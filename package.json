@@ -2,12 +2,20 @@
   "name": "restaurant-management-frontend",
   "private": true,
   "scripts": {
-    "build": "turbo run build",
     "dev": "turbo run dev",
+    "dev:admin": "turbo run dev --filter=admin",
+    "build": "turbo run build",
     "lint": "turbo run lint",
+    "check-types": "turbo run check-types",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "clean": "turbo clean",
+    "clean:all": "powershell -Command \"Get-ChildItem -Path . -Include node_modules, .next, dist, .turbo -Recurse -Directory | Remove-Item -Recurse -Force\"",
+    "reinstall": "pnpm run clean:all && pnpm install"
   },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "devDependencies": {
     "prettier": "^3.7.4",
     "turbo": "^2.9.16",

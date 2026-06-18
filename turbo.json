@@ -1,17 +1,28 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
+  "globalPassThroughEnv": [
+    "PORT",
+    "NEXT_PUBLIC_API_URL",
+    "CHEF_APP_URL",
+    "WAITER_APP_URL",
+    "CASHIER_APP_URL"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**"]
     },
+    "clean": {
+      "cache": false
+    },
     "lint": {
       "dependsOn": ["^lint"]
     },
     "check-types": {
-      "dependsOn": ["^check-types"]
+      "dependsOn": ["^build"],
+      "inputs": ["**/*.ts", "**/*.tsx", "tsconfig.json"]
     },
     "dev": {
       "cache": false,
