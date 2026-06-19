@@ -1,3 +1,7 @@
 packages:
   - "apps/*"
   - "packages/*"
+  - "turbo/generators"
+allowBuilds:
+  esbuild: true
+  sharp: true

@@ -10,7 +10,10 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "clean": "turbo clean",
     "clean:all": "powershell -Command \"Get-ChildItem -Path . -Include node_modules, .next, dist, .turbo -Recurse -Directory | Remove-Item -Recurse -Force\"",
-    "reinstall": "pnpm run clean:all && pnpm install"
+    "reinstall": "pnpm run clean:all && pnpm install",
+    "gen:package": "turbo gen package",
+    "gen:feature": "turbo gen feature",
+    "create:app": "create next-app@latest"
   },
   "workspaces": [
     "apps/*",
@@ -21,8 +24,8 @@
     "turbo": "^2.9.16",
     "typescript": "5.9.2"
   },
-  "packageManager": "pnpm@9.0.0",
+  "packageManager": "pnpm@11.6.0",
   "engines": {
-    "node": ">=18"
+    "node": ">=20.9.0"
   }
 }

@@ -1,0 +1,11 @@
+{
+  "name": "@repo/generators",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@turbo/gen": "^2.9.16"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3"
+  }
+}
