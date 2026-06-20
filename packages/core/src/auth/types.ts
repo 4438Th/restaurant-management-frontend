@@ -9,18 +9,18 @@ export interface AuthenticationResponse {
     expiryTime: string;
 }
 
-export interface IntrospectRequest {
-    token: string;
-}
-
-export interface IntrospectResponse {
-    valid: boolean;
-}
-
 export interface LogoutRequest {
     token: string;
 }
 
 export interface RefreshTokenRequest {
     token: string;
+}
+
+export interface IntrospectRequest {
+    token: string;
+}
+
+export interface IntrospectResponse {
+    valid: boolean;
 }

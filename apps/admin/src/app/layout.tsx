@@ -1,9 +1,6 @@
-import type { Metadata } from "next";
+import "./global.css";
 
-export const metadata: Metadata = {
-  title: "Hệ thống quản trị",
-  description: "Phân hệ quản trị",
-};
+import { QueryProvider } from "@/providers/query-provider";
 
 export default function RootLayout({
   children,
@@ -11,8 +8,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi">
-      <body style={{ margin: 0, fontFamily: "sans-serif" }}>{children}</body>
+    <html lang="en">
+      <body>
+        <QueryProvider>{children}</QueryProvider>
+      </body>
     </html>
   );
 }
