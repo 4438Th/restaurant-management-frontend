@@ -8,3 +8,4 @@ export * from "./sidebar";
 export * from "./stat-card";
 export * from "./table";
 export * from "./topbar";
+export * from "./modal";
