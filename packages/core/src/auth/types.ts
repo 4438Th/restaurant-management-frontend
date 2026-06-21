@@ -1,20 +1,13 @@
+// packages/core/src/auth/types.ts
+
 export interface LoginRequest {
     username: string;
     password: string;
 }
 
 export interface AuthenticationResponse {
-    token: string;
+    token: string; // Token chuỗi jwt nhận về
     authenticated: boolean;
-    expiryTime: string;
-}
-
-export interface LogoutRequest {
-    token: string;
-}
-
-export interface RefreshTokenRequest {
-    token: string;
 }
 
 export interface IntrospectRequest {
@@ -23,4 +16,8 @@ export interface IntrospectRequest {
 
 export interface IntrospectResponse {
     valid: boolean;
+}
+
+export interface RefreshTokenRequest {
+    token: string;
 }

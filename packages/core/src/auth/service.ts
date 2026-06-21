@@ -1,51 +1,43 @@
-import { apiFetch } from "../http";
-import type {
-    LoginRequest,
-    AuthenticationResponse,
-} from "./types";
+// packages/core/src/auth/service.ts
+import { apiClient } from '../http/client';
+import { tokenStorage } from '../http/storage';
+import { AuthenticationResponse, LoginRequest, RefreshTokenRequest } from './types';
 
-import type {
-    ApiResponse,
-} from "../common";
+export const coreAuthService = {
+    login: async (payload: LoginRequest): Promise<AuthenticationResponse> => {
+        const data = await apiClient.post<any, AuthenticationResponse>('/auth/login', payload);
 
-export const authService = {
-    login(payload: LoginRequest) {
-        return apiFetch<ApiResponse<AuthenticationResponse>>(
-            "/auth/login",
-            {
-                method: "POST",
-                body: JSON.stringify(payload),
-            },
-        );
+        if (data?.token) {
+            tokenStorage.setToken(data.token);
+        }
+        return data;
     },
 
-    logout(token: string) {
-        return apiFetch<ApiResponse<void>>(
-            "/auth/logout",
-            {
-                method: "POST",
-                body: JSON.stringify({ token }),
-            },
-        );
+    refreshToken: async (): Promise<AuthenticationResponse> => {
+        const currentToken = tokenStorage.getToken();
+        if (!currentToken) throw new Error('No token found to refresh');
+
+        const payload: RefreshTokenRequest = { token: currentToken };
+        const data = await apiClient.post<any, AuthenticationResponse>('/auth/refreshToken', payload);
+
+        if (data?.token) {
+            tokenStorage.setToken(data.token);
+        }
+        return data;
     },
 
-    introspect(token: string) {
-        return apiFetch<ApiResponse<{ valid: boolean }>>(
-            "/auth/introspect",
-            {
-                method: "POST",
-                body: JSON.stringify({ token }),
-            },
-        );
-    },
-
-    refreshToken(token: string) {
-        return apiFetch<ApiResponse<AuthenticationResponse>>(
-            "/auth/refreshToken",
-            {
-                method: "POST",
-                body: JSON.stringify({ token }),
-            },
-        );
-    },
+    logout: async (): Promise<void> => {
+        const currentToken = tokenStorage.getToken();
+        if (currentToken) {
+            try {
+                await apiClient.post('/auth/logout', { token: currentToken });
+            } catch (e) {
+                console.error('Logout on backend failed', e);
+            }
+        }
+        tokenStorage.clearToken();
+        if (typeof window !== 'undefined') {
+            window.location.href = '/login';
+        }
+    }
 };
