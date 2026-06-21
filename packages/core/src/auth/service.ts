@@ -5,7 +5,7 @@ import { AuthenticationResponse, LoginRequest, RefreshTokenRequest } from './typ
 
 export const coreAuthService = {
     login: async (payload: LoginRequest): Promise<AuthenticationResponse> => {
-        const data = await apiClient.post<any, AuthenticationResponse>('/auth/login', payload);
+        const data = await apiClient.post<AuthenticationResponse>('/auth/login', payload);
 
         if (data?.token) {
             tokenStorage.setToken(data.token);
@@ -18,7 +18,7 @@ export const coreAuthService = {
         if (!currentToken) throw new Error('No token found to refresh');
 
         const payload: RefreshTokenRequest = { token: currentToken };
-        const data = await apiClient.post<any, AuthenticationResponse>('/auth/refreshToken', payload);
+        const data = await apiClient.post<AuthenticationResponse>('/auth/refreshToken', payload);
 
         if (data?.token) {
             tokenStorage.setToken(data.token);
