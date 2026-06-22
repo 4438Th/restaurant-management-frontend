@@ -1,7 +1,6 @@
-/* eslint-env node */
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ["@restaurant/core"],
+  transpilePackages: ["@restaurant/core", "@repo/tailwind-config"],
 
   async rewrites() {
     return [

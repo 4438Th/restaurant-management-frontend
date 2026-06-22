@@ -1,18 +1,16 @@
-import React from "react";
+import * as Icons from "lucide-react";
 
 interface IconProps {
-  name: string;
+  name: keyof typeof Icons;
   className?: string;
-  style?: React.CSSProperties;
 }
 
-export function Icon({ name, className = "", style }: IconProps) {
-  return (
-    <span
-      className={`material-symbols-outlined select-none ${className}`}
-      style={style}
-    >
-      {name}
-    </span>
-  );
+export function Icon({ name, className }: IconProps) {
+  const LucideIcon = Icons[name] as React.ComponentType<{ className?: string }>;
+
+  if (!LucideIcon) {
+    return <Icons.HelpCircle className={className} />;
+  }
+
+  return <LucideIcon className={className} />;
 }
