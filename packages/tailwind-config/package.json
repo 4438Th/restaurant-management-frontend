@@ -1,0 +1,12 @@
+{
+  "name": "@repo/tailwind-config",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./theme.css": "./theme.css"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.3.1",
+    "@tailwindcss/forms": "^0.5.7"
+  }
+}
