@@ -1,3 +1,5 @@
+// packages/core/src/common/types.ts
+
 export interface ApiResponse<T> {
     code: number;
     message: string;
@@ -21,25 +23,4 @@ export interface AuditEntity {
     updatedBy: string;
     deletedAt: string | null;
     deletedBy: string | null;
-}
-
-
-export enum UserStatus {
-    PENDING = 'PENDING',
-    ACTIVE = 'ACTIVE',
-    INACTIVE = 'INACTIVE',
-}
-
-
-export interface Role {
-    name: string;
-    description: string;
-}
-
-export interface UserResponse extends AuditEntity {
-    id: string;
-    username: string;
-    fullName: string;
-    status: UserStatus;
-    roles: Role[];
 }

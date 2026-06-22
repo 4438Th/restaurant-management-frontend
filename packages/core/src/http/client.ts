@@ -3,7 +3,7 @@ import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { tokenStorage } from './storage';
 import { ApiResponse } from '../common/types';
 
-// Định nghĩa lại cấu trúc của một Custom Instance đã được unwrap data hoàn toàn
+
 interface CustomAxiosInstance {
     get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T>;
     post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T>;
@@ -20,7 +20,6 @@ const instance = axios.create({
     timeout: 15000,
 });
 
-// Request Interceptor
 instance.interceptors.request.use(
     (config) => {
         if (typeof window !== 'undefined') {
@@ -34,7 +33,6 @@ instance.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-// Response Interceptor: Tự động bóc tách .result từ ApiResponse<T>
 instance.interceptors.response.use(
     (response) => {
         const apiResponse = response.data as ApiResponse<any>;
@@ -44,8 +42,8 @@ instance.interceptors.response.use(
         if (error.response) {
             const status = error.response.status;
             const apiError = error.response.data as ApiResponse<null>;
-
-            if (status === 401 || apiError.code === 4102 || apiError.code === 4103) {
+            const requestUrl = error.config?.url || '';
+            if ((status === 401 || apiError.code === 4102 || apiError.code === 4103) && !requestUrl.includes('/auth/login')) {
                 if (typeof window !== 'undefined') {
                     tokenStorage.clearToken();
                     window.location.href = '/login';
@@ -57,5 +55,4 @@ instance.interceptors.response.use(
     }
 );
 
-// Ép kiểu instance thành CustomAxiosInstance đã loại bỏ lớp vỏ bọc AxiosResponse
 export const apiClient = instance as unknown as CustomAxiosInstance;

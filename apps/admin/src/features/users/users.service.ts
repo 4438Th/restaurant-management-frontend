@@ -1,6 +1,6 @@
 // apps/admin/src/features/users/users.service.ts
-import { apiClient, PageResponse, UserResponse } from '@repo/core';
-import { UserCreateRequest, UserUpdateRequest, AssignRolesRequest } from './users.types';
+import { apiClient, PageResponse } from '@repo/core';
+import { UserResponse, UserCreateRequest, UserUpdateRequest, AssignRolesRequest } from './users.types';
 
 export const usersService = {
     getAll: (page = 1, size = 10, search?: string, status?: string) => {
