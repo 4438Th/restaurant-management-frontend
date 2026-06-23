@@ -47,4 +47,12 @@ export interface RemoveRolesRequest {
     roles: string[];
 }
 
+export const AVAILABLE_ROLES = [
+    "MANAGER",
+    "CHEF",
+    "WAITER",
+    "BAR",
+    "CASHIER",
+    "USER",
+];
 export type User = UserResponse;

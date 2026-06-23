@@ -1,34 +1,63 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/ui/icon";
 import { UserTable } from "@/features/users/components/user-table";
 import { UserToolbar } from "@/features/users/components/user-toolbar";
+import { UserForm } from "@/features/users/components/user-form";
 import { useUsers } from "@/features/users/users.hooks";
+import { User } from "@/features/users/users.types";
 
 export default function UserManagementPage() {
-  const [page, setPage] = useState(1);
-  const [size] = useState(10);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState("All");
+  const [page, setPage] = useState<number>(1);
+  const [size] = useState<number>(10);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [debouncedSearch, setDebouncedSearch] = useState<string>("");
+  const [selectedStatus, setSelectedStatus] = useState<string>("All");
 
-  // Hook React Query gọi thẳng dữ liệu unwrap sạch sẽ từ service
-  const { data: pageData, isLoading } = useUsers(
+  // State điều khiển đóng/mở form và lưu thông tin tài khoản đang chỉnh sửa
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  // Kỹ thuật Debounce: Giảm tần suất gọi API liên tục khi người dùng đang nhập từ khóa
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setPage(1); // Quay về trang 1 khi phát sinh từ khóa tìm kiếm mới
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  // Hook React Query lấy danh sách dữ liệu phân trang từ Server
+  const { data: pageData, isLoading: isFetchLoading } = useUsers(
     page,
     size,
-    searchQuery || undefined,
+    debouncedSearch || undefined,
     selectedStatus === "All" ? undefined : selectedStatus,
   );
 
   const usersList = pageData?.data || [];
+  const totalPages = pageData?.totalPages || 1;
+
+  // Xử lý sự kiện khi ấn nút "Thêm tài khoản" từ Header chính
+  const handleCreateClick = (): void => {
+    setSelectedUser(null);
+    setIsDrawerOpen(true);
+  };
+
+  // Xử lý sự kiện khi bấm nút Chỉnh sửa trên từng dòng của bảng dữ liệu
+  const handleEditClick = (user: User): void => {
+    setSelectedUser(user);
+    setIsDrawerOpen(true);
+  };
 
   return (
     <div className="bg-surface text-on-surface h-screen flex w-full overflow-hidden">
       {/* SIDEBAR NAVIGATION */}
       <nav className="hidden md:flex w-60 flex-col h-full bg-surface-container-lowest border-r border-outline-variant z-20">
         <div className="h-16 flex items-center px-6 border-b border-outline-variant">
-          <span className="text-[18px] font-bold text-primary truncate">
+          <span className="text-[18px] font-black text-primary tracking-tight truncate">
             ProOps RMS
           </span>
         </div>
@@ -69,63 +98,82 @@ export default function UserManagementPage() {
 
       {/* CONTENT ZONE */}
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
-        <header className="flex justify-between items-center h-16 px-6 w-full bg-surface border-b border-outline-variant shadow-sm z-40 shrink-0">
-          <span className="text-[18px] font-black text-on-surface">
-            System Control
+        {/* TOP BAR PANEL */}
+        <header className="flex justify-between items-center h-16 px-6 w-full bg-surface border-b border-outline-variant shadow-sm z-10 shrink-0">
+          <span className="text-[16px] font-bold text-on-surface tracking-tight">
+            Hệ thống kiểm soát (RBAC)
           </span>
-          <button className="flex items-center gap-2 bg-primary-container text-white px-4 py-2 rounded-lg hover:bg-primary transition-colors">
+          <button
+            onClick={handleCreateClick}
+            className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-xl text-[13px] font-bold shadow-sm transition-colors"
+          >
             <Icon name="Plus" className="w-4 h-4" />
-            <span className="text-[12px] font-semibold">Create User</span>
+            <span>Thêm tài khoản</span>
           </button>
         </header>
 
+        {/* MAIN BODY APP */}
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-surface flex flex-col gap-6">
           <div>
-            <h1 className="text-[36px] font-bold tracking-[-0.02em] text-on-surface">
-              User Management
+            <h1 className="text-[28px] font-black tracking-tight text-on-surface">
+              Tài khoản & Phân quyền
             </h1>
             <p className="text-[14px] text-on-surface-variant mt-1">
-              Configure credentials, tokens, and system access governance
-              (RBAC).
+              Quản lý danh sách nhân sự, mã hóa thông tin và phân định quyền
+              hạn.
             </p>
           </div>
 
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl flex flex-col shadow-sm overflow-hidden">
+          {/* TABLE CONTAINER CARD */}
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col shadow-sm overflow-hidden">
             <UserToolbar
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
               selectedStatus={selectedStatus}
-              onStatusChange={setSelectedStatus}
+              onStatusChange={(status: string) => {
+                setSelectedStatus(status);
+                setPage(1);
+              }}
             />
 
-            <UserTable users={usersList} isLoading={isLoading} />
+            {/* Bảng danh sách */}
+            <UserTable
+              users={usersList}
+              isLoading={isFetchLoading}
+              onEditClick={handleEditClick}
+            />
 
-            {/* Điều hướng phân trang động */}
+            {/* PHÂN TRANG */}
             {pageData && (
-              <div className="p-4 border-t border-outline-variant flex justify-between items-center bg-surface-bright text-[14px] text-on-surface-variant">
+              <div className="p-4 border-t border-outline-variant flex justify-between items-center bg-surface-bright text-[13px] text-on-surface-variant font-medium">
                 <div>
-                  Showing Page {pageData.currentPage} of {pageData.totalPages} (
-                  {pageData.totalElements} entries)
+                  Hiển thị trang{" "}
+                  <span className="text-on-surface font-bold">
+                    {pageData.currentPage}
+                  </span>{" "}
+                  trên{" "}
+                  <span className="text-on-surface font-bold">
+                    {pageData.totalPages}
+                  </span>{" "}
+                  ({pageData.totalElements} tài khoản)
                 </div>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => setPage((p) => Math.max(p - 1, 1))}
                     disabled={page === 1}
-                    className="px-3 py-1 border border-outline-variant rounded hover:bg-surface-container transition-colors disabled:opacity-50 text-[12px] font-medium"
+                    className="px-3 py-1.5 border border-outline-variant rounded-lg hover:bg-surface-container transition-colors disabled:opacity-40 text-[12px] font-bold"
                   >
-                    Prev
+                    Trước
                   </button>
-                  <span className="px-3 text-[14px] font-semibold text-primary">
+                  <span className="px-3 text-[13px] font-black text-primary">
                     {page}
                   </span>
                   <button
-                    onClick={() =>
-                      setPage((p) => (pageData.nextPageUrl ? p + 1 : p))
-                    }
-                    disabled={!pageData.nextPageUrl}
-                    className="px-3 py-1 border border-outline-variant rounded hover:bg-surface-container transition-colors disabled:opacity-50 text-[12px] font-medium"
+                    onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
+                    disabled={page >= totalPages}
+                    className="px-3 py-1.5 border border-outline-variant rounded-lg hover:bg-surface-container transition-colors disabled:opacity-40 text-[12px] font-bold"
                   >
-                    Next
+                    Sau
                   </button>
                 </div>
               </div>
@@ -133,6 +181,13 @@ export default function UserManagementPage() {
           </div>
         </main>
       </div>
+
+      {/* FORM MODAL DRAWER*/}
+      <UserForm
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        user={selectedUser}
+      />
     </div>
   );
 }

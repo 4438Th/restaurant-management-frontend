@@ -6,18 +6,6 @@ export interface LoginRequest {
 }
 
 export interface AuthenticationResponse {
-    token: string; // Chuỗi JWT nhận từ BE
+    token: string;
     authenticated: boolean;
-}
-
-export interface IntrospectRequest {
-    token: string;
-}
-
-export interface IntrospectResponse {
-    valid: boolean;
-}
-
-export interface RefreshTokenRequest {
-    token: string;
 }

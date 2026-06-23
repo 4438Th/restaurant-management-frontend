@@ -1,7 +1,7 @@
+// apps/admin/src/features/users/components/user-toolbar.tsx
 "use client";
 
 import { Icon } from "@/components/ui/icon";
-import { UserStatus } from "../users.types";
 
 interface UserToolbarProps {
   searchQuery: string;
@@ -17,33 +17,36 @@ export function UserToolbar({
   onStatusChange,
 }: UserToolbarProps) {
   return (
-    <div className="p-4 border-b border-outline-variant flex flex-col sm:flex-row justify-between items-center gap-4 bg-surface-bright">
-      {/* Tìm kiếm */}
-      <div className="relative w-full sm:w-80">
+    <div className="p-4 flex flex-col sm:flex-row gap-3 bg-surface-bright border-b border-outline-variant items-center justify-between">
+      {/* Ô tìm kiếm Username / FullName */}
+      <div className="relative w-full sm:max-w-xs">
         <Icon
           name="Search"
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant w-4 h-4 pointer-events-none"
+          className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
         />
         <input
-          className="w-full pl-10 pr-3 py-2 text-[14px] bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all outline-none"
-          placeholder="Search by name or username..."
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
+          placeholder="Tìm theo tên hoặc tài khoản..."
+          className="w-full pl-9 pr-4 py-2 text-[13px] bg-surface border border-outline-variant rounded-xl outline-none focus:border-primary transition-colors"
         />
       </div>
 
-      {/* Bộ lọc trạng thái hệ thống */}
-      <div className="flex items-center gap-2 w-full sm:w-auto">
+      {/* Bộ lọc trạng thái hoạt động */}
+      <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+        <span className="text-[12px] font-bold text-on-surface-variant shrink-0">
+          Trạng thái:
+        </span>
         <select
           value={selectedStatus}
           onChange={(e) => onStatusChange(e.target.value)}
-          className="pl-3 pr-8 py-2 text-[14px] bg-surface-container-lowest border border-outline-variant rounded-lg outline-none cursor-pointer"
+          className="bg-surface border border-outline-variant text-[13px] rounded-xl px-3 py-2 outline-none focus:border-primary font-medium min-w-[120px]"
         >
-          <option value="All">All Status</option>
-          <option value={UserStatus.ACTIVE}>Active</option>
-          <option value={UserStatus.PENDING}>Pending</option>
-          <option value={UserStatus.INACTIVE}>Inactive</option>
+          <option value="All">Tất cả</option>
+          <option value="ACTIVE">ACTIVE</option>
+          <option value="PENDING">PENDING</option>
+          <option value="INACTIVE">INACTIVE</option>
         </select>
       </div>
     </div>
