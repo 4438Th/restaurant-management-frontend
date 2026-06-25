@@ -1,9 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLogin } from "@/features/auth/auth.hooks";
+import { tokenStorage } from "@repo/core";
 
 export default function LoginPage() {
+  useEffect(() => {
+    tokenStorage.clearToken();
+  }, []);
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
@@ -24,7 +28,7 @@ export default function LoginPage() {
         {/* LOGO & TITLE PANEL */}
         <div className="text-center mb-8">
           <h1 className="text-[28px] font-black text-primary tracking-tight">
-            ProOps RMS
+            HTH RMS
           </h1>
           <p className="text-[14px] text-on-surface-variant mt-2">
             Đăng nhập hệ thống quản trị nhà hàng

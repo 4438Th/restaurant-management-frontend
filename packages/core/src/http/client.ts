@@ -1,9 +1,12 @@
-// packages/core/src/http/client.ts
-import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig, AxiosError } from 'axios';
+import axios, {
+    AxiosInstance,
+    AxiosResponse,
+    InternalAxiosRequestConfig,
+    AxiosError
+} from 'axios';
 import { tokenStorage } from './storage';
 import { ApiResponse } from '../common/types';
 
-// ApiError
 export class ApiError extends Error {
     readonly code: number;
     readonly statusCode: number;
@@ -17,27 +20,26 @@ export class ApiError extends Error {
     }
 }
 
-// Định nghĩa lại hàm của AxiosInstance
-declare module 'axios' {
-    export interface AxiosInstance {
-        get<T = unknown, D = unknown>(url: string, config?: import('axios').AxiosRequestConfig<D>): Promise<T>;
-        post<T = unknown, R = T, D = unknown>(url: string, data?: D, config?: import('axios').AxiosRequestConfig<D>): Promise<R>;
-        put<T = unknown, R = T, D = unknown>(url: string, data?: D, config?: import('axios').AxiosRequestConfig<D>): Promise<R>;
-        patch<T = unknown, R = T, D = unknown>(url: string, data?: D, config?: import('axios').AxiosRequestConfig<D>): Promise<R>;
-        delete<T = unknown, D = unknown>(url: string, config?: import('axios').AxiosRequestConfig<D>): Promise<T>;
-    }
-}
+const createBaseClient = (): AxiosInstance => {
+    const getBaseURL = (): string => {
+        if (typeof window !== 'undefined') {
+            return (window as any).env?.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+        }
+        return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+    };
 
-// Khởi tạo AxiosInstance
-const instance: AxiosInstance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    timeout: 15000,
-});
+    return axios.create({
+        baseURL: getBaseURL(),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        timeout: 15000,
+    });
+};
 
-// Request Interceptor: gắn token vào header Authorization
+const instance = createBaseClient();
+
+
 instance.interceptors.request.use(
     (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
         if (typeof window !== 'undefined') {
@@ -51,20 +53,22 @@ instance.interceptors.request.use(
     (error: unknown) => Promise.reject(error)
 );
 
-// 4. Response Interceptor: chuẩn hóa dữ liệu trả về và xử lý lỗi
+
 instance.interceptors.response.use(
     (response: AxiosResponse<ApiResponse<unknown>>): any => {
         return response.data.result;
     },
     (error: AxiosError<ApiResponse<null>>) => {
-        // Lỗi phản hồi từ BE (400, 401, 403, 500...)
         if (error.response) {
             const status = error.response.status;
             const apiData = error.response.data;
             const requestUrl = error.config?.url ?? '';
 
             if ((status === 401 || apiData?.code === 4102) && !requestUrl.includes('/auth/login')) {
-                // xử lý logout...
+                if (typeof window !== 'undefined') {
+                    tokenStorage.clearToken();
+                    window.location.href = '/login';
+                }
             }
 
             return Promise.reject(
@@ -75,17 +79,20 @@ instance.interceptors.response.use(
                 )
             );
         }
-
-        // Lỗi server không có phản hồi (Network Error)
         if (error.request) {
             return Promise.reject(
                 new ApiError('Kết nối tới server thất bại hoặc quá thời gian phản hồi!', 1001, 503)
             );
         }
-
-        // Lỗi khởi tạo hoặc crash client
         return Promise.reject(new ApiError(error.message, 1000, 500));
     }
 );
+export interface HttpClient {
+    get<T = unknown>(url: string, config?: any): Promise<T>;
+    post<T = unknown, D = unknown>(url: string, data?: D, config?: any): Promise<T>;
+    put<T = unknown, D = unknown>(url: string, data?: D, config?: any): Promise<T>;
+    patch<T = unknown, D = unknown>(url: string, data?: D, config?: any): Promise<T>;
+    delete<T = unknown>(url: string, config?: any): Promise<T>;
+}
 
-export const apiClient = instance;
+export const apiClient = instance as unknown as HttpClient;

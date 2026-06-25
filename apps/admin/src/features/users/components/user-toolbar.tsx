@@ -41,7 +41,7 @@ export function UserToolbar({
         <select
           value={selectedStatus}
           onChange={(e) => onStatusChange(e.target.value)}
-          className="bg-surface border border-outline-variant text-[13px] rounded-xl px-3 py-2 outline-none focus:border-primary font-medium min-w-[120px]"
+          className="bg-surface border border-outline-variant text-[13px] rounded-xl px-3 py-2 outline-none focus:border-primary font-medium min-w-30"
         >
           <option value="All">Tất cả</option>
           <option value="ACTIVE">ACTIVE</option>

@@ -19,7 +19,7 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "build": "tsup src/index.ts --format cjs,esm --clean --dts-resolve",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
     "check-types": "tsc --noEmit"
   },

@@ -6,6 +6,7 @@ import { Icon } from "@/components/ui/icon";
 import { UserTable } from "@/features/users/components/user-table";
 import { UserToolbar } from "@/features/users/components/user-toolbar";
 import { UserForm } from "@/features/users/components/user-form";
+import { UserProfileModal } from "@/features/users/components/user-profile-modal"; // 🌟 Import Profile Modal mới
 import { useUsers } from "@/features/users/users.hooks";
 import { User } from "@/features/users/users.types";
 
@@ -16,8 +17,9 @@ export default function UserManagementPage() {
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
 
-  // State điều khiển đóng/mở form và lưu thông tin tài khoản đang chỉnh sửa
+  // State điều khiển đóng/mở form hệ thống và lưu thông tin tài khoản đang thao tác
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+  const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false); // 🌟 State quản lý đóng/mở Modal hồ sơ cá nhân
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   // Kỹ thuật Debounce: Giảm tần suất gọi API liên tục khi người dùng đang nhập từ khóa
@@ -52,26 +54,23 @@ export default function UserManagementPage() {
     setIsDrawerOpen(true);
   };
 
+  // 🌟 Xử lý sự kiện khi click vào một dòng (User Row) trên bảng để xem thông tin cá nhân
+  const handleRowClick = (user: User): void => {
+    setSelectedUser(user);
+    setIsProfileOpen(true);
+  };
+
   return (
     <div className="bg-surface text-on-surface h-screen flex w-full overflow-hidden">
       {/* SIDEBAR NAVIGATION */}
       <nav className="hidden md:flex w-60 flex-col h-full bg-surface-container-lowest border-r border-outline-variant z-20">
         <div className="h-16 flex items-center px-6 border-b border-outline-variant">
           <span className="text-[18px] font-black text-primary tracking-tight truncate">
-            ProOps RMS
+            HTH RMS
           </span>
         </div>
         <div className="flex-1 overflow-y-auto py-2">
           <ul className="flex flex-col gap-1 px-2">
-            <li>
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-4 px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors"
-              >
-                <Icon name="LayoutDashboard" className="w-5 h-5" />
-                <span className="text-[12px] font-semibold">Dashboard</span>
-              </Link>
-            </li>
             <li>
               <Link
                 href="/users"
@@ -101,27 +100,35 @@ export default function UserManagementPage() {
         {/* TOP BAR PANEL */}
         <header className="flex justify-between items-center h-16 px-6 w-full bg-surface border-b border-outline-variant shadow-sm z-10 shrink-0">
           <span className="text-[16px] font-bold text-on-surface tracking-tight">
-            Hệ thống kiểm soát (RBAC)
+            Tài khoản nhân sự
           </span>
           <button
             onClick={handleCreateClick}
             className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-xl text-[13px] font-bold shadow-sm transition-colors"
           >
             <Icon name="Plus" className="w-4 h-4" />
-            <span>Thêm tài khoản</span>
+            <span>Tạo mới</span>
           </button>
         </header>
 
         {/* MAIN BODY APP */}
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-surface flex flex-col gap-6">
-          <div>
-            <h1 className="text-[28px] font-black tracking-tight text-on-surface">
-              Tài khoản & Phân quyền
-            </h1>
-            <p className="text-[14px] text-on-surface-variant mt-1">
-              Quản lý danh sách nhân sự, mã hóa thông tin và phân định quyền
-              hạn.
-            </p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-[28px] font-black tracking-tight text-on-surface">
+                Danh sách tài khoản
+              </h1>
+              <p className="text-[14px] text-on-surface-variant mt-1">
+                Quản lý hồ sơ nhân sự và phân quyền truy cập hệ thống.
+              </p>
+            </div>
+            <Link
+              href="/users/trash"
+              className="flex items-center gap-2 border border-outline-variant hover:bg-surface-container text-on-surface px-4 py-2 rounded-xl text-[13px] font-bold shadow-sm transition-colors"
+            >
+              <Icon name="Trash2" className="w-4 h-4 text-error" />
+              <span>Thùng rác</span>
+            </Link>
           </div>
 
           {/* TABLE CONTAINER CARD */}
@@ -141,6 +148,7 @@ export default function UserManagementPage() {
               users={usersList}
               isLoading={isFetchLoading}
               onEditClick={handleEditClick}
+              onRowClick={handleRowClick} // 🌟 Khớp nối prop nhận sự kiện click dòng vào table
             />
 
             {/* PHÂN TRANG */}
@@ -182,10 +190,17 @@ export default function UserManagementPage() {
         </main>
       </div>
 
-      {/* FORM MODAL DRAWER*/}
+      {/* FORM MODAL DRAWER (Tạo mới / Sửa quyền hệ thống) */}
       <UserForm
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
+        user={selectedUser}
+      />
+
+      {/* 🌟 USER PROFILE MODAL (Xem chi tiết hồ sơ cá nhân) */}
+      <UserProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
         user={selectedUser}
       />
     </div>

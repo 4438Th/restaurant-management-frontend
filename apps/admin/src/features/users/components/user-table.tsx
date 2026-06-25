@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { Icon } from "@/components/ui/icon";
 import { User, UserStatus } from "../users.types";
 import { useDeleteUser } from "../users.hooks";
@@ -8,19 +9,25 @@ interface UserTableProps {
   users: User[];
   isLoading: boolean;
   onEditClick?: (user: User) => void;
+  onRowClick?: (user: User) => void; // 🌟 Thêm prop để nhận callback xử lý xem chi tiết hồ sơ
 }
 
-export function UserTable({ users, isLoading, onEditClick }: UserTableProps) {
+export function UserTable({
+  users,
+  isLoading,
+  onEditClick,
+  onRowClick,
+}: UserTableProps) {
   const deleteUserMutation = useDeleteUser();
 
-  const handleDelete = (user: User) => {
+  const handleDelete = (e: React.MouseEvent, user: User) => {
+    e.stopPropagation(); // 🌟 Chặn không cho kích hoạt sự kiện click dòng (mở Modal) khi bấm Xóa
+
     if (
       confirm(
         `Bạn có chắc chắn muốn xóa tài khoản "${user.username}" khỏi hệ thống không?`,
       )
     ) {
-      // 🌟 Gọi mutate trực tiếp. Mọi thông báo Thành công / Thất bại
-      // đã được lo trọn gói bởi Sonner Toast đặt bên trong Custom Hook.
       deleteUserMutation.mutate(user.id);
     }
   };
@@ -34,6 +41,7 @@ export function UserTable({ users, isLoading, onEditClick }: UserTableProps) {
               <input
                 className="rounded border-outline-variant text-primary focus:ring-primary cursor-pointer"
                 type="checkbox"
+                onClick={(e) => e.stopPropagation()} // 🌟 Chặn nổi bọt cho checkbox header
               />
             </th>
             <th className="p-4">User Details</th>
@@ -64,7 +72,6 @@ export function UserTable({ users, isLoading, onEditClick }: UserTableProps) {
             </tr>
           ) : (
             users.map((user) => {
-              // Định nghĩa logic loading cục bộ cho riêng dòng đang bấm xóa
               const isDeletingThisUser =
                 deleteUserMutation.isPending &&
                 deleteUserMutation.variables === user.id;
@@ -72,18 +79,22 @@ export function UserTable({ users, isLoading, onEditClick }: UserTableProps) {
               return (
                 <tr
                   key={user.id}
-                  className="hover:bg-surface-container-low transition-colors"
+                  onClick={() => onRowClick?.(user)} // 🌟 Kích hoạt mở Modal khi click vào bất kỳ vùng trống nào trên dòng
+                  className="hover:bg-surface-container-low transition-colors cursor-pointer select-none" // 🌟 Thêm cursor-pointer báo hiệu dòng này bấm được
                 >
                   <td className="p-4 text-center">
                     <input
                       className="rounded border-outline-variant text-primary focus:ring-primary cursor-pointer"
                       type="checkbox"
+                      onClick={(e) => e.stopPropagation()} // 🌟 Chặn nổi bọt khi click chọn checkbox trên dòng
                     />
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[12px]">
-                        {user.fullName.charAt(0)}
+                        {user.fullName
+                          ? user.fullName.charAt(0).toUpperCase()
+                          : "U"}
                       </div>
                       <div>
                         <div className="font-semibold">{user.fullName}</div>
@@ -128,10 +139,13 @@ export function UserTable({ users, isLoading, onEditClick }: UserTableProps) {
                     {/* Nút Sửa */}
                     {onEditClick && (
                       <button
-                        onClick={() => onEditClick(user)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEditClick(user);
+                        }}
                         disabled={deleteUserMutation.isPending}
                         className="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors rounded-xl disabled:opacity-40"
-                        title="Chỉnh sửa"
+                        title="Chỉnh sửa tài khoản"
                       >
                         <Icon name="Pencil" className="w-4 h-4" />
                       </button>
@@ -139,13 +153,12 @@ export function UserTable({ users, isLoading, onEditClick }: UserTableProps) {
 
                     {/* Nút Xóa */}
                     <button
-                      onClick={() => handleDelete(user)}
+                      onClick={(e) => handleDelete(e, user)}
                       disabled={deleteUserMutation.isPending}
                       className="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 transition-colors rounded-xl disabled:opacity-40"
                       title="Xóa tài khoản"
                     >
                       {isDeletingThisUser ? (
-                        // Hiển thị trạng thái spinner nhỏ khi dòng này đang được xử lý xóa
                         <div className="w-4 h-4 border-2 border-error border-t-transparent rounded-full animate-spin" />
                       ) : (
                         <Icon name="Trash2" className="w-4 h-4" />

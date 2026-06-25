@@ -23,7 +23,7 @@ export default function RootLayout({
     <html lang="en" className={`light ${inter.variable}`}>
       <body className="antialiased">
         <QueryProvider>{children}</QueryProvider>
-        <Toaster richColors position="top-right" />
+        <Toaster duration={2000} richColors position="top-right" />
       </body>
     </html>
   );

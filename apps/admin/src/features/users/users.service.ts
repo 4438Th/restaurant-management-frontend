@@ -1,6 +1,6 @@
 // apps/admin/src/features/users/users.service.ts
 import { apiClient, PageResponse } from '@repo/core';
-import { UserResponse, UserCreateRequest, UserUpdateRequest, AssignRolesRequest } from './users.types';
+import { UserResponse, UserCreateRequest, UserUpdateRequest } from './users.types';
 
 export const usersService = {
     getAll: (page = 1, size = 10, search?: string, status?: string) => {
@@ -28,18 +28,7 @@ export const usersService = {
     },
 
     restore: (id: string) => {
-        return apiClient.post<string>(`/users/${id}`);
+        return apiClient.post<string>(`/users/${id}/restore`);
     },
 
-    activate: (id: string) => {
-        return apiClient.patch<UserResponse>(`/users/${id}/activate`);
-    },
-
-    block: (id: string) => {
-        return apiClient.patch<UserResponse>(`/users/${id}/block`);
-    },
-
-    assignRoles: (payload: AssignRolesRequest) => {
-        return apiClient.post<UserResponse>('/users/assign-roles', payload);
-    }
 };

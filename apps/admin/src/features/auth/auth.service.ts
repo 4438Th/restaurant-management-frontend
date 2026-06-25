@@ -11,7 +11,7 @@ export const authService = {
         return apiClient.post<AuthenticationResponse>('/auth/refreshToken', { token });
     },
 
-    logout: (token: string): Promise<void> => {
-        return apiClient.post<void>('/auth/logout', { token });
+    logout: (token: string, config?: Record<string, unknown>): Promise<void> => {
+        return apiClient.post<void>('/auth/logout', { token }, config);
     }
 };

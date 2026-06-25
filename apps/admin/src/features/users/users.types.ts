@@ -5,6 +5,7 @@ export enum UserStatus {
     PENDING = 'PENDING',
     ACTIVE = 'ACTIVE',
     INACTIVE = 'INACTIVE',
+    DELETED = 'DELETED',
 }
 
 export interface Role {
@@ -16,6 +17,9 @@ export interface UserResponse extends AuditEntity {
     id: string;
     username: string;
     fullName: string;
+    email: string;
+    phoneNumber: string;
+    dob: string;
     status: UserStatus;
     roles: string[];
     permissions: string[];
@@ -27,23 +31,21 @@ export interface UserResponse extends AuditEntity {
 
 export interface UserCreateRequest {
     username: string;
-    password?: string;
+    password: string;
     fullName: string;
+    email: string;
+    phoneNumber: string;
+    dob: string;
     roles: string[];
 }
 
 export interface UserUpdateRequest {
     password?: string;
     fullName: string;
-}
-
-export interface AssignRolesRequest {
-    user: string;
-    roles: string[];
-}
-
-export interface RemoveRolesRequest {
-    user: string;
+    status: UserStatus;
+    email: string;
+    phoneNumber: string;
+    dob: string;
     roles: string[];
 }
 
@@ -53,6 +55,5 @@ export const AVAILABLE_ROLES = [
     "WAITER",
     "BAR",
     "CASHIER",
-    "USER",
 ];
 export type User = UserResponse;

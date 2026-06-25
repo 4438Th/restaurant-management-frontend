@@ -141,3 +141,72 @@ body {
 .animate-fade-in {
   animation: fadeIn 0.2s ease-out forwards;
 }
+.custom-datepicker-wrapper .react-datepicker-wrapper {
+  width: 100%;
+}
+
+/* Khung bọc bảng lịch Popover */
+.react-datepicker {
+  border: 1px solid var(--color-outline-variant) !important;
+  border-radius: 1rem !important; /* ứng với rounded-2xl */
+  font-family: var(--font-sans) !important;
+  box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  overflow: hidden;
+  background-color: var(--color-surface-bright) !important;
+}
+
+/* Phần Header chứa Tháng/Năm và nút Next/Prev */
+.react-datepicker__header {
+  background-color: var(--color-surface-container-low) !important;
+  border-bottom: 1px solid var(--color-outline-variant) !important;
+  padding-top: 12px !important;
+}
+
+/* Chữ hiển thị Tháng/Năm hiện tại */
+.react-datepicker__current-month {
+  color: var(--color-on-surface) !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+}
+
+/* Tên các ngày trong tuần (T2, T3, T4...) */
+.react-datepicker__day-name {
+  color: var(--color-on-surface-variant) !important;
+  font-weight: 600 !important;
+}
+
+/* Ô ngày thông thường */
+.react-datepicker__day {
+  color: var(--color-on-surface) !important;
+  border-radius: 0.5rem !important; /* rounded-lg */
+}
+
+/* Hiệu ứng hover qua các ngày */
+.react-datepicker__day:hover {
+  background-color: var(--color-surface-variant) !important;
+}
+
+/* Ngày được chọn HOẶC ngày đang được focus từ bàn phím */
+.react-datepicker__day--selected, 
+.react-datepicker__day--keyboard-selected {
+  background-color: var(--color-primary) !important;
+  color: var(--color-on-primary) !important;
+  font-weight: 700 !important;
+}
+
+/* Các ngày bị vô hiệu hóa (ví dụ ngày tương lai) */
+.react-datepicker__day--disabled {
+  color: var(--color-outline) !important;
+  opacity: 0.4;
+}
+
+/* Bộ dropdown chọn nhanh Tháng/Năm */
+.react-datepicker__year-select,
+.react-datepicker__month-select {
+  padding: 2px 4px;
+  border-radius: 6px;
+  border: 1px solid var(--color-outline-variant);
+  outline: none;
+  background-color: transparent;
+  color: var(--color-on-surface);
+}

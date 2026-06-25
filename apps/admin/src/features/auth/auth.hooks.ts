@@ -27,22 +27,19 @@ export const useLogin = () => {
 
 export const useLogout = () => {
     const router = useRouter();
+
     return useMutation<void, ApiError, void>({
         mutationFn: async () => {
             const currentToken = tokenStorage.getToken();
-            if (currentToken) {
-                await authService.logout(currentToken);
-            }
+            if (!currentToken) return;
+
+            return authService.logout(currentToken, { timeout: 2000 });
         },
-        onSuccess: () => {
+        retry: false,
+        onSettled: () => {
             tokenStorage.clearToken();
-            toast.success('Đã đăng xuất tài khoản thành công.');
-            router.push('/login');
-        },
-        onError: (error: ApiError) => {
-            toast.error(
-                error.message || 'Đăng xuất thất bại, vui lòng kiểm tra lại thông tin!'
-            );
-        },
+            toast.success("Đã đăng xuất khỏi hệ thống.");
+            router.push("/login");
+        }
     });
 };

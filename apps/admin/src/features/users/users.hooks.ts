@@ -50,9 +50,31 @@ export const useDeleteUser = () => {
         onSuccess: () => {
             toast.success('Đã xóa người dùng thành công!');
             queryClient.invalidateQueries({ queryKey: ['users'], exact: false });
+            queryClient.invalidateQueries({ queryKey: ["users-trash"] });
+            queryClient.invalidateQueries({ queryKey: ["users"] });
         },
         onError: (error: ApiError) => {
             toast.error(error.message || 'Xóa người dùng thất bại!');
         },
+    });
+};
+export const useUsersTrash = (page: number, size: number, search?: string) => {
+    return useQuery({
+        queryKey: ['users-trash', { page, size, search }],
+        queryFn: () => usersService.getTrash(page, size, search),
+        placeholderData: (previousData) => previousData,
+        staleTime: 30 * 1000,
+    });
+};
+
+export const useRestoreUser = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (id: string) => usersService.restore(id),
+        onSuccess: () => {
+            toast.success("Đã khôi phục tài khoản nhân sự thành công!");
+            queryClient.invalidateQueries({ queryKey: ["users-trash"] });
+            queryClient.invalidateQueries({ queryKey: ["users"] });
+        }
     });
 };
