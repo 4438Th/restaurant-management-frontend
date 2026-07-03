@@ -20,11 +20,11 @@ export const useCreateUser = () => {
     return useMutation<unknown, ApiError, UserCreateRequest>({
         mutationFn: (payload: UserCreateRequest) => usersService.create(payload),
         onSuccess: () => {
-            toast.success('Thêm người dùng mới thành công!');
+            toast.success('Tạo thành công!');
             queryClient.invalidateQueries({ queryKey: ['users'], exact: false });
         },
         onError: (error: ApiError) => {
-            toast.error(error.message || 'Thêm người dùng thất bại!');
+            toast.error(error.message || 'Tạo thất bại!');
         },
     });
 };
@@ -34,7 +34,7 @@ export const useUpdateUser = () => {
     return useMutation<unknown, ApiError, { id: string; payload: UserUpdateRequest }>({
         mutationFn: ({ id, payload }) => usersService.update(id, payload),
         onSuccess: () => {
-            toast.success('Cập nhật thông tin thành công!');
+            toast.success('Cập nhật thành công!');
             queryClient.invalidateQueries({ queryKey: ['users'], exact: false });
         },
         onError: (error: ApiError) => {
@@ -48,13 +48,13 @@ export const useDeleteUser = () => {
     return useMutation<unknown, ApiError, string>({
         mutationFn: (id: string) => usersService.delete(id),
         onSuccess: () => {
-            toast.success('Đã xóa người dùng thành công!');
+            toast.success('Đã xóa thành công!');
             queryClient.invalidateQueries({ queryKey: ['users'], exact: false });
             queryClient.invalidateQueries({ queryKey: ["users-trash"] });
             queryClient.invalidateQueries({ queryKey: ["users"] });
         },
         onError: (error: ApiError) => {
-            toast.error(error.message || 'Xóa người dùng thất bại!');
+            toast.error(error.message || 'Xóa thất bại!');
         },
     });
 };
@@ -72,7 +72,7 @@ export const useRestoreUser = () => {
     return useMutation({
         mutationFn: (id: string) => usersService.restore(id),
         onSuccess: () => {
-            toast.success("Đã khôi phục tài khoản nhân sự thành công!");
+            toast.success("Đã khôi phục thành công!");
             queryClient.invalidateQueries({ queryKey: ["users-trash"] });
             queryClient.invalidateQueries({ queryKey: ["users"] });
         }

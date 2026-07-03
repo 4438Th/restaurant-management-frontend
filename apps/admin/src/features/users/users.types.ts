@@ -23,10 +23,6 @@ export interface UserResponse extends AuditEntity {
     status: UserStatus;
     roles: string[];
     permissions: string[];
-    createdAt: string;
-    createdBy: string;
-    updatedAt: string;
-    updatedBy: string;
 }
 
 export interface UserCreateRequest {
