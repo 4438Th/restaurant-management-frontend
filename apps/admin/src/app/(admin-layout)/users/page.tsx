@@ -1,11 +1,10 @@
+// apps/admin/src/app/(admin-layout)/users/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/ui/icon";
-import { Sidebar } from "@/components/layout/sidebar";
-import { UserHeader } from "@/features/users/components/user-header";
-import { UserPagination } from "@/features/users/components/user-pagination";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { UserTable } from "@/features/users/components/user-table";
 import { UserToolbar } from "@/features/users/components/user-toolbar";
 import { UserForm } from "@/features/users/components/user-form";
@@ -58,26 +57,30 @@ export default function UserManagementPage() {
   };
 
   return (
-    <div className="bg-surface text-on-surface h-screen flex w-full overflow-hidden">
-      {/* SIDEBAR NAVIGATION */}
-      <Sidebar />
+    <>
+      {/* VÙNG CUỘN ĐỘC LẬP CHO NỘI DUNG USER */}
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-surface flex flex-col gap-6 h-full">
+        {/* TIÊU ĐỀ TRANG VÀ NÚT CHUYỂN HƯỚNG TỚI THÙNG RÁC */}
+        <div className="flex justify-between items-center hrink-0">
+          <div>
+            <h1 className="text-[28px] font-black tracking-tight text-on-surface">
+              Danh sách tài khoản
+            </h1>
+            <p className="text-[14px] text-on-surface-variant mt-1">
+              Quản lý hồ sơ nhân sự và phân quyền truy cập hệ thống.
+            </p>
+          </div>
 
-      {/* CONTENT ZONE */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden relative">
-        {/* TOP BAR PANEL */}
-        <UserHeader onCreateClick={handleCreateClick} />
+          <div className="flex items-center gap-3">
+            {/* THÊM TÀI KHOẢN MỚI (Được nhấc từ UserHeader cũ xuống đây để quy hoạch gọn gàng) */}
+            <button
+              onClick={handleCreateClick}
+              className="flex items-center gap-2 bg-primary text-on-primary hover:bg-primary/90 px-4 py-2 rounded-xl text-[13px] font-bold shadow-sm transition-colors"
+            >
+              <Icon name="UserPlus" className="w-4 h-4" />
+              <span>Thêm tài khoản</span>
+            </button>
 
-        {/* MAIN BODY APP */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-surface flex flex-col gap-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-[28px] font-black tracking-tight text-on-surface">
-                Danh sách tài khoản
-              </h1>
-              <p className="text-[14px] text-on-surface-variant mt-1">
-                Quản lý hồ sơ nhân sự và phân quyền truy cập hệ thống.
-              </p>
-            </div>
             <Link
               href="/users/trash"
               className="flex items-center gap-2 border border-outline-variant hover:bg-surface-container text-on-surface px-4 py-2 rounded-xl text-[13px] font-bold shadow-sm transition-colors"
@@ -86,41 +89,47 @@ export default function UserManagementPage() {
               <span>Thùng rác</span>
             </Link>
           </div>
+        </div>
 
-          {/* TABLE CONTAINER CARD */}
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col shadow-sm overflow-hidden">
-            <UserToolbar
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              selectedStatus={selectedStatus}
-              onStatusChange={(status: string) => {
-                setSelectedStatus(status);
-                setPage(1);
-              }}
-            />
+        {/* CONTAINER CARD BẢO VỆ BẢNG KHÔNG BỊ TRÀN VỠ */}
+        <div className="flex-1 min-h-0 bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col shadow-sm overflow-hidden">
+          <UserToolbar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedStatus={selectedStatus}
+            onStatusChange={(status: string) => {
+              setSelectedStatus(status);
+              setPage(1);
+            }}
+          />
 
+          {/* Vùng chứa Table: Cho phép scroll ngang bên trong nếu dữ liệu quá dài */}
+          <div className="flex-1 overflow-auto min-h-0">
             <UserTable
               users={usersList}
               isLoading={isFetchLoading}
               onEditClick={handleEditClick}
               onRowClick={handleRowClick}
             />
+          </div>
 
-            {/* PHÂN TRANG */}
-            {pageData && (
-              <UserPagination
+          {/* THANH PHÂN TRANG GẮN ĐÁY BOX */}
+          {pageData && (
+            <div className="border-t border-outline-variant shrink-0">
+              <TablePagination
                 currentPage={pageData.currentPage}
                 totalPages={totalPages}
                 totalElements={pageData.totalElements}
                 page={page}
                 onPageChange={setPage}
+                unitLabel="tài khoản"
               />
-            )}
-          </div>
-        </main>
-      </div>
+            </div>
+          )}
+        </div>
+      </main>
 
-      {/* MODALS & DRAWERS */}
+      {/* CÁC THÀNH PHẦN MODAL & DRAWERS NẰM NGỒI CHỜ KÍCH HOẠT */}
       <UserForm
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
@@ -132,6 +141,6 @@ export default function UserManagementPage() {
         onClose={() => setIsProfileOpen(false)}
         user={selectedUser}
       />
-    </div>
+    </>
   );
 }

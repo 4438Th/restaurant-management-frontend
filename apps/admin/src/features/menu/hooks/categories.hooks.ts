@@ -6,7 +6,7 @@ import { categoriesService } from '../services/categories.service';
 import { MenuCategoryCreateRequest, MenuCategoryUpdateRequest } from '../menu.types';
 
 
-export const useMenuCategories = (page: number, size: number, search?: string, status?: string) => {
+export const useMenuCategory = (page: number, size: number, search?: string, status?: string) => {
     return useQuery({
         queryKey: ['users', { page, size, search, status }],
         queryFn: () => categoriesService.getAll(page, size, search, status),
@@ -15,7 +15,7 @@ export const useMenuCategories = (page: number, size: number, search?: string, s
     });
 };
 
-export const useCreateMenuCategories = () => {
+export const useCreateMenuCategory = () => {
     const queryClient = useQueryClient();
     return useMutation<unknown, ApiError, MenuCategoryCreateRequest>({
         mutationFn: (payload: MenuCategoryCreateRequest) => categoriesService.create(payload),
@@ -29,7 +29,7 @@ export const useCreateMenuCategories = () => {
     });
 };
 
-export const useUpdateMenuCategories = () => {
+export const useUpdateMenuCategory = () => {
     const queryClient = useQueryClient();
     return useMutation<unknown, ApiError, { id: string; payload: MenuCategoryUpdateRequest }>({
         mutationFn: ({ id, payload }) => categoriesService.update(id, payload),
@@ -43,7 +43,7 @@ export const useUpdateMenuCategories = () => {
     });
 };
 
-export const useDeleteMenuCategories = () => {
+export const useDeleteMenuCategory = () => {
     const queryClient = useQueryClient();
     return useMutation<unknown, ApiError, string>({
         mutationFn: (id: string) => categoriesService.delete(id),
@@ -58,7 +58,7 @@ export const useDeleteMenuCategories = () => {
         },
     });
 };
-export const useUsersMenuCategories = (page: number, size: number, search?: string) => {
+export const useUsersMenuCategory = (page: number, size: number, search?: string) => {
     return useQuery({
         queryKey: ['menu-categories-trash', { page, size, search }],
         queryFn: () => categoriesService.getTrash(page, size, search),
@@ -67,7 +67,7 @@ export const useUsersMenuCategories = (page: number, size: number, search?: stri
     });
 };
 
-export const useRestoreMenuCategories = () => {
+export const useRestoreMenuCategory = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (id: string) => categoriesService.restore(id),

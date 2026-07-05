@@ -2,37 +2,34 @@
 
 import React from "react";
 import { Icon } from "@/components/ui/icon";
-import { User } from "../users.types";
-import { useRestoreUser } from "../users.hooks";
+import { MenuCategoryResponse } from "../menu.types";
+import { useRestoreMenuCategory } from "../hooks/categories.hooks";
 
-interface UserTrashTableProps {
-  users: User[];
+interface MenuCategoryTrashTableProps {
+  categories: MenuCategoryResponse[];
   isLoading: boolean;
-  onRowClick?: (user: User) => void;
 }
 
-export function UserTrashTable({
-  users,
+export function MenuCategoryTrashTable({
+  categories,
   isLoading,
-  onRowClick,
-}: UserTrashTableProps) {
-  const restoreMutation = useRestoreUser();
+}: MenuCategoryTrashTableProps) {
+  const restoreMutation = useRestoreMenuCategory();
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full overflow-x-auto border border-outline-variant rounded-2xl bg-surface">
       <table className="w-full text-left border-collapse table-auto min-w-125">
         <thead>
-          <tr className="bg-surface-bright text-[12px] font-semibold text-on-surface-variant border-b border-outline-variant sticky top-0 z-10">
+          <tr className="bg-surface-container-lowest text-[12px] font-bold text-on-surface-variant border-b border-outline-variant">
             <th className="p-4 w-12 text-center">
               <input
                 type="checkbox"
                 className="rounded border-outline-variant text-primary cursor-pointer"
-                onClick={(e) => e.stopPropagation()}
               />
             </th>
-            <th className="p-4">Nhân viên</th>
-            <th className="p-4">Tên đăng nhập</th>
-            <th className="p-4 w-32 text-right">Thao tác</th>
+            <th className="p-4">Tên danh mục bị xóa</th>
+            <th className="p-4">Mô tả trước đó</th>
+            <th className="p-4 w-36 text-right">Thao tác</th>
           </tr>
         </thead>
         <tbody className="text-[14px] text-on-surface divide-y divide-outline-variant">
@@ -45,43 +42,40 @@ export function UserTrashTable({
                 Đang tải dữ liệu thùng rác...
               </td>
             </tr>
-          ) : users.length === 0 ? (
+          ) : categories.length === 0 ? (
             <tr>
               <td
                 colSpan={4}
                 className="p-8 text-center text-on-surface-variant text-[13px]"
               >
-                Thùng rác trống.
+                Thùng rác trống rỗng.
               </td>
             </tr>
           ) : (
-            users.map((user) => {
+            categories.map((category) => {
               const isRestoring =
                 restoreMutation.isPending &&
-                restoreMutation.variables === user.id;
+                restoreMutation.variables === category.id;
               return (
                 <tr
-                  key={user.id}
-                  onClick={() => onRowClick?.(user)}
-                  className="hover:bg-surface-container-low transition-colors cursor-pointer select-none"
+                  key={category.id}
+                  className="hover:bg-surface-container-low/50 transition-colors select-none"
                 >
                   <td className="p-4 text-center">
                     <input
                       type="checkbox"
                       className="rounded border-outline-variant text-primary cursor-pointer"
-                      onClick={(e) => e.stopPropagation()}
                     />
                   </td>
-                  <td className="p-4 font-semibold">{user.fullName}</td>
-                  <td className="p-4 font-mono text-[13px] text-on-surface-variant">
-                    {user.username}
+                  <td className="p-4 font-semibold text-on-surface">
+                    {category.categoryName}
                   </td>
-                  <td
-                    className="p-4 text-right flex justify-end"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                  <td className="p-4 text-on-surface-variant text-[13px] truncate max-w-xs">
+                    {category.description}
+                  </td>
+                  <td className="p-4 text-right flex justify-end">
                     <button
-                      onClick={() => restoreMutation.mutate(user.id)}
+                      onClick={() => restoreMutation.mutate(category.id)}
                       disabled={isRestoring}
                       className="px-3 py-1.5 text-success hover:bg-success/10 rounded-xl transition-colors flex items-center gap-1.5 text-[12px] font-bold disabled:opacity-40"
                     >

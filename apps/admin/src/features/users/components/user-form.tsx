@@ -37,7 +37,7 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [dob, setDob] = useState(""); // Lưu trữ dưới dạng "yyyy-MM-dd"
+  const [dob, setDob] = useState("");
 
   useEffect(() => {
     if (user) {

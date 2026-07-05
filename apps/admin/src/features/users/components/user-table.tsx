@@ -9,7 +9,7 @@ interface UserTableProps {
   users: User[];
   isLoading: boolean;
   onEditClick?: (user: User) => void;
-  onRowClick?: (user: User) => void; // 🌟 Thêm prop để nhận callback xử lý xem chi tiết hồ sơ
+  onRowClick?: (user: User) => void;
 }
 
 export function UserTable({
@@ -21,11 +21,10 @@ export function UserTable({
   const deleteUserMutation = useDeleteUser();
 
   const handleDelete = (e: React.MouseEvent, user: User) => {
-    e.stopPropagation(); // 🌟 Chặn không cho kích hoạt sự kiện click dòng (mở Modal) khi bấm Xóa
-
+    e.stopPropagation();
     if (
       confirm(
-        `Bạn có chắc chắn muốn xóa tài khoản "${user.username}" khỏi hệ thống không?`,
+        `Bạn có chắc chắn muốn tạm dừng tài khoản "${user.username}" không?`,
       )
     ) {
       deleteUserMutation.mutate(user.id);
@@ -33,22 +32,22 @@ export function UserTable({
   };
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left border-collapse">
+    <div className="w-full overflow-x-auto">
+      <table className="w-full text-left border-collapse table-auto min-w-175">
         <thead>
-          <tr className="bg-surface-bright text-[12px] font-semibold text-on-surface-variant border-b border-outline-variant">
+          <tr className="bg-surface-bright text-[12px] font-semibold text-on-surface-variant border-b border-outline-variant sticky top-0 z-10">
             <th className="p-4 w-12 text-center">
               <input
-                className="rounded border-outline-variant text-primary focus:ring-primary cursor-pointer"
                 type="checkbox"
-                onClick={(e) => e.stopPropagation()} // 🌟 Chặn nổi bọt cho checkbox header
+                className="rounded border-outline-variant text-primary cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
               />
             </th>
-            <th className="p-4">User Details</th>
-            <th className="p-4">Username</th>
-            <th className="p-4">Roles</th>
-            <th className="p-4 text-center">Status</th>
-            <th className="p-4 text-right">Actions</th>
+            <th className="p-4">Nhân viên</th>
+            <th className="p-4">Tên đăng nhập</th>
+            <th className="p-4">Vai trò</th>
+            <th className="p-4 w-28 text-center">Trạng thái</th>
+            <th className="p-4 w-28 text-right">Thao tác</th>
           </tr>
         </thead>
         <tbody className="text-[14px] text-on-surface divide-y divide-outline-variant">
@@ -56,37 +55,36 @@ export function UserTable({
             <tr>
               <td
                 colSpan={6}
-                className="p-4 text-center text-on-surface-variant"
+                className="p-8 text-center text-on-surface-variant text-[13px]"
               >
-                Loading application users...
+                Đang tải dữ liệu...
               </td>
             </tr>
           ) : users.length === 0 ? (
             <tr>
               <td
                 colSpan={6}
-                className="p-4 text-center text-on-surface-variant"
+                className="p-8 text-center text-on-surface-variant text-[13px]"
               >
-                No system accounts found.
+                Không tìm thấy tài khoản nào phù hợp.
               </td>
             </tr>
           ) : (
             users.map((user) => {
-              const isDeletingThisUser =
+              const isDeleting =
                 deleteUserMutation.isPending &&
                 deleteUserMutation.variables === user.id;
-
               return (
                 <tr
                   key={user.id}
-                  onClick={() => onRowClick?.(user)} // 🌟 Kích hoạt mở Modal khi click vào bất kỳ vùng trống nào trên dòng
-                  className="hover:bg-surface-container-low transition-colors cursor-pointer select-none" // 🌟 Thêm cursor-pointer báo hiệu dòng này bấm được
+                  onClick={() => onRowClick?.(user)}
+                  className="hover:bg-surface-container-low transition-colors cursor-pointer select-none"
                 >
                   <td className="p-4 text-center">
                     <input
-                      className="rounded border-outline-variant text-primary focus:ring-primary cursor-pointer"
                       type="checkbox"
-                      onClick={(e) => e.stopPropagation()} // 🌟 Chặn nổi bọt khi click chọn checkbox trên dòng
+                      className="rounded border-outline-variant text-primary cursor-pointer"
+                      onClick={(e) => e.stopPropagation()}
                     />
                   </td>
                   <td className="p-4">
@@ -96,9 +94,7 @@ export function UserTable({
                           ? user.fullName.charAt(0).toUpperCase()
                           : "U"}
                       </div>
-                      <div>
-                        <div className="font-semibold">{user.fullName}</div>
-                      </div>
+                      <div className="font-semibold">{user.fullName}</div>
                     </div>
                   </td>
                   <td className="p-4 font-mono text-[13px] text-primary">
@@ -106,59 +102,49 @@ export function UserTable({
                   </td>
                   <td className="p-4">
                     <div className="flex flex-wrap gap-1">
-                      {user.roles && user.roles.length > 0 ? (
-                        user.roles.map((roleName) => (
-                          <span
-                            key={roleName}
-                            className="px-2 py-0.5 bg-primary-container/10 text-primary font-bold text-[11px] rounded border border-primary/20 uppercase tracking-wider"
-                          >
-                            {roleName}
-                          </span>
-                        ))
-                      ) : (
+                      {user.roles?.map((role) => (
+                        <span
+                          key={role}
+                          className="px-2 py-0.5 bg-primary-container/10 text-primary font-bold text-[11px] rounded border border-primary/20 uppercase"
+                        >
+                          {role}
+                        </span>
+                      )) || (
                         <span className="text-[12px] text-on-surface-variant italic">
-                          No Roles Assigned
+                          Chưa phân quyền
                         </span>
                       )}
                     </div>
                   </td>
                   <td className="p-4 text-center">
                     <span
-                      className={`inline-flex items-center px-2 py-1 rounded-full text-[11px] font-bold ${
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold ${
                         user.status === UserStatus.ACTIVE
                           ? "bg-green-600/10 text-green-600"
-                          : user.status === UserStatus.PENDING
-                            ? "bg-amber-500/10 text-amber-500"
-                            : "bg-error/10 text-error"
+                          : "bg-amber-500/10 text-amber-500"
                       }`}
                     >
                       {user.status}
                     </span>
                   </td>
-                  <td className="p-4 text-right flex justify-end gap-2">
-                    {/* Nút Sửa */}
+                  <td
+                    className="p-4 text-right flex justify-end gap-1"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     {onEditClick && (
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEditClick(user);
-                        }}
-                        disabled={deleteUserMutation.isPending}
-                        className="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors rounded-xl disabled:opacity-40"
-                        title="Chỉnh sửa tài khoản"
+                        onClick={() => onEditClick(user)}
+                        className="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-xl transition-colors"
                       >
                         <Icon name="Pencil" className="w-4 h-4" />
                       </button>
                     )}
-
-                    {/* Nút Xóa */}
                     <button
                       onClick={(e) => handleDelete(e, user)}
-                      disabled={deleteUserMutation.isPending}
-                      className="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 transition-colors rounded-xl disabled:opacity-40"
-                      title="Xóa tài khoản"
+                      disabled={isDeleting}
+                      className="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-xl transition-colors"
                     >
-                      {isDeletingThisUser ? (
+                      {isDeleting ? (
                         <div className="w-4 h-4 border-2 border-error border-t-transparent rounded-full animate-spin" />
                       ) : (
                         <Icon name="Trash2" className="w-4 h-4" />
