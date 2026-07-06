@@ -31,6 +31,22 @@ export function UserTable({
     }
   };
 
+  // Hàm helper map màu sắc động dựa trên chính xác 4 trạng thái của UserStatus Enum
+  const getStatusStyle = (status: UserStatus) => {
+    switch (status) {
+      case UserStatus.ACTIVE:
+        return "bg-green-600/10 text-green-600";
+      case UserStatus.PENDING:
+        return "bg-blue-500/10 text-blue-500";
+      case UserStatus.INACTIVE:
+        return "bg-amber-500/10 text-amber-500";
+      case UserStatus.DELETED:
+        return "bg-error/10 text-error";
+      default:
+        return "bg-on-surface/10 text-on-surface-variant";
+    }
+  };
+
   return (
     <div className="w-full overflow-x-auto">
       <table className="w-full text-left border-collapse table-auto min-w-175">
@@ -89,11 +105,6 @@ export function UserTable({
                   </td>
                   <td className="p-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[12px]">
-                        {user.fullName
-                          ? user.fullName.charAt(0).toUpperCase()
-                          : "U"}
-                      </div>
                       <div className="font-semibold">{user.fullName}</div>
                     </div>
                   </td>
@@ -118,11 +129,7 @@ export function UserTable({
                   </td>
                   <td className="p-4 text-center">
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold ${
-                        user.status === UserStatus.ACTIVE
-                          ? "bg-green-600/10 text-green-600"
-                          : "bg-amber-500/10 text-amber-500"
-                      }`}
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold ${getStatusStyle(user.status)}`}
                     >
                       {user.status}
                     </span>

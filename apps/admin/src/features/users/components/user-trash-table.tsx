@@ -72,8 +72,12 @@ export function UserTrashTable({
                       onClick={(e) => e.stopPropagation()}
                     />
                   </td>
-                  <td className="p-4 font-semibold">{user.fullName}</td>
-                  <td className="p-4 font-mono text-[13px] text-on-surface-variant">
+                  <td className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="font-semibold">{user.fullName}</div>
+                    </div>
+                  </td>
+                  <td className="p-4 font-mono text-[13px] text-primary">
                     {user.username}
                   </td>
                   <td

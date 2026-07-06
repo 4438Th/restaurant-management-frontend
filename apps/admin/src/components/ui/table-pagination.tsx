@@ -9,7 +9,6 @@ interface TablePaginationProps {
   totalElements: number;
   page: number;
   onPageChange: (page: number | ((prev: number) => number)) => void;
-  /** Đơn vị hiển thị tổng số phần tử (Ví dụ: "tài khoản", "danh mục", "món ăn") */
   unitLabel?: string;
 }
 
@@ -19,15 +18,14 @@ export function TablePagination({
   totalElements,
   page,
   onPageChange,
-  unitLabel = "bản ghi", // Mặc định nếu không truyền gì vào
+  unitLabel = "bản ghi",
 }: TablePaginationProps) {
   return (
     <div className="p-4 flex justify-between items-center bg-surface-bright text-[13px] text-on-surface-variant font-medium select-none">
       <div>
-        Hiển thị trang{" "}
-        <span className="text-on-surface font-bold">{currentPage}</span> trên{" "}
-        <span className="text-on-surface font-bold">{totalPages}</span> (
-        {totalElements} {unitLabel})
+        Trang <span className="text-on-surface font-bold">{currentPage}</span>{" "}
+        trên <span className="text-on-surface font-bold">{totalPages}</span> (
+        Tổng: {totalElements} {unitLabel})
       </div>
       <div className="flex items-center gap-1">
         <button

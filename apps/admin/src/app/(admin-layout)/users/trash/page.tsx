@@ -50,7 +50,7 @@ export default function UserTrashPage() {
           <div>
             <h1 className="text-[28px] font-black tracking-tight text-error flex items-center gap-3">
               <Icon name="Trash2" className="w-7 h-7" />
-              Thùng rác lưu trữ
+              Thùng rác
             </h1>
             <p className="text-[14px] text-on-surface-variant mt-1">
               Danh sách nhân sự đã tạm dừng hoạt động. Bạn có thể khôi phục lại
@@ -104,7 +104,7 @@ export default function UserTrashPage() {
                 totalElements={pageData.totalElements}
                 page={page}
                 onPageChange={setPage}
-                unitLabel="tài khoản đã xóa"
+                unitLabel="tài khoản"
               />
             </div>
           )}

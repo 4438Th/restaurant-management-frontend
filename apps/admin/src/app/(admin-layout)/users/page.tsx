@@ -61,7 +61,7 @@ export default function UserManagementPage() {
       {/* VÙNG CUỘN ĐỘC LẬP CHO NỘI DUNG USER */}
       <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-surface flex flex-col gap-6 h-full">
         {/* TIÊU ĐỀ TRANG VÀ NÚT CHUYỂN HƯỚNG TỚI THÙNG RÁC */}
-        <div className="flex justify-between items-center hrink-0">
+        <div className="flex justify-between items-center shrink-0">
           <div>
             <h1 className="text-[28px] font-black tracking-tight text-on-surface">
               Danh sách tài khoản
@@ -92,7 +92,11 @@ export default function UserManagementPage() {
         </div>
 
         {/* CONTAINER CARD BẢO VỆ BẢNG KHÔNG BỊ TRÀN VỠ */}
-        <div className="flex-1 min-h-0 bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col shadow-sm overflow-hidden">
+        <div
+          className="flex-1 min-h-0 bg-surface-container-lowest
+         border border-outline-variant rounded-2xl flex flex-col
+          shadow-sm overflow-hidden"
+        >
           <UserToolbar
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}

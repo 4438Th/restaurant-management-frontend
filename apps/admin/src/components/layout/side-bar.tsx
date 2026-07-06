@@ -19,7 +19,7 @@ export function Sidebar() {
     "text-on-surface-variant hover:bg-surface-container hover:text-on-surface";
 
   return (
-    <nav className="hidden md:flex w-60 flex-col h-full bg-surface-container-lowest border-r border-outline-variant z-20">
+    <nav className="flex w-full flex-col h-full bg-surface-container-lowest">
       {/* BRAND HEADER */}
       <div className="h-16 flex items-center px-6 border-b border-outline-variant">
         <span className="text-[18px] font-black text-primary tracking-tight truncate">

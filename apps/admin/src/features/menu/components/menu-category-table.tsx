@@ -1,4 +1,3 @@
-// apps/admin/src/features/menu/components/menu-category-table.tsx
 "use client";
 
 import React from "react";
@@ -6,18 +5,20 @@ import { Icon } from "@/components/ui/icon";
 import { MenuCategoryResponse, MenuCategoryStatus } from "../menu.types";
 import { useDeleteMenuCategory } from "../hooks/categories.hooks";
 
-interface MenuCategoryTableProps {
+interface CategoryTableProps {
   categories: MenuCategoryResponse[];
   isLoading: boolean;
-  onEditClick: (category: MenuCategoryResponse) => void;
+  onEditClick?: (category: MenuCategoryResponse) => void;
+  onRowClick?: (category: MenuCategoryResponse) => void;
 }
 
 export function MenuCategoryTable({
   categories,
   isLoading,
   onEditClick,
-}: MenuCategoryTableProps) {
-  const deleteMutation = useDeleteMenuCategory();
+  onRowClick,
+}: CategoryTableProps) {
+  const deleteCategoryMutation = useDeleteMenuCategory();
 
   const handleDelete = (
     e: React.MouseEvent,
@@ -26,58 +27,44 @@ export function MenuCategoryTable({
     e.stopPropagation();
     if (
       confirm(
-        `Bạn có chắc chắn muốn xóa danh mục "${category.categoryName}" vào thùng rác?`,
+        `Bạn có chắc chắn muốn xóa danh mục "${category.categoryName}" không?`,
       )
     ) {
-      deleteMutation.mutate(category.id);
+      deleteCategoryMutation.mutate(category.id);
     }
   };
 
-  const getStatusBadgeClass = (status: MenuCategoryStatus) => {
+  // Hàm mapping màu sắc chuẩn dựa trên MenuCategoryStatus Enum
+  const getStatusStyle = (status: MenuCategoryStatus) => {
     switch (status) {
       case MenuCategoryStatus.ACTIVE:
         return "bg-green-600/10 text-green-600";
+      case MenuCategoryStatus.DRAFT:
+        return "bg-blue-500/10 text-blue-500";
       case MenuCategoryStatus.INACTIVE:
         return "bg-amber-500/10 text-amber-500";
-      case MenuCategoryStatus.DRAFT:
-        return "bg-slate-500/10 text-slate-500";
-      default:
+      case MenuCategoryStatus.DELETED:
         return "bg-error/10 text-error";
-    }
-  };
-
-  const getStatusLabel = (status: MenuCategoryStatus) => {
-    switch (status) {
-      case MenuCategoryStatus.ACTIVE:
-        return "Đang chạy";
-      case MenuCategoryStatus.INACTIVE:
-        return "Đang ẩn";
-      case MenuCategoryStatus.DRAFT:
-        return "Bản nháp";
       default:
-        return "Đã xóa";
+        return "bg-on-surface/10 text-on-surface-variant";
     }
   };
 
   return (
-    /* 
-      THAY ĐỔI TẠI ĐÂY:
-      - Xóa 'rounded-2xl' để table vuông vức không bo góc.
-      - Thêm 'h-full flex-1' để bảng chiếm trọn vẹn không gian chiều cao của container.
-    */
-    <div className="w-full h-full flex-1 overflow-x-auto border border-outline-variant rounded-none bg-surface">
-      <table className="w-full text-left border-collapse table-auto min-w-150">
+    <div className="w-full overflow-x-auto">
+      <table className="w-full text-left border-collapse table-auto min-w-175">
         <thead>
-          <tr className="bg-surface-container-lowest text-[12px] font-bold text-on-surface-variant border-b border-outline-variant sticky top-0 z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.05)]">
+          <tr className="bg-surface-bright text-[12px] font-semibold text-on-surface-variant border-b border-outline-variant sticky top-0 z-10">
             <th className="p-4 w-12 text-center">
               <input
                 type="checkbox"
-                className="border-outline-variant text-primary cursor-pointer"
+                className="rounded border-outline-variant text-primary cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
               />
             </th>
             <th className="p-4">Tên danh mục</th>
-            <th className="p-4">Mô tả chi tiết</th>
-            <th className="p-4 w-32 text-center">Trạng thái</th>
+            <th className="p-4">Mô tả</th>
+            <th className="p-4 w-28 text-center">Trạng thái</th>
             <th className="p-4 w-28 text-right">Thao tác</th>
           </tr>
         </thead>
@@ -88,7 +75,7 @@ export function MenuCategoryTable({
                 colSpan={5}
                 className="p-8 text-center text-on-surface-variant text-[13px]"
               >
-                Đang tải danh mục...
+                Đang tải dữ liệu danh mục...
               </td>
             </tr>
           ) : categories.length === 0 ? (
@@ -97,49 +84,61 @@ export function MenuCategoryTable({
                 colSpan={5}
                 className="p-8 text-center text-on-surface-variant text-[13px]"
               >
-                Không tìm thấy danh mục thực đơn nào.
+                Không tìm thấy danh mục nào phù hợp.
               </td>
             </tr>
           ) : (
             categories.map((category) => {
               const isDeleting =
-                deleteMutation.isPending &&
-                deleteMutation.variables === category.id;
+                deleteCategoryMutation.isPending &&
+                deleteCategoryMutation.variables === category.id;
               return (
                 <tr
                   key={category.id}
-                  className="hover:bg-surface-container-low/50 transition-colors select-none"
+                  onClick={() => onRowClick?.(category)}
+                  className="hover:bg-surface-container-low transition-colors cursor-pointer select-none"
                 >
                   <td className="p-4 text-center">
                     <input
                       type="checkbox"
                       className="rounded border-outline-variant text-primary cursor-pointer"
+                      onClick={(e) => e.stopPropagation()}
                     />
                   </td>
-                  <td className="p-4 font-semibold text-on-surface">
-                    {category.categoryName}
+                  <td className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                        <Icon name="Folder" className="w-4 h-4" />
+                      </div>
+                      <div className="font-semibold text-primary">
+                        {category.categoryName}
+                      </div>
+                    </div>
                   </td>
-                  <td className="p-4 text-on-surface-variant max-w-sm truncate">
+                  <td className="p-4 text-on-surface-variant max-w-xs truncate">
                     {category.description || (
-                      <span className="italic text-[12px] opacity-50">
-                        Không có mô tả
-                      </span>
+                      <span className="italic text-[13px]">Không có mô tả</span>
                     )}
                   </td>
                   <td className="p-4 text-center">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${getStatusBadgeClass(category.status)}`}
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold ${getStatusStyle(category.status)}`}
                     >
-                      {getStatusLabel(category.status)}
+                      {category.status}
                     </span>
                   </td>
-                  <td className="p-4 text-right flex justify-end gap-1">
-                    <button
-                      onClick={() => onEditClick(category)}
-                      className="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-xl transition-colors"
-                    >
-                      <Icon name="Pencil" className="w-4 h-4" />
-                    </button>
+                  <td
+                    className="p-4 text-right flex justify-end gap-1"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {onEditClick && (
+                      <button
+                        onClick={() => onEditClick(category)}
+                        className="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-xl transition-colors"
+                      >
+                        <Icon name="Pencil" className="w-4 h-4" />
+                      </button>
+                    )}
                     <button
                       onClick={(e) => handleDelete(e, category)}
                       disabled={isDeleting}

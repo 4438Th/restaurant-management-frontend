@@ -5,31 +5,34 @@ import { Icon } from "@/components/ui/icon";
 import { MenuCategoryResponse } from "../menu.types";
 import { useRestoreMenuCategory } from "../hooks/categories.hooks";
 
-interface MenuCategoryTrashTableProps {
+interface CategoryTrashTableProps {
   categories: MenuCategoryResponse[];
   isLoading: boolean;
+  onRowClick?: (category: MenuCategoryResponse) => void;
 }
 
-export function MenuCategoryTrashTable({
+export function CategoryTrashTable({
   categories,
   isLoading,
-}: MenuCategoryTrashTableProps) {
+  onRowClick,
+}: CategoryTrashTableProps) {
   const restoreMutation = useRestoreMenuCategory();
 
   return (
-    <div className="w-full overflow-x-auto border border-outline-variant rounded-2xl bg-surface">
+    <div className="w-full overflow-x-auto">
       <table className="w-full text-left border-collapse table-auto min-w-125">
         <thead>
-          <tr className="bg-surface-container-lowest text-[12px] font-bold text-on-surface-variant border-b border-outline-variant">
+          <tr className="bg-surface-bright text-[12px] font-semibold text-on-surface-variant border-b border-outline-variant sticky top-0 z-10">
             <th className="p-4 w-12 text-center">
               <input
                 type="checkbox"
                 className="rounded border-outline-variant text-primary cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
               />
             </th>
-            <th className="p-4">Tên danh mục bị xóa</th>
-            <th className="p-4">Mô tả trước đó</th>
-            <th className="p-4 w-36 text-right">Thao tác</th>
+            <th className="p-4">Tên danh mục</th>
+            <th className="p-4">Mô tả</th>
+            <th className="p-4 w-32 text-right">Thao tác</th>
           </tr>
         </thead>
         <tbody className="text-[14px] text-on-surface divide-y divide-outline-variant">
@@ -48,7 +51,7 @@ export function MenuCategoryTrashTable({
                 colSpan={4}
                 className="p-8 text-center text-on-surface-variant text-[13px]"
               >
-                Thùng rác trống rỗng.
+                Thùng rác trống.
               </td>
             </tr>
           ) : (
@@ -59,21 +62,35 @@ export function MenuCategoryTrashTable({
               return (
                 <tr
                   key={category.id}
-                  className="hover:bg-surface-container-low/50 transition-colors select-none"
+                  onClick={() => onRowClick?.(category)}
+                  className="hover:bg-surface-container-low transition-colors cursor-pointer select-none"
                 >
                   <td className="p-4 text-center">
                     <input
                       type="checkbox"
                       className="rounded border-outline-variant text-primary cursor-pointer"
+                      onClick={(e) => e.stopPropagation()}
                     />
                   </td>
-                  <td className="p-4 font-semibold text-on-surface">
-                    {category.categoryName}
+                  <td className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                        <Icon name="Folder" className="w-4 h-4" />
+                      </div>
+                      <div className="font-semibold text-primary">
+                        {category.categoryName}
+                      </div>
+                    </div>
                   </td>
-                  <td className="p-4 text-on-surface-variant text-[13px] truncate max-w-xs">
-                    {category.description}
+                  <td className="p-4 text-on-surface-variant max-w-xs truncate">
+                    {category.description || (
+                      <span className="italic text-[13px]">Không có mô tả</span>
+                    )}
                   </td>
-                  <td className="p-4 text-right flex justify-end">
+                  <td
+                    className="p-4 text-right flex justify-end"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <button
                       onClick={() => restoreMutation.mutate(category.id)}
                       disabled={isRestoring}
