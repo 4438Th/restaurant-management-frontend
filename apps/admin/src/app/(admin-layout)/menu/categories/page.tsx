@@ -127,7 +127,7 @@ export default function MenuCategoriesPage() {
                 totalElements={pageData.totalElements}
                 page={page}
                 onPageChange={setPage}
-                unitLabel="danh mục thực đơn"
+                unitLabel="danh mục"
               />
             </div>
           )}

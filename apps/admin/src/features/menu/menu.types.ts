@@ -1,6 +1,6 @@
 import { AuditEntity } from "@repo/core";
 
-export enum MenuItemStatus {
+export enum DishStatus {
     ARCHIVED = 'ARCHIVED',
     OUT_OF_STOCK = 'OUT_OF_STOCK',
     DISCONTINUED = 'DISCONTINUED',
@@ -12,7 +12,7 @@ export enum MenuCategoryStatus {
     INACTIVE = 'INACTIVE',
     DELETED = 'DELETED',
 }
-export enum MenuItemType {
+export enum DishType {
     FOOD = 'FOOD',
     BEVERAGE = 'BEVERAGE',
     OTHER = 'OTHER'
@@ -32,33 +32,34 @@ export interface MenuCategoryResponse extends AuditEntity {
     description: string;
     status: MenuCategoryStatus;
 }
-export interface MenuItemCreateRequest {
+export interface DishCreateRequest {
     itemName: string;
     description: string;
     price: string;
     imageUrl: string;
     unit: string;
-    type: MenuItemType;
+    type: DishType;
     categoryId: string;
 }
-export interface MenuItemUpdateRequest {
+export interface DishUpdateRequest {
     itemName: string;
     description: string;
     price: string;
     imageUrl: string;
     unit: string;
-    type: MenuItemType;
+    type: DishType;
     categoryId: string;
-    status: MenuItemStatus;
+    status: DishStatus;
 }
-export interface MenuItemResponse extends AuditEntity {
+export interface DishResponse extends AuditEntity {
     id: string;
     itemName: string;
     description: string;
-    status: MenuItemStatus;
+    price: string;
+    status: DishStatus;
     imageUrl: string;
     unit: string;
-    type: MenuItemType;
+    type: DishType;
     category: MenuCategoryInfo;
 }
 export interface MenuCategoryInfo extends AuditEntity {

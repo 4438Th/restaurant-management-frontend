@@ -71,11 +71,9 @@ export function Sidebar() {
               <ul className="mt-1 flex flex-col gap-1 pl-9 pr-2">
                 <li>
                   <Link
-                    href="/menu/items"
+                    href="/menu/dishes"
                     className={`flex items-center gap-3 px-3 py-1.5 rounded-lg transition-colors ${
-                      isActive("/menu/items") || pathname === "/menu"
-                        ? activeStyle
-                        : inactiveStyle
+                      isActive("/menu/dishes") ? activeStyle : inactiveStyle
                     }`}
                   >
                     <Icon name="Beef" className="w-4 h-4" />

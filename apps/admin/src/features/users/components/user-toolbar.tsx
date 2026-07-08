@@ -44,9 +44,9 @@ export function UserToolbar({
           className="bg-surface border border-outline-variant text-[13px] rounded-xl px-3 py-2 outline-none focus:border-primary font-medium min-w-30"
         >
           <option value="All">Tất cả</option>
-          <option value="ACTIVE">ACTIVE</option>
-          <option value="PENDING">PENDING</option>
-          <option value="INACTIVE">INACTIVE</option>
+          <option value="ACTIVE">Hoạt động</option>
+          <option value="PENDING">Chờ duyệt</option>
+          <option value="INACTIVE">Không hoạt động</option>
         </select>
       </div>
     </div>
