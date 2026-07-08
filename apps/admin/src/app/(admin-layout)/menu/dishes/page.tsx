@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { Icon } from "@/components/ui/icon";
 
 import { DishToolbar } from "@/features/menu/components/dish-toolbar";
 import { DishTable } from "@/features/menu/components/dish-table";
 import { DishForm } from "@/features/menu/components/dish-form";
+import { DishModal } from "@/features/menu/components/dish-modal";
 import { TablePagination } from "@/components/ui/table-pagination";
+import { PageHeader } from "@/components/layout/page-header";
+
 import { useDish } from "@/features/menu/hooks/dishes.hooks";
 import { DishResponse, DishStatus } from "@/features/menu/menu.types";
 
@@ -20,7 +21,7 @@ export default function DishesPage() {
 
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [selectedDish, setSelectedDish] = useState<DishResponse | null>(null);
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -48,43 +49,22 @@ export default function DishesPage() {
     setSelectedDish(dish);
     setIsDrawerOpen(true);
   };
-
+  const handleRowClick = (dish: DishResponse) => {
+    setSelectedDish(dish);
+    setIsModalOpen(true);
+  };
   return (
     <>
       {/* VÙNG CUỘN ĐỘC LẬP CHO NỘI DUNG MENU DISHES */}
       <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-surface flex flex-col gap-6 h-full">
         {/* TIÊU ĐỀ TRANG VÀ NÚT HÀNH ĐỘNG */}
-        <div className="flex justify-between items-center shrink-0">
-          <div>
-            <h1 className="text-[28px] font-black tracking-tight text-on-surface">
-              Danh sách món ăn
-            </h1>
-            <p className="text-[14px] text-on-surface-variant mt-1">
-              Quản lý chi tiết thực đơn, đơn giá, hình ảnh và tình trạng cung
-              ứng món trên toàn hệ thống.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* THÊM MÓN MỚI */}
-            <button
-              onClick={handleCreateClick}
-              className="flex items-center gap-2 bg-primary text-on-primary hover:bg-primary/90 px-4 py-2 rounded-xl text-[13px] font-bold shadow-sm transition-colors"
-            >
-              <Icon name="Plus" className="w-4 h-4" />
-              <span>Thêm món mới</span>
-            </button>
-
-            {/* ĐƯỜNG DẪN TỚI THÙNG RÁC MÓN ĂN */}
-            <Link
-              href="/menu/dishes/trash"
-              className="flex items-center gap-2 border border-outline-variant hover:bg-surface-container text-on-surface px-4 py-2 rounded-xl text-[13px] font-bold shadow-sm transition-colors"
-            >
-              <Icon name="Trash2" className="w-4 h-4 text-error" />
-              <span>Thùng rác</span>
-            </Link>
-          </div>
-        </div>
+        <PageHeader
+          title="Danh sách món"
+          description="Quản lý chi tiết các món trong thực đơn."
+          buttonText="Thêm món mới"
+          onButtonClick={handleCreateClick}
+          trashLink="/menu/dishes/trash"
+        />
 
         {/* CONTAINER CARD BẢO VỆ BẢNG */}
         <div className="flex-1 min-h-0 bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col shadow-sm overflow-hidden">
@@ -105,6 +85,7 @@ export default function DishesPage() {
               dishes={dishList}
               isLoading={isFetchLoading}
               onEditClick={handleEditClick}
+              onRowClick={handleRowClick}
             />
           </div>
 
@@ -128,6 +109,14 @@ export default function DishesPage() {
       <DishForm
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
+        dish={selectedDish}
+      />
+      <DishModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedDish(null);
+        }}
         dish={selectedDish}
       />
     </>

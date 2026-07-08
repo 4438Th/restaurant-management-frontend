@@ -28,19 +28,19 @@ export function DishTable({
     }
   };
 
-  // Map màu sắc dựa trên DishStatus Enum
+  // 1. Sửa lại style Trạng thái: Nền màu đậm hẳn, chữ trắng tinh gắt phẳng!
   const getStatusStyle = (status: DishStatus) => {
     switch (status) {
       case DishStatus.ARCHIVED:
-        return "bg-blue-500/10 text-blue-500";
+        return "bg-neutral-500 text-white dark:bg-neutral-600";
       case DishStatus.OUT_OF_STOCK:
-        return "bg-amber-500/10 text-amber-500";
+        return "bg-amber-500 text-white dark:bg-amber-600";
       case DishStatus.DISCONTINUED:
-        return "bg-error/10 text-error";
+        return "bg-error text-white"; // Giữ token bg-error của ông
       case DishStatus.DELETED:
-        return "bg-error/20 text-error font-black";
+        return "bg-red-700 text-white font-black";
       default:
-        return "bg-on-surface/10 text-on-surface-variant";
+        return "bg-emerald-600 text-white dark:bg-emerald-700"; // Đang phục vụ (Default)
     }
   };
 
@@ -56,19 +56,30 @@ export function DishTable({
       case DishStatus.DELETED:
         return "Đã xóa";
       default:
-        return status;
+        return "Đang bán";
     }
   };
 
-  // Map badge cho DishType
+  // 2. Sửa lại style Phân loại: Nền Solid đậm đà đập tan cái nền xám phèn cũ
   const getTypeBadge = (type: DishType) => {
     switch (type) {
       case DishType.FOOD:
-        return "bg-primary-container/10 text-primary border-primary/20";
+        return "bg-amber-600 text-white dark:bg-amber-700";
       case DishType.BEVERAGE:
-        return "bg-green-600/10 text-green-600 border-green-600/20";
+        return "bg-sky-600 text-white dark:bg-sky-700";
       default:
-        return "bg-on-surface/10 text-on-surface-variant border-outline-variant";
+        return "bg-zinc-500 text-white dark:bg-zinc-600";
+    }
+  };
+
+  const getTypeLabel = (type: DishType) => {
+    switch (type) {
+      case DishType.FOOD:
+        return "Đồ ăn";
+      case DishType.BEVERAGE:
+        return "Nước uống";
+      default:
+        return "Khác";
     }
   };
 
@@ -132,7 +143,7 @@ export function DishTable({
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       {dish.imageUrl ? (
-                        <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-outline-variant">
+                        <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-outline-variant shrink-0">
                           <Image
                             src={dish.imageUrl}
                             alt={dish.itemName}
@@ -142,15 +153,15 @@ export function DishTable({
                           />
                         </div>
                       ) : (
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                           <Icon name="Utensils" className="w-4 h-4" />
                         </div>
                       )}
-                      <div>
-                        <div className="font-semibold text-primary">
+                      <div className="min-w-0">
+                        <div className="font-semibold text-primary truncate max-w-50">
                           {dish.itemName}
                         </div>
-                        <div className="text-[12px] text-on-surface-variant truncate max-w-45">
+                        <div className="text-[12px] text-on-surface-variant truncate max-w-50">
                           {dish.description || "Không có mô tả"}
                         </div>
                       </div>
@@ -160,10 +171,11 @@ export function DishTable({
                     {dish.category?.categoryName || "Chưa phân loại"}
                   </td>
                   <td className="p-4">
+                    {/* 3. Đổi bọc tròn và font vừa vặn cho Badge Phân Loại */}
                     <span
-                      className={`px-2 py-0.5 font-bold text-[11px] rounded border uppercase ${getTypeBadge(dish.type)}`}
+                      className={`px-2.5 py-0.5 font-bold text-[11px] rounded-lg shadow-sm whitespace-nowrap ${getTypeBadge(dish.type)}`}
                     >
-                      {dish.type}
+                      {getTypeLabel(dish.type)}
                     </span>
                   </td>
                   <td className="p-4 text-right font-mono font-bold text-on-surface">
@@ -173,8 +185,9 @@ export function DishTable({
                     </span>
                   </td>
                   <td className="p-4 text-center">
+                    {/* 4. Đổi bọc tròn cho Badge Trạng Thái */}
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold ${getStatusStyle(dish.status)}`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-bold shadow-sm whitespace-nowrap ${getStatusStyle(dish.status)}`}
                     >
                       {getStatusLabel(dish.status)}
                     </span>

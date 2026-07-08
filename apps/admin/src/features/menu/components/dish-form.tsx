@@ -128,7 +128,7 @@ export function DishForm({ isOpen, onClose, dish }: DishFormProps) {
                 Hình ảnh món
               </label>
               <CldUploadWidget
-                uploadPreset="dish_preset" // 2. ĐIỀN TÊN UPLOAD PRESET ÔNG VỪA TẠO Ở BƯỚC 2 VÀO ĐÂY
+                uploadPreset="dish_preset"
                 onSuccess={(results: unknown) => {
                   const res = results as { info?: { secure_url?: string } };
                   if (res?.info?.secure_url) {
@@ -136,9 +136,9 @@ export function DishForm({ isOpen, onClose, dish }: DishFormProps) {
                   }
                 }}
                 options={{
-                  multiple: false, // Chỉ cho phép up 1 ảnh duy nhất cho 1 món
-                  clientAllowedFormats: ["jpg", "png", "jpeg", "webp"], // Giới hạn định dạng file
-                  maxFileSize: 2000000, // Giới hạn ảnh dưới 2MB cho nhẹ cloud
+                  multiple: false,
+                  clientAllowedFormats: ["jpg", "png", "jpeg", "webp"],
+                  maxFileSize: 2000000,
                 }}
               >
                 {({ open }) => {

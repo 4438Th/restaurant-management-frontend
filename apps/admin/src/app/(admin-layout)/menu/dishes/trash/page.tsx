@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
 import { Icon } from "@/components/ui/icon";
 import { useDish } from "@/features/menu/hooks/dishes.hooks";
 import { DishTrashTable } from "@/features/menu/components/dish-trash-table";
 import { TablePagination } from "@/components/ui/table-pagination";
+import { PageHeader } from "@/components/layout/page-header";
 
 export default function DishTrashPage() {
   const [page, setPage] = useState<number>(1);
@@ -33,27 +33,13 @@ export default function DishTrashPage() {
   return (
     <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-surface flex flex-col gap-6 h-full">
       {/* TIÊU ĐỀ TRANG VÀ NÚT QUAY LẠI */}
-      <div className="flex justify-between items-center shrink-0">
-        <div>
-          <h1 className="text-[28px] font-black tracking-tight text-error flex items-center gap-3">
-            <Icon name="Trash2" className="w-7 h-7" />
-            Thùng rác món ăn
-          </h1>
-          <p className="text-[14px] text-on-surface-variant mt-1">
-            Danh sách các món ăn, đồ uống đã xóa tạm thời khỏi thực đơn hệ
-            thống.
-          </p>
-        </div>
-
-        <Link
-          href="/menu/dishes"
-          className="flex items-center gap-2 bg-surface-variant hover:bg-surface-container text-on-surface px-4 py-2 rounded-xl text-[13px] font-bold shadow-sm transition-colors"
-        >
-          <Icon name="ArrowLeft" className="w-4 h-4" />
-          <span>Quay lại</span>
-        </Link>
-      </div>
-
+      <PageHeader
+        title="Thùng rác"
+        description="Danh sách các món ăn, đồ uống đã xóa tạm thời khỏi thực đơn hệ
+            thống."
+        isTrash={true}
+        backLink="/menu/dishes"
+      />
       {/* CONTAINER CARD */}
       <div className="flex-1 min-h-0 bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col shadow-sm overflow-hidden">
         {/* Ô TÌM KIẾM NHANH */}

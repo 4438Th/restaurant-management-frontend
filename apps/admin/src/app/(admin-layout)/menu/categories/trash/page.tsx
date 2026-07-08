@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
 import { Icon } from "@/components/ui/icon";
 import { useMenuCategoryTrash } from "@/features/menu/hooks/categories.hooks";
 import { CategoryTrashTable } from "@/features/menu/components/menu-category-trash-table";
 import { TablePagination } from "@/components/ui/table-pagination";
+import { PageHeader } from "@/components/layout/page-header";
 
 export default function MenuCategoryTrashPage() {
   const [page, setPage] = useState<number>(1);
@@ -33,26 +33,13 @@ export default function MenuCategoryTrashPage() {
   return (
     <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-surface flex flex-col gap-6 h-full">
       {/* TIÊU ĐỀ TRANG VÀ NÚT QUAY LẠI */}
-      <div className="flex justify-between items-center shrink-0">
-        <div>
-          <h1 className="text-[28px] font-black tracking-tight text-error flex items-center gap-3">
-            <Icon name="Trash2" className="w-7 h-7" />
-            Thùng rác
-          </h1>
-          <p className="text-[14px] text-on-surface-variant mt-1">
-            Danh sách danh mục thực đơn đã xóa. Bạn có thể khôi phục lại hoạt
-            động của chúng.
-          </p>
-        </div>
-
-        <Link
-          href="/menu/categories" // Điều chỉnh lại route danh mục chính của ông
-          className="flex items-center gap-2 bg-surface-variant hover:bg-surface-container text-on-surface px-4 py-2 rounded-xl text-[13px] font-bold shadow-sm transition-colors"
-        >
-          <Icon name="ArrowLeft" className="w-4 h-4" />
-          <span>Quay lại</span>
-        </Link>
-      </div>
+      <PageHeader
+        title="Thùng rác"
+        description=" Danh sách danh mục thực đơn đã xóa. Bạn có thể khôi phục lại hoạt
+            động của chúng."
+        isTrash={true}
+        backLink="/menu/categories"
+      />
 
       {/* CONTAINER CARD CHỐNG TRÀN BẢNG */}
       <div className="flex-1 min-h-0 bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col shadow-sm overflow-hidden">

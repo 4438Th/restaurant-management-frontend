@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { Icon } from "@/components/ui/icon";
 
 import { MenuCategoryToolbar } from "@/features/menu/components/menu-category-toolbar";
 import { MenuCategoryTable } from "@/features/menu/components/menu-category-table";
 import { MenuCategoryForm } from "@/features/menu/components/menu-category-form";
 import { TablePagination } from "@/components/ui/table-pagination";
+import { PageHeader } from "@/components/layout/page-header";
+
 import { useMenuCategory } from "@/features/menu/hooks/categories.hooks";
 import {
   MenuCategoryResponse,
@@ -60,37 +60,14 @@ export default function MenuCategoriesPage() {
       {/* VÙNG CUỘN ĐỘC LẬP CHO NỘI DUNG MENU CATEGORY */}
       <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-surface flex flex-col gap-6 h-full">
         {/* TIÊU ĐỀ TRANG VÀ NÚT CHUYỂN HƯỚNG TỚI THÙNG RÁC */}
-        <div className="flex justify-between items-center shrink-0">
-          <div>
-            <h1 className="text-[28px] font-black tracking-tight text-on-surface">
-              Danh mục thực đơn
-            </h1>
-            <p className="text-[14px] text-on-surface-variant mt-1">
-              Phân loại thực đơn giúp khách hàng và nhân viên dễ dàng tìm kiếm
-              món.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* THÊM DANH MỤC MỚI */}
-            <button
-              onClick={handleCreateClick}
-              className="flex items-center gap-2 bg-primary text-on-primary hover:bg-primary/90 px-4 py-2 rounded-xl text-[13px] font-bold shadow-sm transition-colors"
-            >
-              <Icon name="Plus" className="w-4 h-4" />
-              <span>Thêm danh mục</span>
-            </button>
-
-            {/* ĐƯỜNG DẪN TỚI THÙNG RÁC DANH MỤC */}
-            <Link
-              href="/menu/categories/trash"
-              className="flex items-center gap-2 border border-outline-variant hover:bg-surface-container text-on-surface px-4 py-2 rounded-xl text-[13px] font-bold shadow-sm transition-colors"
-            >
-              <Icon name="Trash2" className="w-4 h-4 text-error" />
-              <span>Thùng rác</span>
-            </Link>
-          </div>
-        </div>
+        <PageHeader
+          title="Danh mục thực đơn"
+          description="Phân loại thực đơn giúp khách hàng và nhân viên dễ dàng tìm kiếm
+              món."
+          buttonText="Thêm danh mục"
+          onButtonClick={handleCreateClick}
+          trashLink="/menu/categories/trash"
+        />
 
         {/* CONTAINER CARD BẢO VỆ BẢNG KHÔNG BỊ TRÀN VỠ */}
         <div

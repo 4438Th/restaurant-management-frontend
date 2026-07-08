@@ -1,14 +1,13 @@
-// apps/admin/src/app/(admin-layout)/users/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { Icon } from "@/components/ui/icon";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { UserTable } from "@/features/users/components/user-table";
 import { UserToolbar } from "@/features/users/components/user-toolbar";
 import { UserForm } from "@/features/users/components/user-form";
 import { UserProfileModal } from "@/features/users/components/user-profile-modal";
+import { PageHeader } from "@/components/layout/page-header";
+
 import { useUsers } from "@/features/users/users.hooks";
 import { User } from "@/features/users/users.types";
 
@@ -61,35 +60,13 @@ export default function UserManagementPage() {
       {/* VÙNG CUỘN ĐỘC LẬP CHO NỘI DUNG USER */}
       <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-surface flex flex-col gap-6 h-full">
         {/* TIÊU ĐỀ TRANG VÀ NÚT CHUYỂN HƯỚNG TỚI THÙNG RÁC */}
-        <div className="flex justify-between items-center shrink-0">
-          <div>
-            <h1 className="text-[28px] font-black tracking-tight text-on-surface">
-              Danh sách tài khoản
-            </h1>
-            <p className="text-[14px] text-on-surface-variant mt-1">
-              Quản lý hồ sơ nhân sự và phân quyền truy cập hệ thống.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* THÊM TÀI KHOẢN MỚI (Được nhấc từ UserHeader cũ xuống đây để quy hoạch gọn gàng) */}
-            <button
-              onClick={handleCreateClick}
-              className="flex items-center gap-2 bg-primary text-on-primary hover:bg-primary/90 px-4 py-2 rounded-xl text-[13px] font-bold shadow-sm transition-colors"
-            >
-              <Icon name="UserPlus" className="w-4 h-4" />
-              <span>Thêm tài khoản</span>
-            </button>
-
-            <Link
-              href="/users/trash"
-              className="flex items-center gap-2 border border-outline-variant hover:bg-surface-container text-on-surface px-4 py-2 rounded-xl text-[13px] font-bold shadow-sm transition-colors"
-            >
-              <Icon name="Trash2" className="w-4 h-4 text-error" />
-              <span>Thùng rác</span>
-            </Link>
-          </div>
-        </div>
+        <PageHeader
+          title="Danh sách tài khoản"
+          description="Quản lý hồ sơ nhân sự và phân quyền truy cập hệ thống."
+          buttonText="Thêm tài khoản"
+          onButtonClick={handleCreateClick}
+          trashLink="/users/trash"
+        />
 
         {/* CONTAINER CARD BẢO VỆ BẢNG KHÔNG BỊ TRÀN VỠ */}
         <div
