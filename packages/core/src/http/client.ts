@@ -6,7 +6,6 @@ import axios, {
 } from 'axios';
 import { tokenStorage } from './storage';
 import { ApiResponse } from '../common/types';
-
 export class ApiError extends Error {
     readonly code: number;
     readonly statusCode: number;
@@ -19,6 +18,11 @@ export class ApiError extends Error {
         Object.setPrototypeOf(this, ApiError.prototype);
     }
 }
+
+let onTokenExpiredCallback: (() => void) | null = null;
+export const setupHttpInterceptor = (onExpired: () => void) => {
+    onTokenExpiredCallback = onExpired;
+};
 
 const createBaseClient = (): AxiosInstance => {
     const getBaseURL = (): string => {
@@ -63,14 +67,20 @@ instance.interceptors.response.use(
             const status = error.response.status;
             const apiData = error.response.data;
             const requestUrl = error.config?.url ?? '';
-
-            if ((status === 401 || apiData?.code === 4102) && !requestUrl.includes('/auth/login')) {
+            const isTokenExpired =
+                status === 401 ||
+                apiData?.code === 4102 ||
+                apiData?.message?.includes("TOKEN_EXPIRED");
+            if (isTokenExpired && !requestUrl.includes('/auth/login')) {
                 if (typeof window !== 'undefined') {
-                    tokenStorage.clearToken();
-                    window.location.href = '/login';
+                    if (onTokenExpiredCallback) {
+                        onTokenExpiredCallback();
+                    } else {
+                        window.location.href = '/login';
+                    }
+                    return new Promise(() => { });
                 }
             }
-
             return Promise.reject(
                 new ApiError(
                     apiData?.message ?? 'Có lỗi xảy ra phía máy chủ!',
