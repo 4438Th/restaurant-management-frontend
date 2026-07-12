@@ -1,5 +1,5 @@
 import { apiClient, PageResponse } from '@repo/core';
-import { MenuCategoryResponse, MenuCategoryCreateRequest, MenuCategoryUpdateRequest } from '../menu.types';
+import { MenuCategoryResponse, MenuCategoryCreateRequest, MenuCategoryUpdateRequest, MenuCategoryAnalyticsResponse } from '../menu.types';
 
 export const categoriesService = {
     getAll: (page = 1, size = 10, search?: string, status?: string) => {
@@ -29,5 +29,7 @@ export const categoriesService = {
     restore: (id: string) => {
         return apiClient.post<string>(`/menu/categories/${id}/restore`);
     },
-
+    getAnalytics: () => {
+        return apiClient.get<MenuCategoryAnalyticsResponse[]>('/menu/categories/analytics');
+    },
 };

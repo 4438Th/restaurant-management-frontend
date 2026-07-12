@@ -78,3 +78,10 @@ export const useRestoreMenuCategory = () => {
         }
     });
 };
+export const useMenuCategoryAnalytics = () => {
+    return useQuery({
+        queryKey: ['menu/categories/analytics'],
+        queryFn: () => categoriesService.getAnalytics(),
+        staleTime: 5 * 60 * 1000,
+    });
+};

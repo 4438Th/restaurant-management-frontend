@@ -51,6 +51,11 @@ export interface MenuCategoryResponse extends AuditEntity {
     description: string;
     status: MenuCategoryStatus;
 }
+export interface MenuCategoryAnalyticsResponse {
+    categoryId: string;
+    categoryName: string;
+    totalDishes: number;
+}
 export interface DishCreateRequest {
     dishName: string;
     description: string;
@@ -85,5 +90,3 @@ export interface MenuCategoryInfo extends AuditEntity {
     id: string;
     categoryName: string;
 }
-
-
