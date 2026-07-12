@@ -90,3 +90,8 @@ export interface MenuCategoryInfo extends AuditEntity {
     id: string;
     categoryName: string;
 }
+export interface DishAnalyticsResponse {
+    totalDishes: number;
+    totalByStatus: Record<DishStatus, number>;
+    totalByType: Record<DishType, number>;
+}

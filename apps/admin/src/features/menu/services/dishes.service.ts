@@ -1,5 +1,5 @@
 import { apiClient, PageResponse } from '@repo/core';
-import { DishCreateRequest, DishUpdateRequest, DishResponse } from '../menu.types';
+import { DishCreateRequest, DishUpdateRequest, DishResponse, DishAnalyticsResponse } from '../menu.types';
 
 export const dishesService = {
     getAll: (page = 1, size = 10, search?: string, status?: string, type?: string, categoryId?: string) => {
@@ -28,5 +28,8 @@ export const dishesService = {
 
     restore: (id: string) => {
         return apiClient.post<string>(`/menu/dishes/${id}/restore`);
+    },
+    getAnalytics: () => {
+        return apiClient.get<DishAnalyticsResponse>('/menu/dishes/analytics');
     },
 };

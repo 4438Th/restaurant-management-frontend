@@ -77,3 +77,10 @@ export const useRestoreDish = () => {
         }
     });
 };
+export const useDishAnalytics = () => {
+    return useQuery({
+        queryKey: ['menu/dishes/analytics'],
+        queryFn: () => dishesService.getAnalytics(),
+        staleTime: 30 * 1000,
+    });
+};

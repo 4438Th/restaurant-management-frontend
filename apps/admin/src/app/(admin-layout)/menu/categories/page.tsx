@@ -70,9 +70,6 @@ export default function MenuCategoriesPage() {
           trashLink="/menu/categories/trash"
         />
 
-        {/* VÙNG THỐNG KÊ ANALYTICS CARDS (Đã bọc lại thành 1 component sạch sẽ) */}
-        <MenuCategoryAnalytics />
-
         {/* CONTAINER CARD BẢO VỆ BẢNG KHÔNG BỊ TRÀN VỠ */}
         <div
           className="flex-1 min-h-0 bg-surface-container-lowest
@@ -113,6 +110,8 @@ export default function MenuCategoriesPage() {
             </div>
           )}
         </div>
+        {/* VÙNG THỐNG KÊ ANALYTICS CARDS (Đã bọc lại thành 1 component sạch sẽ) */}
+        <MenuCategoryAnalytics />
       </main>
 
       {/* THÀNH PHẦN FORM DRAWER NẰM CHỜ KÍCH HOẠT */}

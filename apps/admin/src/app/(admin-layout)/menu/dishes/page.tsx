@@ -8,9 +8,10 @@ import { DishForm } from "@/features/menu/components/dish-form";
 import { DishModal } from "@/features/menu/components/dish-modal";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { PageHeader } from "@/components/layout/page-header";
+import { DishAnalytics } from "@/features/menu/components/dish-analytics";
 
 import { useDish } from "@/features/menu/hooks/dishes.hooks";
-import { useMenuCategory } from "@/features/menu/hooks/categories.hooks"; // IMPORT THÊM HOOK CATEGORY
+import { useMenuCategory } from "@/features/menu/hooks/categories.hooks";
 import { DishResponse, DishStatus, DishType } from "@/features/menu/menu.types";
 
 export default function DishesPage() {
@@ -121,6 +122,7 @@ export default function DishesPage() {
             </div>
           )}
         </div>
+        <DishAnalytics />
       </main>
 
       <DishForm
