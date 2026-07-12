@@ -1,22 +1,41 @@
 import { AuditEntity } from "@repo/core";
 
 export enum DishStatus {
-    ARCHIVED = 'ARCHIVED',
-    OUT_OF_STOCK = 'OUT_OF_STOCK',
-    DISCONTINUED = 'DISCONTINUED',
-    DELETED = 'DELETED',
+    AVAILABLE = 'Đang bán',
+    ARCHIVED = 'Lưu trữ',
+    OUT_OF_STOCK = 'Tạm hết món',
+    DISCONTINUED = 'Ngừng bán',
+    DELETED = 'Đã xóa',
 }
-export enum MenuCategoryStatus {
-    DRAFT = 'DRAFT',
-    ACTIVE = 'ACTIVE',
-    INACTIVE = 'INACTIVE',
-    DELETED = 'DELETED',
-}
+export const DishStatusLabel: Record<string, string> = {
+    'AVAILABLE': DishStatus.AVAILABLE,
+    'ARCHIVED': DishStatus.ARCHIVED,
+    'OUT_OF_STOCK': DishStatus.OUT_OF_STOCK,
+    'DISCONTINUED': DishStatus.DISCONTINUED,
+    'DELETED': DishStatus.DELETED,
+};
 export enum DishType {
-    FOOD = 'FOOD',
-    BEVERAGE = 'BEVERAGE',
-    OTHER = 'OTHER'
+    FOOD = 'Đồ ăn',
+    BEVERAGE = 'Đồ uống',
+    OTHER = 'Khác'
 }
+export const DishTypeLabel: Record<string, string> = {
+    'FOOD': DishType.FOOD,
+    'BEVERAGE': DishType.BEVERAGE,
+    'OTHER': DishType.OTHER,
+};
+export enum MenuCategoryStatus {
+    DRAFT = 'Bản nháp',
+    ACTIVE = 'Đang hoạt động',
+    INACTIVE = 'Không hoạt động',
+    DELETED = 'Đã xóa',
+}
+export const MenuCategoryStatusLabel: Record<string, string> = {
+    'DRAFT': MenuCategoryStatus.DRAFT,
+    'ACTIVE': MenuCategoryStatus.ACTIVE,
+    'INACTIVE': MenuCategoryStatus.INACTIVE,
+    'DELETED': MenuCategoryStatus.DELETED
+};
 export interface MenuCategoryCreateRequest {
     categoryName: string;
     description: string;
@@ -33,7 +52,7 @@ export interface MenuCategoryResponse extends AuditEntity {
     status: MenuCategoryStatus;
 }
 export interface DishCreateRequest {
-    itemName: string;
+    dishName: string;
     description: string;
     price: string;
     imageUrl: string;
@@ -42,7 +61,7 @@ export interface DishCreateRequest {
     categoryId: string;
 }
 export interface DishUpdateRequest {
-    itemName: string;
+    dishName: string;
     description: string;
     price: string;
     imageUrl: string;
@@ -53,7 +72,7 @@ export interface DishUpdateRequest {
 }
 export interface DishResponse extends AuditEntity {
     id: string;
-    itemName: string;
+    dishName: string;
     description: string;
     price: string;
     status: DishStatus;

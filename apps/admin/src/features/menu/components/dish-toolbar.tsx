@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Icon } from "@/components/ui/icon";
-import { DishStatus } from "../menu.types";
+import { DishStatusLabel } from "../menu.types";
 
 interface DishToolbarProps {
   searchQuery: string;
@@ -27,10 +27,10 @@ export function DishToolbar({
         />
         <input
           type="text"
-          placeholder="Tìm tên món, mô tả..."
+          placeholder="Tìm theo tên món,..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 text-[13px] bg-surface border border-outline-variant rounded-xl focus:border-primary outline-none transition-all"
+          className="w-full pl-10 pr-4 py-2 text-[13px] bg-surface border border-outline-variant rounded-xl focus:border-primary outline-none transition-all text-on-surface font-medium"
         />
       </div>
 
@@ -42,12 +42,16 @@ export function DishToolbar({
         <select
           value={selectedStatus}
           onChange={(e) => onStatusChange(e.target.value)}
-          className="text-[13px] bg-surface border border-outline-variant rounded-xl px-3 py-2 outline-none focus:border-primary cursor-pointer font-medium text-on-surface min-w-38.75"
+          className="text-[13px] bg-surface border border-outline-variant rounded-xl px-3 py-2 outline-none focus:border-primary cursor-pointer font-medium text-on-surface min-w-40"
         >
           <option value="All">Tất cả</option>
-          <option value={DishStatus.ARCHIVED}>Lưu trữ</option>
-          <option value={DishStatus.OUT_OF_STOCK}>Hết món</option>
-          <option value={DishStatus.DISCONTINUED}>Ngừng kinh doanh</option>
+          {Object.keys(DishStatusLabel)
+            .filter((key) => key !== "DELETED")
+            .map((key) => (
+              <option key={key} value={key}>
+                {DishStatusLabel[key]}
+              </option>
+            ))}
         </select>
       </div>
     </div>

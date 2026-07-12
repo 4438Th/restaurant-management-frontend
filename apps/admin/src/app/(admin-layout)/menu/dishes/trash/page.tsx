@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Icon } from "@/components/ui/icon";
-import { useDish } from "@/features/menu/hooks/dishes.hooks";
+import { useDishTrash } from "@/features/menu/hooks/dishes.hooks";
 import { DishTrashTable } from "@/features/menu/components/dish-trash-table";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { PageHeader } from "@/components/layout/page-header";
@@ -21,7 +21,7 @@ export default function DishTrashPage() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  const { data: pageData, isLoading: isFetchLoading } = useDish(
+  const { data: pageData, isLoading: isFetchLoading } = useDishTrash(
     page,
     size,
     debouncedSearch || undefined,

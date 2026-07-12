@@ -1,4 +1,3 @@
-// apps/admin/src/features/users/users.service.ts
 import { apiClient, PageResponse } from '@repo/core';
 import { UserResponse, UserCreateRequest, UserUpdateRequest } from './users.types';
 

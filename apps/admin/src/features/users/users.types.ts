@@ -1,13 +1,31 @@
-// apps/admin/src/features/users/users.types.ts
 import { AuditEntity } from "@repo/core";
 
 export enum UserStatus {
-    PENDING = 'PENDING',
-    ACTIVE = 'ACTIVE',
-    INACTIVE = 'INACTIVE',
-    DELETED = 'DELETED',
+    PENDING = 'Chờ duyệt',
+    ACTIVE = 'Đang hoạt động',
+    INACTIVE = 'Không hoạt động',
+    DELETED = 'Đã xóa',
 }
-
+export const UserStatusLabel: Record<string, string> = {
+    'PENDING': UserStatus.PENDING,
+    'ACTIVE': UserStatus.ACTIVE,
+    'INACTIVE': UserStatus.INACTIVE,
+    'DELETED': UserStatus.DELETED,
+}
+export enum UserRoles {
+    MANAGER = "Quản lý",
+    CHEF = "Bếp",
+    WAITER = "Phục vụ",
+    BAR = "Bar",
+    CASHIER = "Thu ngân",
+}
+export const UserRolesLabel: Record<string, string> = {
+    'MANAGER': UserRoles.MANAGER,
+    'CHEF': UserRoles.CHEF,
+    'WAITER': UserRoles.WAITER,
+    'BAR': UserRoles.BAR,
+    'CASHIER': UserRoles.CASHIER,
+}
 export interface Role {
     name: string;
     description: string;
@@ -45,11 +63,5 @@ export interface UserUpdateRequest {
     roles: string[];
 }
 
-export const AVAILABLE_ROLES = [
-    "MANAGER",
-    "CHEF",
-    "WAITER",
-    "BAR",
-    "CASHIER",
-];
+
 export type User = UserResponse;

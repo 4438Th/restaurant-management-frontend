@@ -57,7 +57,7 @@ export const useDeleteDish = () => {
         },
     });
 };
-export const useUsersDish = (page: number, size: number, search?: string) => {
+export const useDishTrash = (page: number, size: number, search?: string) => {
     return useQuery({
         queryKey: ['menu/dishes/trash', { page, size, search }],
         queryFn: () => dishesService.getTrash(page, size, search),

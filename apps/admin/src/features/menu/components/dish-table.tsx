@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { Icon } from "@/components/ui/icon";
-import { DishResponse, DishStatus, DishType } from "../menu.types";
+import { DishResponse, DishStatusLabel, DishTypeLabel } from "../menu.types";
 import { useDeleteDish } from "../hooks/dishes.hooks";
 
 interface DishTableProps {
@@ -23,63 +23,35 @@ export function DishTable({
 
   const handleDelete = (e: React.MouseEvent, dish: DishResponse) => {
     e.stopPropagation();
-    if (confirm(`Bạn có chắc chắn muốn xóa món ăn "${dish.itemName}" không?`)) {
+    if (confirm(`Bạn có chắc chắn muốn xóa món ăn "${dish.dishName}" không?`)) {
       deleteDishMutation.mutate(dish.id);
     }
   };
 
-  // 1. Sửa lại style Trạng thái: Nền màu đậm hẳn, chữ trắng tinh gắt phẳng!
-  const getStatusStyle = (status: DishStatus) => {
+  const getStatusStyle = (status: string) => {
     switch (status) {
-      case DishStatus.ARCHIVED:
+      case "AVAILABLE":
+        return "bg-emerald-600 text-white dark:bg-emerald-700";
+      case "ARCHIVED":
         return "bg-neutral-500 text-white dark:bg-neutral-600";
-      case DishStatus.OUT_OF_STOCK:
+      case "OUT_OF_STOCK":
         return "bg-amber-500 text-white dark:bg-amber-600";
-      case DishStatus.DISCONTINUED:
-        return "bg-error text-white"; // Giữ token bg-error của ông
-      case DishStatus.DELETED:
-        return "bg-red-700 text-white font-black";
+      case "DISCONTINUED":
+        return "bg-error text-white";
       default:
-        return "bg-emerald-600 text-white dark:bg-emerald-700"; // Đang phục vụ (Default)
+        return "bg-zinc-500 text-white";
     }
   };
 
-  // Map label tiếng Việt cho trạng thái
-  const getStatusLabel = (status: DishStatus) => {
-    switch (status) {
-      case DishStatus.ARCHIVED:
-        return "Lưu trữ";
-      case DishStatus.OUT_OF_STOCK:
-        return "Hết món";
-      case DishStatus.DISCONTINUED:
-        return "Ngừng bán";
-      case DishStatus.DELETED:
-        return "Đã xóa";
-      default:
-        return "Đang bán";
-    }
-  };
-
-  // 2. Sửa lại style Phân loại: Nền Solid đậm đà đập tan cái nền xám phèn cũ
-  const getTypeBadge = (type: DishType) => {
+  // Nhận string thô từ API để map màu chính xác
+  const getTypeBadge = (type: string) => {
     switch (type) {
-      case DishType.FOOD:
+      case "FOOD":
         return "bg-amber-600 text-white dark:bg-amber-700";
-      case DishType.BEVERAGE:
+      case "BEVERAGE":
         return "bg-sky-600 text-white dark:bg-sky-700";
       default:
         return "bg-zinc-500 text-white dark:bg-zinc-600";
-    }
-  };
-
-  const getTypeLabel = (type: DishType) => {
-    switch (type) {
-      case DishType.FOOD:
-        return "Đồ ăn";
-      case DishType.BEVERAGE:
-        return "Nước uống";
-      default:
-        return "Khác";
     }
   };
 
@@ -146,7 +118,7 @@ export function DishTable({
                         <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-outline-variant shrink-0">
                           <Image
                             src={dish.imageUrl}
-                            alt={dish.itemName}
+                            alt={dish.dishName || "Hình ảnh món ăn"}
                             fill
                             className="object-cover"
                             sizes="40px"
@@ -159,7 +131,7 @@ export function DishTable({
                       )}
                       <div className="min-w-0">
                         <div className="font-semibold text-primary truncate max-w-50">
-                          {dish.itemName}
+                          {dish.dishName}
                         </div>
                         <div className="text-[12px] text-on-surface-variant truncate max-w-50">
                           {dish.description || "Không có mô tả"}
@@ -171,25 +143,28 @@ export function DishTable({
                     {dish.category?.categoryName || "Chưa phân loại"}
                   </td>
                   <td className="p-4">
-                    {/* 3. Đổi bọc tròn và font vừa vặn cho Badge Phân Loại */}
+                    {/* Dịch text từ key backend sang tiếng Việt bằng DishTypeLabel */}
                     <span
                       className={`px-2.5 py-0.5 font-bold text-[11px] rounded-lg shadow-sm whitespace-nowrap ${getTypeBadge(dish.type)}`}
                     >
-                      {getTypeLabel(dish.type)}
+                      {DishTypeLabel[dish.type] || dish.type}
                     </span>
                   </td>
                   <td className="p-4 text-right font-mono font-bold text-on-surface">
-                    {Number(dish.price).toLocaleString("vi-VN")}đ{" "}
+                    {dish.price
+                      ? Number(dish.price).toLocaleString("vi-VN")
+                      : "0"}
+                    đ{" "}
                     <span className="text-[12px] font-normal text-on-surface-variant">
                       /{dish.unit}
                     </span>
                   </td>
                   <td className="p-4 text-center">
-                    {/* 4. Đổi bọc tròn cho Badge Trạng Thái */}
+                    {/* Dịch text từ key backend sang tiếng Việt bằng DishStatusLabel */}
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-lg text-[11px] font-bold shadow-sm whitespace-nowrap ${getStatusStyle(dish.status)}`}
                     >
-                      {getStatusLabel(dish.status)}
+                      {DishStatusLabel[dish.status] || dish.status}
                     </span>
                   </td>
                   <td

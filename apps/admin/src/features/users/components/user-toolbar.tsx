@@ -1,7 +1,8 @@
-// apps/admin/src/features/users/components/user-toolbar.tsx
 "use client";
 
+import React from "react";
 import { Icon } from "@/components/ui/icon";
+import { UserStatusLabel } from "../users.types";
 
 interface UserToolbarProps {
   searchQuery: string;
@@ -28,8 +29,8 @@ export function UserToolbar({
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Tìm theo tên hoặc tài khoản..."
-          className="w-full pl-9 pr-4 py-2 text-[13px] bg-surface border border-outline-variant rounded-xl outline-none focus:border-primary transition-colors"
+          placeholder="Tìm theo tên tài khoản hoặc họ tên..."
+          className="w-full pl-9 pr-4 py-2 text-[13px] bg-surface border border-outline-variant rounded-xl outline-none focus:border-primary transition-colors text-on-surface font-medium"
         />
       </div>
 
@@ -41,12 +42,16 @@ export function UserToolbar({
         <select
           value={selectedStatus}
           onChange={(e) => onStatusChange(e.target.value)}
-          className="bg-surface border border-outline-variant text-[13px] rounded-xl px-3 py-2 outline-none focus:border-primary font-medium min-w-30"
+          className="bg-surface border border-outline-variant text-[13px] rounded-xl px-3 py-2 outline-none focus:border-primary font-medium text-on-surface min-w-40 cursor-pointer"
         >
-          <option value="All">Tất cả</option>
-          <option value="ACTIVE">Hoạt động</option>
-          <option value="PENDING">Chờ duyệt</option>
-          <option value="INACTIVE">Không hoạt động</option>
+          <option value="All">Tất cả trạng thái</option>
+          {Object.keys(UserStatusLabel)
+            .filter((key) => key !== "DELETED")
+            .map((key) => (
+              <option key={key} value={key}>
+                {UserStatusLabel[key]}
+              </option>
+            ))}
         </select>
       </div>
     </div>

@@ -10,10 +10,11 @@ import { vi } from "date-fns/locale/vi";
 import "react-datepicker/dist/react-datepicker.css";
 import {
   User,
-  AVAILABLE_ROLES,
   UserUpdateRequest,
   UserCreateRequest,
   UserStatus,
+  UserRoles,
+  UserRolesLabel,
 } from "../users.types";
 
 interface UserFormProps {
@@ -71,6 +72,11 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
     return new Date(year, month - 1, day);
   }, [dob]);
 
+  // ĐÃ DI CHUYỂN LÊN TRÊN: Lấy danh sách các vai trò từ Enum bằng useMemo trước early return
+  const roleOptions = useMemo(() => {
+    return Object.keys(UserRoles);
+  }, []);
+
   const handleDateChange = (date: Date | null) => {
     if (!date) {
       setDob("");
@@ -93,6 +99,7 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!username && !isEditMode) return;
+
     if (!fullName || !email || !phoneNumber || !dob) {
       toast.error("Vui lòng điền đầy đủ các thông tin bắt buộc!");
       return;
@@ -104,18 +111,24 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
     }
 
     if (isEditMode && user) {
-      const payload: UserUpdateRequest = {
+      const finalStatus = isEditingAdmin ? user.status : status;
+      const finalPassword = password.trim() ? password : undefined;
+
+      const updatePayload: UserUpdateRequest = {
         fullName,
         email,
         phoneNumber,
         dob,
-        status: isEditingAdmin ? user.status : status,
+        status: finalStatus,
         roles: selectedRoles,
-        password: password.trim() ? password : "",
+        password: finalPassword,
       };
 
       updateUserMutation.mutate(
-        { id: user.id, payload },
+        {
+          id: user.id,
+          payload: updatePayload,
+        },
         {
           onSuccess: () => onClose(),
           onError: (error: ApiError) => {
@@ -126,7 +139,7 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
     } else {
       if (!password) return;
 
-      const payload: UserCreateRequest = {
+      const createPayload: UserCreateRequest = {
         username,
         password,
         fullName,
@@ -136,7 +149,7 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
         roles: selectedRoles,
       };
 
-      createUserMutation.mutate(payload, {
+      createUserMutation.mutate(createPayload, {
         onSuccess: () => onClose(),
         onError: (error: ApiError) => {
           toast.error(error.message || "Không thể tạo tài khoản mới!");
@@ -145,6 +158,7 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
     }
   };
 
+  // Các điều kiện check early return hoặc biến thông thường đặt ở đây
   if (!isOpen) return null;
 
   const isPending =
@@ -173,6 +187,7 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
             </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="p-2 hover:bg-surface-variant rounded-full text-on-surface-variant transition-colors"
           >
@@ -288,14 +303,13 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
             />
           </div>
 
-          {/* Trạng thái */}
+          {/* Trạng thái tài khoản */}
           {isEditMode && !isEditingAdmin && (
             <div>
               <label className="block text-[12px] font-bold text-on-surface mb-2">
                 Trạng thái tài khoản
               </label>
               <div className="flex gap-2 mt-2">
-                {/* 🌟 CHỈ HIỂN THỊ NÚT NÀY nếu trạng thái hiện tại của user đang là PENDING */}
                 {status === UserStatus.PENDING && (
                   <button
                     type="button"
@@ -347,7 +361,7 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
                 Phân quyền vai trò
               </label>
               <div className="flex flex-wrap gap-2 mt-2">
-                {AVAILABLE_ROLES.map((role) => {
+                {roleOptions.map((role) => {
                   const isSelected = selectedRoles.includes(role);
                   return (
                     <button
@@ -360,7 +374,7 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
                           : "bg-surface-bright text-on-surface-variant border-outline-variant hover:bg-surface-variant"
                       }`}
                     >
-                      {role}
+                      {UserRolesLabel[role] || role}
                     </button>
                   );
                 })}

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Icon } from "@/components/ui/icon";
-import { DishResponse, DishType, DishStatus } from "../menu.types";
+import { DishResponse, DishStatusLabel, DishTypeLabel } from "../menu.types";
 
 interface DishModalProps {
   isOpen: boolean;
@@ -13,60 +13,71 @@ interface DishModalProps {
 export function DishModal({ isOpen, onClose, dish }: DishModalProps) {
   if (!isOpen || !dish) return null;
 
-  // Hàm helper để hiển thị badge phân loại đẹp mắt
-  const renderTypeBadge = (type: DishType) => {
+  // Hàm helper render badge phân loại chuẩn theo Key từ backend
+  const renderTypeBadge = (type: string) => {
+    const label = DishTypeLabel[type] || "Khác";
+
     switch (type) {
-      case DishType.FOOD:
+      case "FOOD":
         return (
           <span className="px-2.5 py-1 rounded-lg text-[12px] font-bold bg-amber-600 text-white dark:bg-amber-700 flex items-center gap-1.5 w-fit shadow-sm">
             <Icon name="Utensils" className="w-3.5 h-3.5 text-white" />
-            <span>Đồ ăn</span>
+            <span>{label}</span>
           </span>
         );
-      case DishType.BEVERAGE:
+      case "BEVERAGE":
         return (
           <span className="px-2.5 py-1 rounded-lg text-[12px] font-bold bg-sky-600 text-white dark:bg-sky-700 flex items-center gap-1.5 w-fit shadow-sm">
             <Icon name="CupSoda" className="w-3.5 h-3.5 text-white" />
-            <span>Nước uống</span>
+            <span>{label}</span>
           </span>
         );
       default:
         return (
           <span className="px-2.5 py-1 rounded-lg text-[12px] font-bold bg-zinc-500 text-white dark:bg-zinc-600 flex items-center gap-1.5 w-fit shadow-sm">
             <Icon name="Layers" className="w-3.5 h-3.5 text-white" />
-            <span>Khác</span>
+            <span>{label}</span>
           </span>
         );
     }
   };
 
-  // Hàm helper để hiển thị badge trạng thái phục vụ
-  const renderStatusBadge = (status: DishStatus) => {
+  // Hàm helper render badge trạng thái ĐỒNG BỘ 100% màu sắc đậm rõ nét với Table
+  const renderStatusBadge = (status: string) => {
+    const label = DishStatusLabel[status] || status;
+
     switch (status) {
-      case DishStatus.OUT_OF_STOCK:
+      case "OUT_OF_STOCK":
         return (
-          <span className="px-2.5 py-1 rounded-lg text-[12px] font-bold bg-amber-500 text-white dark:bg-amber-600 shadow-sm flex items-center gap-1 w-fit">
+          <span className="px-2.5 py-1 rounded-lg text-[12px] font-bold bg-amber-500 text-white dark:bg-amber-600 shadow-sm flex items-center gap-1.5 w-fit">
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-            <span>Hết món (Tạm thời)</span>
+            <span>{label}</span>
           </span>
         );
-      case DishStatus.DISCONTINUED:
+      case "DISCONTINUED":
         return (
           <span className="px-2.5 py-1 rounded-lg text-[12px] font-bold bg-error text-white shadow-sm flex items-center gap-1 w-fit">
-            <span>Ngừng kinh doanh</span>
+            <span>{label}</span>
           </span>
         );
-      case DishStatus.ARCHIVED:
+      case "ARCHIVED":
         return (
           <span className="px-2.5 py-1 rounded-lg text-[12px] font-bold bg-neutral-500 text-white dark:bg-neutral-600 shadow-sm flex items-center gap-1 w-fit">
-            <span>Lưu trữ</span>
+            <span>{label}</span>
           </span>
         );
+      case "DELETED":
+        return (
+          <span className="px-2.5 py-1 rounded-lg text-[12px] font-black bg-red-700 text-white shadow-sm flex items-center gap-1 w-fit">
+            <span>{label}</span>
+          </span>
+        );
+      case "AVAILABLE":
       default:
         return (
-          <span className="px-2.5 py-1 rounded-lg text-[12px] font-bold bg-success text-white shadow-sm flex items-center gap-1 w-fit">
+          <span className="px-2.5 py-1 rounded-lg text-[12px] font-bold bg-emerald-600 text-white dark:bg-emerald-700 shadow-sm flex items-center gap-1.5 w-fit">
             <span className="w-1.5 h-1.5 rounded-full bg-white" />
-            <span>Đang phục vụ</span>
+            <span>{label}</span>
           </span>
         );
     }
@@ -87,11 +98,10 @@ export function DishModal({ isOpen, onClose, dish }: DishModalProps) {
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={dish.imageUrl}
-              alt={dish.itemName}
+              alt={dish.dishName}
               className="w-full h-full object-cover"
             />
           ) : (
-            // Khung fallback nếu món ăn chưa up ảnh
             <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-on-surface-variant bg-surface-bright">
               <Icon
                 name="UtensilsCrossed"
@@ -114,11 +124,11 @@ export function DishModal({ isOpen, onClose, dish }: DishModalProps) {
 
         {/* NỘI DUNG THÔNG TIN CHI TIẾT */}
         <div className="p-5 flex flex-col gap-4 text-[14px]">
-          {/* TÊN MÓN VÀ PHÂN LOẠI */}
+          {/* TÊN MÓN VÀ GIÁ */}
           <div className="flex flex-col gap-1.5">
             <div className="flex items-start justify-between gap-4">
               <h3 className="text-lg font-bold text-on-surface leading-snug">
-                {dish.itemName}
+                {dish.dishName}
               </h3>
               <div className="shrink-0 font-mono text-lg font-black text-primary">
                 {Number(dish.price).toLocaleString("vi-VN")}đ

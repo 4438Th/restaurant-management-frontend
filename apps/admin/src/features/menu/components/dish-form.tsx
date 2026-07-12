@@ -5,10 +5,10 @@ import { Icon } from "@/components/ui/icon";
 import { CldUploadWidget } from "next-cloudinary";
 import {
   DishResponse,
-  DishStatus,
-  DishType,
   DishCreateRequest,
   DishUpdateRequest,
+  DishStatusLabel,
+  DishTypeLabel,
 } from "../menu.types";
 import { useCreateDish, useUpdateDish } from "../hooks/dishes.hooks";
 import { useMenuCategory } from "../hooks/categories.hooks";
@@ -26,34 +26,36 @@ export function DishForm({ isOpen, onClose, dish }: DishFormProps) {
   const { data: categoriesData } = useMenuCategory(1, 100);
   const categories = categoriesData?.data || [];
 
-  const [itemName, setItemName] = useState("");
+  const [dishName, setDishName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
-  const [imageUrl, setImageUrl] = useState(""); // State này sẽ lưu chuỗi URL cuối cùng để gửi cho BE
+  const [imageUrl, setImageUrl] = useState("");
   const [unit, setUnit] = useState("Đĩa");
-  const [type, setType] = useState<DishType>(DishType.FOOD);
+
+  // Lưu state dưới dạng chuỗi Key (gốc từ API) thay vì gán cứng Enum tiếng Việt
+  const [type, setType] = useState<string>("FOOD");
   const [categoryId, setCategoryId] = useState("");
-  const [status, setStatus] = useState<DishStatus>(DishStatus.OUT_OF_STOCK);
+  const [status, setStatus] = useState<string>("AVAILABLE");
 
   useEffect(() => {
     if (dish) {
-      setItemName(dish.itemName || "");
+      setDishName(dish.dishName || "");
       setDescription(dish.description || "");
       setPrice(dish.price || "");
       setImageUrl(dish.imageUrl || "");
       setUnit(dish.unit || "Đĩa");
-      setType(dish.type || DishType.FOOD);
+      setType(dish.type || "FOOD");
       setCategoryId(dish.category?.id || "");
-      setStatus(dish.status || DishStatus.OUT_OF_STOCK);
+      setStatus(dish.status || "AVAILABLE");
     } else {
-      setItemName("");
+      setDishName("");
       setDescription("");
       setPrice("");
       setImageUrl("");
       setUnit("Đĩa");
-      setType(DishType.FOOD);
+      setType("FOOD");
       setCategoryId("");
-      setStatus(DishStatus.OUT_OF_STOCK);
+      setStatus("AVAILABLE");
     }
   }, [dish, isOpen]);
 
@@ -63,18 +65,18 @@ export function DishForm({ isOpen, onClose, dish }: DishFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!itemName || !price || !categoryId || !unit) {
+    if (!dishName || !price || !categoryId || !unit) {
       alert("Vui lòng điền đầy đủ các thông tin bắt buộc (*)");
       return;
     }
 
     const basePayload = {
-      itemName,
+      dishName,
       description,
       price,
       imageUrl,
       unit,
-      type,
+      type, // Gửi chuỗi Key lên backend ('FOOD' hoặc 'BEVERAGE')
       categoryId,
     };
 
@@ -144,7 +146,6 @@ export function DishForm({ isOpen, onClose, dish }: DishFormProps) {
                 {({ open }) => {
                   return (
                     <div className="flex flex-col gap-3">
-                      {/* Hiển thị khung xem trước (Preview) nếu đã có ảnh */}
                       {imageUrl ? (
                         <div className="relative group w-full h-40 rounded-xl overflow-hidden border border-outline-variant bg-surface-container-low flex items-center justify-center">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -163,7 +164,6 @@ export function DishForm({ isOpen, onClose, dish }: DishFormProps) {
                           </button>
                         </div>
                       ) : (
-                        // Khung trống bắt mắt kích thích bấm kéo thả khi chưa có ảnh
                         <button
                           type="button"
                           onClick={() => open()}
@@ -186,7 +186,7 @@ export function DishForm({ isOpen, onClose, dish }: DishFormProps) {
               </CldUploadWidget>
             </div>
 
-            {/* CÁC TRƯỜNG DỮ LIỆU ĐÃ CÓ (GIỮ NGUYÊN) */}
+            {/* TÊN MÓN */}
             <div className="flex flex-col gap-1.5">
               <label className="font-bold text-on-surface-variant">
                 Tên món <span className="text-error">*</span>
@@ -194,13 +194,14 @@ export function DishForm({ isOpen, onClose, dish }: DishFormProps) {
               <input
                 type="text"
                 placeholder="Ví dụ: Cơm rang dưa bò"
-                value={itemName}
-                onChange={(e) => setItemName(e.target.value)}
+                value={dishName}
+                onChange={(e) => setDishName(e.target.value)}
                 className="w-full px-3.5 py-2.5 bg-surface-bright border border-outline-variant rounded-xl focus:border-primary outline-none transition-all text-on-surface font-medium"
                 required
               />
             </div>
 
+            {/* DANH MỤC */}
             <div className="flex flex-col gap-1.5">
               <label className="font-bold text-on-surface-variant">
                 Danh mục thực đơn <span className="text-error">*</span>
@@ -220,6 +221,7 @@ export function DishForm({ isOpen, onClose, dish }: DishFormProps) {
               </select>
             </div>
 
+            {/* PHÂN LOẠI & ĐƠN VỊ TÍNH */}
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
                 <label className="font-bold text-on-surface-variant">
@@ -227,14 +229,14 @@ export function DishForm({ isOpen, onClose, dish }: DishFormProps) {
                 </label>
                 <select
                   value={type}
-                  onChange={(e) => setType(e.target.value as DishType)}
+                  onChange={(e) => setType(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-surface-bright border border-outline-variant rounded-xl focus:border-primary outline-none transition-all text-on-surface font-medium cursor-pointer"
                 >
-                  <option value={DishType.FOOD}>FOOD (Đồ ăn)</option>
-                  <option value={DishType.BEVERAGE}>
-                    BEVERAGE (Nước uống)
-                  </option>
-                  <option value={DishType.OTHER}>OTHER (Khác)</option>
+                  {Object.keys(DishTypeLabel).map((key) => (
+                    <option key={key} value={key}>
+                      {DishTypeLabel[key]}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -253,6 +255,7 @@ export function DishForm({ isOpen, onClose, dish }: DishFormProps) {
               </div>
             </div>
 
+            {/* ĐƠN GIÁ */}
             <div className="flex flex-col gap-1.5">
               <label className="font-bold text-on-surface-variant">
                 Đơn giá (VND) <span className="text-error">*</span>
@@ -267,6 +270,7 @@ export function DishForm({ isOpen, onClose, dish }: DishFormProps) {
               />
             </div>
 
+            {/* TRẠNG THÁI PHỤC VỤ*/}
             {dish && (
               <div className="flex flex-col gap-1.5">
                 <label className="font-bold text-on-surface-variant">
@@ -274,20 +278,21 @@ export function DishForm({ isOpen, onClose, dish }: DishFormProps) {
                 </label>
                 <select
                   value={status}
-                  onChange={(e) => setStatus(e.target.value as DishStatus)}
+                  onChange={(e) => setStatus(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-surface-bright border border-outline-variant rounded-xl focus:border-primary outline-none transition-all text-on-surface font-medium cursor-pointer"
                 >
-                  <option value={DishStatus.OUT_OF_STOCK}>
-                    Hết món (Tạm thời)
-                  </option>
-                  <option value={DishStatus.ARCHIVED}>Lưu trữ</option>
-                  <option value={DishStatus.DISCONTINUED}>
-                    Ngừng kinh doanh
-                  </option>
+                  {Object.keys(DishStatusLabel)
+                    .filter((key) => key !== "DELETED") // Đã loại bỏ trạng thái DELETED tại đây
+                    .map((key) => (
+                      <option key={key} value={key}>
+                        {DishStatusLabel[key]}
+                      </option>
+                    ))}
                 </select>
               </div>
             )}
 
+            {/* MÔ TẢ NGẮN */}
             <div className="flex flex-col gap-1.5">
               <label className="font-bold text-on-surface-variant">
                 Mô tả ngắn

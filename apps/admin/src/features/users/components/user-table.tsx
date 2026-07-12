@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Icon } from "@/components/ui/icon";
-import { User, UserStatus } from "../users.types";
+import { User, UserStatusLabel } from "../users.types";
 import { useDeleteUser } from "../users.hooks";
 
 interface UserTableProps {
@@ -31,16 +31,16 @@ export function UserTable({
     }
   };
 
-  // Hàm helper map màu sắc động dựa trên chính xác 4 trạng thái của UserStatus Enum
-  const getStatusStyle = (status: UserStatus) => {
-    switch (status) {
-      case UserStatus.ACTIVE:
+  // Hàm helper map màu sắc động dựa trên KEY của trạng thái lưu trong database (Ví dụ: 'ACTIVE', 'PENDING')
+  const getStatusStyle = (statusKey: string) => {
+    switch (statusKey) {
+      case "ACTIVE":
         return "bg-green-600/10 text-green-600";
-      case UserStatus.PENDING:
+      case "PENDING":
         return "bg-blue-500/10 text-blue-500";
-      case UserStatus.INACTIVE:
+      case "INACTIVE":
         return "bg-amber-500/10 text-amber-500";
-      case UserStatus.DELETED:
+      case "DELETED":
         return "bg-error/10 text-error";
       default:
         return "bg-on-surface/10 text-on-surface-variant";
@@ -62,7 +62,7 @@ export function UserTable({
             <th className="p-4">Nhân viên</th>
             <th className="p-4">Tên đăng nhập</th>
             <th className="p-4">Vai trò</th>
-            <th className="p-4 w-28 text-center">Trạng thái</th>
+            <th className="p-4 w-32 text-center">Trạng thái</th>
             <th className="p-4 w-28 text-right">Thao tác</th>
           </tr>
         </thead>
@@ -129,9 +129,9 @@ export function UserTable({
                   </td>
                   <td className="p-4 text-center">
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold ${getStatusStyle(user.status)}`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${getStatusStyle(user.status)}`}
                     >
-                      {user.status}
+                      {UserStatusLabel[user.status] || user.status}
                     </span>
                   </td>
                   <td
