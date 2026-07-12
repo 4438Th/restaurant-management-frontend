@@ -5,10 +5,10 @@ import { usersService } from './users.service';
 import { UserCreateRequest, UserUpdateRequest } from './users.types';
 
 
-export const useUsers = (page: number, size: number, search?: string, status?: string) => {
+export const useUsers = (page: number, size: number, search?: string, status?: string, role?: string) => {
     return useQuery({
-        queryKey: ['users', { page, size, search, status }],
-        queryFn: () => usersService.getAll(page, size, search, status),
+        queryKey: ['users', { page, size, search, status, role }],
+        queryFn: () => usersService.getAll(page, size, search, status, role),
         placeholderData: (previousData) => previousData,
         staleTime: 30 * 1000,
     });

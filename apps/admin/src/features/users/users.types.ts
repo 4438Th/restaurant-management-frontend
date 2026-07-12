@@ -6,12 +6,14 @@ export enum UserStatus {
     INACTIVE = 'Không hoạt động',
     DELETED = 'Đã xóa',
 }
+
 export const UserStatusLabel: Record<string, string> = {
     'PENDING': UserStatus.PENDING,
     'ACTIVE': UserStatus.ACTIVE,
     'INACTIVE': UserStatus.INACTIVE,
     'DELETED': UserStatus.DELETED,
 }
+
 export enum UserRoles {
     MANAGER = "Quản lý",
     CHEF = "Bếp",
@@ -19,6 +21,7 @@ export enum UserRoles {
     BAR = "Bar",
     CASHIER = "Thu ngân",
 }
+
 export const UserRolesLabel: Record<string, string> = {
     'MANAGER': UserRoles.MANAGER,
     'CHEF': UserRoles.CHEF,
@@ -30,7 +33,6 @@ export interface Role {
     name: string;
     description: string;
 }
-
 export interface UserResponse extends AuditEntity {
     id: string;
     username: string;
@@ -42,7 +44,6 @@ export interface UserResponse extends AuditEntity {
     roles: string[];
     permissions: string[];
 }
-
 export interface UserCreateRequest {
     username: string;
     password: string;
@@ -52,7 +53,6 @@ export interface UserCreateRequest {
     dob: string;
     roles: string[];
 }
-
 export interface UserUpdateRequest {
     password?: string;
     fullName: string;
@@ -62,6 +62,5 @@ export interface UserUpdateRequest {
     dob: string;
     roles: string[];
 }
-
 
 export type User = UserResponse;

@@ -2,9 +2,9 @@ import { apiClient, PageResponse } from '@repo/core';
 import { UserResponse, UserCreateRequest, UserUpdateRequest } from './users.types';
 
 export const usersService = {
-    getAll: (page = 1, size = 10, search?: string, status?: string) => {
+    getAll: (page = 1, size = 10, search?: string, status?: string, role?: string) => {
         return apiClient.get<PageResponse<UserResponse>>('/users', {
-            params: { page, size, search, status },
+            params: { page, size, search, status, role },
         });
     },
 

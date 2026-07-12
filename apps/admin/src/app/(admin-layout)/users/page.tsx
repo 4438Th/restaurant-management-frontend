@@ -17,6 +17,7 @@ export default function UserManagementPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
+  const [selectedRole, setSelectedRole] = useState<string>("All"); // <-- THÊM STATE QUẢN LÝ VAI TRÒ CHỌN LỌC
 
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
@@ -30,11 +31,13 @@ export default function UserManagementPage() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
+  // Tích hợp cả bộ lọc status và role trước khi nạp vào hook React Query
   const { data: pageData, isLoading: isFetchLoading } = useUsers(
     page,
     size,
     debouncedSearch || undefined,
     selectedStatus === "All" ? undefined : selectedStatus,
+    selectedRole === "All" ? undefined : selectedRole, // <-- TRUYỀN THÊM THAM SỐ VAI TRÒ VÀO HOOK
   );
 
   const usersList = pageData?.data || [];
@@ -81,6 +84,11 @@ export default function UserManagementPage() {
             onStatusChange={(status: string) => {
               setSelectedStatus(status);
               setPage(1);
+            }}
+            selectedRole={selectedRole} // <-- BỔ SUNG PROP TRUYỀN XUỐNG
+            onRoleChange={(role: string) => {
+              setSelectedRole(role);
+              setPage(1); // Reset về trang 1 khi thay đổi tiêu chí lọc vai trò
             }}
           />
 
