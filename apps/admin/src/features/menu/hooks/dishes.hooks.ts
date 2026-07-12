@@ -5,10 +5,10 @@ import { dishesService } from '../services/dishes.service';
 import { DishCreateRequest, DishUpdateRequest } from '../menu.types';
 
 
-export const useDish = (page: number, size: number, search?: string, status?: string) => {
+export const useDish = (page: number, size: number, search?: string, status?: string, type?: string, categoryId?: string) => {
     return useQuery({
-        queryKey: ['menu/dishes', { page, size, search, status }],
-        queryFn: () => dishesService.getAll(page, size, search, status),
+        queryKey: ['menu/dishes', { page, size, search, status, type, categoryId }],
+        queryFn: () => dishesService.getAll(page, size, search, status, type, categoryId),
         placeholderData: (previousData) => previousData,
         staleTime: 30 * 1000,
     });

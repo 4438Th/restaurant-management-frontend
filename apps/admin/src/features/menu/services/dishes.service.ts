@@ -2,9 +2,9 @@ import { apiClient, PageResponse } from '@repo/core';
 import { DishCreateRequest, DishUpdateRequest, DishResponse } from '../menu.types';
 
 export const dishesService = {
-    getAll: (page = 1, size = 10, search?: string, status?: string) => {
+    getAll: (page = 1, size = 10, search?: string, status?: string, type?: string, categoryId?: string) => {
         return apiClient.get<PageResponse<DishResponse>>('/menu/dishes', {
-            params: { page, size, search, status },
+            params: { page, size, search, status, type, categoryId },
         });
     },
 

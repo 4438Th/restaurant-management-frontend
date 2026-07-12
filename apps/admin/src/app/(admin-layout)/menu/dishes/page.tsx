@@ -10,18 +10,24 @@ import { TablePagination } from "@/components/ui/table-pagination";
 import { PageHeader } from "@/components/layout/page-header";
 
 import { useDish } from "@/features/menu/hooks/dishes.hooks";
-import { DishResponse, DishStatus } from "@/features/menu/menu.types";
+import { useMenuCategory } from "@/features/menu/hooks/categories.hooks"; // IMPORT THÊM HOOK CATEGORY
+import { DishResponse, DishStatus, DishType } from "@/features/menu/menu.types";
 
 export default function DishesPage() {
   const [page, setPage] = useState<number>(1);
   const [size] = useState<number>(10);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");
+
+  // STATE CÁC BỘ LỌC
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
+  const [selectedType, setSelectedType] = useState<string>("All");
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
 
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [selectedDish, setSelectedDish] = useState<DishResponse | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -30,11 +36,16 @@ export default function DishesPage() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
+  // LẤY DANH SÁCH DANH MỤC ĐỂ ĐƯA VÀO SELECT BOX TRONG TOOLBAR
+  const { data: categoryData } = useMenuCategory(1, 100, undefined, undefined);
+  const categoriesList = categoryData?.data || [];
   const { data: pageData, isLoading: isFetchLoading } = useDish(
     page,
     size,
     debouncedSearch || undefined,
     selectedStatus === "All" ? undefined : (selectedStatus as DishStatus),
+    selectedType === "All" ? undefined : (selectedType as DishType),
+    selectedCategory === "All" ? undefined : selectedCategory,
   );
 
   const dishList = pageData?.data || [];
@@ -49,15 +60,15 @@ export default function DishesPage() {
     setSelectedDish(dish);
     setIsDrawerOpen(true);
   };
+
   const handleRowClick = (dish: DishResponse) => {
     setSelectedDish(dish);
     setIsModalOpen(true);
   };
+
   return (
     <>
-      {/* VÙNG CUỘN ĐỘC LẬP CHO NỘI DUNG MENU DISHES */}
       <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-surface flex flex-col gap-6 h-full">
-        {/* TIÊU ĐỀ TRANG VÀ NÚT HÀNH ĐỘNG */}
         <PageHeader
           title="Danh sách món"
           description="Quản lý chi tiết các món trong thực đơn."
@@ -66,9 +77,7 @@ export default function DishesPage() {
           trashLink="/menu/dishes/trash"
         />
 
-        {/* CONTAINER CARD BẢO VỆ BẢNG */}
         <div className="flex-1 min-h-0 bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col shadow-sm overflow-hidden">
-          {/* THANH CÔNG CỤ TÌM KIẾM & BỘ LỌC */}
           <DishToolbar
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
@@ -77,9 +86,19 @@ export default function DishesPage() {
               setSelectedStatus(status);
               setPage(1);
             }}
+            selectedType={selectedType}
+            onTypeChange={(type: string) => {
+              setSelectedType(type);
+              setPage(1);
+            }}
+            selectedCategory={selectedCategory}
+            onCategoryChange={(categoryId: string) => {
+              setSelectedCategory(categoryId);
+              setPage(1);
+            }}
+            categories={categoriesList}
           />
 
-          {/* VÙNG CHỨA TABLE */}
           <div className="flex-1 overflow-auto min-h-0">
             <DishTable
               dishes={dishList}
@@ -89,7 +108,6 @@ export default function DishesPage() {
             />
           </div>
 
-          {/* THANH PHÂN TRANG GẮN ĐÁY BOX */}
           {pageData && (
             <div className="border-t border-outline-variant shrink-0">
               <TablePagination
@@ -105,7 +123,6 @@ export default function DishesPage() {
         </div>
       </main>
 
-      {/* DRAWER FORM NẰM CHỜ KÍCH HOẠT */}
       <DishForm
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
