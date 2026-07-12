@@ -17,7 +17,7 @@ export default function UserManagementPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
-  const [selectedRole, setSelectedRole] = useState<string>("All"); // <-- THÊM STATE QUẢN LÝ VAI TRÒ CHỌN LỌC
+  const [selectedRole, setSelectedRole] = useState<string>("All");
 
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
@@ -37,7 +37,7 @@ export default function UserManagementPage() {
     size,
     debouncedSearch || undefined,
     selectedStatus === "All" ? undefined : selectedStatus,
-    selectedRole === "All" ? undefined : selectedRole, // <-- TRUYỀN THÊM THAM SỐ VAI TRÒ VÀO HOOK
+    selectedRole === "All" ? undefined : selectedRole,
   );
 
   const usersList = pageData?.data || [];
@@ -85,10 +85,10 @@ export default function UserManagementPage() {
               setSelectedStatus(status);
               setPage(1);
             }}
-            selectedRole={selectedRole} // <-- BỔ SUNG PROP TRUYỀN XUỐNG
+            selectedRole={selectedRole}
             onRoleChange={(role: string) => {
               setSelectedRole(role);
-              setPage(1); // Reset về trang 1 khi thay đổi tiêu chí lọc vai trò
+              setPage(1);
             }}
           />
 
