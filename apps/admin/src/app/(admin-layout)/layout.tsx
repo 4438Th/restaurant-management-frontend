@@ -55,6 +55,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         {/* VÙNG NỘI DUNG ĐỘNG CỦA CÁC PAGE CON */}
         <div className="flex-1 w-full overflow-hidden relative flex flex-col">
           {children}
+          <div id="root-portal"></div>
         </div>
       </div>
     </div>

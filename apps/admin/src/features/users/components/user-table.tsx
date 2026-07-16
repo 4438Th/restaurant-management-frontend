@@ -22,7 +22,9 @@ export function UserTable({
 
   const handleDelete = (e: React.MouseEvent, user: User) => {
     e.stopPropagation();
+
     if (
+      typeof window !== "undefined" &&
       confirm(
         `Bạn có chắc chắn muốn tạm dừng tài khoản "${user.username}" không?`,
       )
@@ -31,19 +33,18 @@ export function UserTable({
     }
   };
 
-  // Hàm helper map màu sắc động dựa trên KEY của trạng thái lưu trong database (Ví dụ: 'ACTIVE', 'PENDING')
+  // Đồng bộ lại chuẩn màu sắc theo đúng logic form trạng thái
   const getStatusStyle = (statusKey: string) => {
     switch (statusKey) {
       case "ACTIVE":
-        return "bg-green-600/10 text-green-600";
+        return "bg-green-600/10 text-green-600 border border-green-500/20";
       case "PENDING":
-        return "bg-blue-500/10 text-blue-500";
+        return "bg-amber-500/10 text-amber-600 border border-amber-500/20";
       case "INACTIVE":
-        return "bg-amber-500/10 text-amber-500";
       case "DELETED":
-        return "bg-error/10 text-error";
+        return "bg-error/10 text-error border border-error/20";
       default:
-        return "bg-on-surface/10 text-on-surface-variant";
+        return "bg-on-surface/5 text-on-surface-variant border border-outline-variant";
     }
   };
 
@@ -90,37 +91,45 @@ export function UserTable({
               const isDeleting =
                 deleteUserMutation.isPending &&
                 deleteUserMutation.variables === user.id;
+
               return (
                 <tr
                   key={user.id}
-                  onClick={() => onRowClick?.(user)}
-                  className="hover:bg-surface-container-low transition-colors cursor-pointer select-none"
+                  onClick={() => !isDeleting && onRowClick?.(user)}
+                  className={`transition-colors border-b border-outline-variant select-none ${
+                    isDeleting
+                      ? "bg-surface-container-low opacity-50 pointer-events-none"
+                      : "hover:bg-surface-container-low cursor-pointer"
+                  }`}
                 >
-                  <td className="p-4 text-center">
+                  <td
+                    className="p-4 text-center"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <input
                       type="checkbox"
-                      className="rounded border-outline-variant text-primary cursor-pointer"
-                      onClick={(e) => e.stopPropagation()}
+                      disabled={isDeleting}
+                      className="rounded border-outline-variant text-primary cursor-pointer disabled:cursor-not-allowed"
                     />
                   </td>
                   <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="font-semibold">{user.fullName}</div>
-                    </div>
+                    <div className="font-semibold">{user.fullName}</div>
                   </td>
                   <td className="p-4 font-mono text-[13px] text-primary">
                     {user.username}
                   </td>
                   <td className="p-4">
                     <div className="flex flex-wrap gap-1">
-                      {user.roles?.map((role) => (
-                        <span
-                          key={role}
-                          className="px-2 py-0.5 bg-primary-container/10 text-primary font-bold text-[11px] rounded border border-primary/20 uppercase"
-                        >
-                          {role}
-                        </span>
-                      )) || (
+                      {user.roles && user.roles.length > 0 ? (
+                        user.roles.map((role) => (
+                          <span
+                            key={role}
+                            className="px-2 py-0.5 bg-primary-container/10 text-primary font-bold text-[11px] rounded border border-primary/20 uppercase"
+                          >
+                            {role}
+                          </span>
+                        ))
+                      ) : (
                         <span className="text-[12px] text-on-surface-variant italic">
                           Chưa phân quyền
                         </span>
@@ -141,7 +150,8 @@ export function UserTable({
                     {onEditClick && (
                       <button
                         onClick={() => onEditClick(user)}
-                        className="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-xl transition-colors"
+                        disabled={isDeleting}
+                        className="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-xl transition-colors disabled:opacity-30 disabled:pointer-events-none"
                       >
                         <Icon name="Pencil" className="w-4 h-4" />
                       </button>
@@ -149,7 +159,7 @@ export function UserTable({
                     <button
                       onClick={(e) => handleDelete(e, user)}
                       disabled={isDeleting}
-                      className="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-xl transition-colors"
+                      className="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-xl transition-colors flex items-center justify-center min-w-[32px]"
                     >
                       {isDeleting ? (
                         <div className="w-4 h-4 border-2 border-error border-t-transparent rounded-full animate-spin" />

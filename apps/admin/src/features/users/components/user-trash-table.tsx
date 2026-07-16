@@ -18,6 +18,11 @@ export function UserTrashTable({
 }: UserTrashTableProps) {
   const restoreMutation = useRestoreUser();
 
+  const handleRestore = (e: React.MouseEvent, userId: string) => {
+    e.stopPropagation();
+    restoreMutation.mutate(userId);
+  };
+
   return (
     <div className="w-full overflow-x-auto">
       <table className="w-full text-left border-collapse table-auto min-w-125">
@@ -59,23 +64,29 @@ export function UserTrashTable({
               const isRestoring =
                 restoreMutation.isPending &&
                 restoreMutation.variables === user.id;
+
               return (
                 <tr
                   key={user.id}
-                  onClick={() => onRowClick?.(user)}
-                  className="hover:bg-surface-container-low transition-colors cursor-pointer select-none"
+                  onClick={() => !isRestoring && onRowClick?.(user)}
+                  className={`transition-colors border-b border-outline-variant select-none ${
+                    isRestoring
+                      ? "bg-surface-container-low opacity-50 pointer-events-none"
+                      : "hover:bg-surface-container-low cursor-pointer"
+                  }`}
                 >
-                  <td className="p-4 text-center">
+                  <td
+                    className="p-4 text-center"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <input
                       type="checkbox"
-                      className="rounded border-outline-variant text-primary cursor-pointer"
-                      onClick={(e) => e.stopPropagation()}
+                      disabled={isRestoring}
+                      className="rounded border-outline-variant text-primary cursor-pointer disabled:cursor-not-allowed"
                     />
                   </td>
                   <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="font-semibold">{user.fullName}</div>
-                    </div>
+                    <div className="font-semibold">{user.fullName}</div>
                   </td>
                   <td className="p-4 font-mono text-[13px] text-primary">
                     {user.username}
@@ -85,16 +96,21 @@ export function UserTrashTable({
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
-                      onClick={() => restoreMutation.mutate(user.id)}
+                      onClick={(e) => handleRestore(e, user.id)}
                       disabled={isRestoring}
-                      className="px-3 py-1.5 text-success hover:bg-success/10 rounded-xl transition-colors flex items-center gap-1.5 text-[12px] font-bold disabled:opacity-40"
+                      className="px-3 py-1.5 text-success hover:bg-success/10 rounded-xl transition-colors flex items-center gap-1.5 text-[12px] font-bold disabled:opacity-40 disabled:pointer-events-none select-none min-w-25 justify-center"
                     >
                       {isRestoring ? (
-                        <div className="w-4 h-4 border-2 border-success border-t-transparent rounded-full animate-spin" />
+                        <>
+                          <div className="w-4 h-4 border-2 border-success border-t-transparent rounded-full animate-spin" />
+                          <span>Đang xử lý</span>
+                        </>
                       ) : (
-                        <Icon name="RotateCcw" className="w-4 h-4" />
+                        <>
+                          <Icon name="RotateCcw" className="w-4 h-4" />
+                          <span>Khôi phục</span>
+                        </>
                       )}
-                      <span>Khôi phục</span>
                     </button>
                   </td>
                 </tr>

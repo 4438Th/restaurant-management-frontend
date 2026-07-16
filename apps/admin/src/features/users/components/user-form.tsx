@@ -7,6 +7,7 @@ import { Icon } from "@/components/ui/icon";
 import { useCreateUser, useUpdateUser } from "../users.hooks";
 import DatePicker from "react-datepicker";
 import { vi } from "date-fns/locale/vi";
+import { parse, format, isValid } from "date-fns";
 import "react-datepicker/dist/react-datepicker.css";
 import {
   User,
@@ -34,47 +35,74 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [status, setStatus] = useState<UserStatus>(UserStatus.PENDING);
+
+  // SỬA: State status nên lưu KEY (string như 'PENDING', 'ACTIVE') thay vì lưu VALUE tiếng Việt
+  const [status, setStatus] = useState<keyof typeof UserStatus>("PENDING");
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [dob, setDob] = useState("");
 
   useEffect(() => {
-    if (user) {
+    if (user && isOpen) {
       setUsername(user.username || "");
       setFullName(user.fullName || "");
       setEmail(user.email || "");
       setPhoneNumber(user.phoneNumber || "");
-      setDob(user.dob || "");
-      setStatus(user.status || UserStatus.PENDING);
+
+      if (user.status) {
+        const apiStatus = user.status.toUpperCase();
+        if (apiStatus in UserStatus) {
+          setStatus(apiStatus as keyof typeof UserStatus);
+        } else {
+          const foundKey = Object.keys(UserStatus).find(
+            (key) => UserStatus[key as keyof typeof UserStatus] === user.status,
+          );
+          setStatus((foundKey as keyof typeof UserStatus) || "PENDING");
+        }
+      } else {
+        setStatus("PENDING");
+      }
+
       setSelectedRoles(user.roles || []);
       setPassword("");
-    } else {
+
+      if (user.dob) {
+        const parsedDate = new Date(user.dob);
+        if (isValid(parsedDate)) {
+          setDob(format(parsedDate, "yyyy-MM-dd"));
+        } else {
+          const backupParse = parse(user.dob, "dd/MM/yyyy", new Date());
+          if (isValid(backupParse)) {
+            setDob(format(backupParse, "yyyy-MM-dd"));
+          } else {
+            setDob("");
+          }
+        }
+      } else {
+        setDob("");
+      }
+    } else if (!isOpen) {
       setUsername("");
       setPassword("");
       setFullName("");
       setEmail("");
       setPhoneNumber("");
       setDob("");
-      setStatus(UserStatus.PENDING);
+      setStatus("PENDING");
       setSelectedRoles([]);
     }
+    // 2. SỬA TẠI ĐÂY: Xóa bỏ chữ 'lod' gây lỗi cú pháp
   }, [user, isOpen]);
 
   const dateValue = useMemo(() => {
-    if (!dob || !dob.includes("-")) return null;
-
-    const parts = dob.split("-").map(Number);
-    if (parts.length !== 3 || parts.some(isNaN)) return null;
-
-    const [year, month, day] = parts as [number, number, number];
-    return new Date(year, month - 1, day);
+    if (!dob) return null;
+    const parsedDate = parse(dob, "yyyy-MM-dd", new Date());
+    return isValid(parsedDate) ? parsedDate : null;
   }, [dob]);
 
-  // ĐÃ DI CHUYỂN LÊN TRÊN: Lấy danh sách các vai trò từ Enum bằng useMemo trước early return
   const roleOptions = useMemo(() => {
-    return Object.keys(UserRoles);
+    return Object.keys(UserRoles) as (keyof typeof UserRoles)[];
   }, []);
 
   const handleDateChange = (date: Date | null) => {
@@ -82,10 +110,7 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
       setDob("");
       return;
     }
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    setDob(`${year}-${month}-${day}`);
+    setDob(format(date, "yyyy-MM-dd"));
   };
 
   const handleToggleRole = (role: string) => {
@@ -110,15 +135,20 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
       return;
     }
 
+    let formattedDob = dob;
+    if (dateValue) {
+      formattedDob = dateValue.toISOString();
+    }
+
     if (isEditMode && user) {
-      const finalStatus = isEditingAdmin ? user.status : status;
+      const finalStatus = (isEditingAdmin ? user.status : status) as UserStatus;
       const finalPassword = password.trim() ? password : undefined;
 
       const updatePayload: UserUpdateRequest = {
         fullName,
         email,
         phoneNumber,
-        dob,
+        dob: formattedDob,
         status: finalStatus,
         roles: selectedRoles,
         password: finalPassword,
@@ -130,7 +160,10 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
           payload: updatePayload,
         },
         {
-          onSuccess: () => onClose(),
+          onSuccess: () => {
+            toast.success("Cập nhật tài khoản thành công!");
+            onClose();
+          },
           onError: (error: ApiError) => {
             toast.error(error.message || "Không thể cập nhật tài khoản!");
           },
@@ -145,12 +178,15 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
         fullName,
         email,
         phoneNumber,
-        dob,
+        dob: formattedDob,
         roles: selectedRoles,
       };
 
       createUserMutation.mutate(createPayload, {
-        onSuccess: () => onClose(),
+        onSuccess: () => {
+          toast.success("Tạo tài khoản mới thành công!");
+          onClose();
+        },
         onError: (error: ApiError) => {
           toast.error(error.message || "Không thể tạo tài khoản mới!");
         },
@@ -158,7 +194,6 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
     }
   };
 
-  // Các điều kiện check early return hoặc biến thông thường đặt ở đây
   if (!isOpen) return null;
 
   const isPending =
@@ -166,13 +201,11 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/40 z-40 transition-opacity animate-fade-in"
         onClick={onClose}
       />
 
-      {/* Panel Form Drawer */}
       <div className="fixed inset-y-0 right-0 w-full max-w-md bg-surface-container-lowest border-l border-outline-variant z-50 shadow-2xl flex flex-col animate-slide-in">
         {/* Header */}
         <div className="p-5 border-b border-outline-variant flex items-center justify-between bg-surface-bright">
@@ -189,7 +222,7 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
           <button
             type="button"
             onClick={onClose}
-            className="p-2 hover:bg-surface-variant rounded-full text-on-surface-variant transition-colors"
+            className="p-2 hover:bg-surface-variant rounded-full text-on-surface-variant transition-colors cursor-pointer"
           >
             <Icon name="X" className="w-5 h-5" />
           </button>
@@ -278,9 +311,10 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
                 scrollableYearDropdown
                 yearDropdownItemNumber={70}
                 required
+                portalId="root-portal"
                 className="w-full px-4 py-2.5 text-[14px] bg-surface-bright border border-outline-variant rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all cursor-pointer"
               />
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant/60">
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant/60 z-10">
                 <Icon name="Calendar" className="w-4 h-4" />
               </div>
             </div>
@@ -310,43 +344,48 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
                 Trạng thái tài khoản
               </label>
               <div className="flex gap-2 mt-2">
-                {status === UserStatus.PENDING && (
-                  <button
-                    type="button"
-                    onClick={() => setStatus(UserStatus.PENDING)}
-                    className="flex-1 py-2 px-3 text-[12px] font-bold border rounded-xl transition-all flex items-center justify-center gap-1.5 bg-amber-500/10 text-amber-600 border-amber-500"
-                  >
-                    <span className="w-2 h-2 rounded-full bg-amber-500" />
-                    Chờ kích hoạt
-                  </button>
-                )}
-
+                {/* SỬA: So sánh trực tiếp với chuỗi KEY viết hoa */}
                 <button
                   type="button"
-                  onClick={() => setStatus(UserStatus.ACTIVE)}
-                  className={`flex-1 py-2 px-3 text-[12px] font-semibold border rounded-xl transition-all flex items-center justify-center gap-1.5 ${
-                    status === UserStatus.ACTIVE
-                      ? "bg-success/10 text-green-600 font-bold border-green-500"
+                  onClick={() => setStatus("PENDING")}
+                  className={`flex-1 py-2 px-3 text-[12px] border rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+                    status === "PENDING"
+                      ? "bg-amber-500/10 text-amber-600 font-bold border-amber-500"
                       : "bg-surface-bright border-outline-variant text-on-surface-variant hover:bg-surface-variant"
                   }`}
                 >
                   <span
-                    className={`w-2 h-2 rounded-full ${status === UserStatus.ACTIVE ? "bg-green-600" : "bg-neutral-400"}`}
+                    className={`w-2 h-2 rounded-full ${status === "PENDING" ? "bg-amber-500" : "bg-neutral-400"}`}
+                  />
+                  Chờ kích hoạt
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setStatus("ACTIVE")}
+                  className={`flex-1 py-2 px-3 text-[12px] border rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+                    status === "ACTIVE"
+                      ? "bg-green-600/10 text-green-600 font-bold border-green-500"
+                      : "bg-surface-bright border-outline-variant text-on-surface-variant hover:bg-surface-variant"
+                  }`}
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full ${status === "ACTIVE" ? "bg-green-600" : "bg-neutral-400"}`}
                   />
                   Hoạt động
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setStatus(UserStatus.INACTIVE)}
-                  className={`flex-1 py-2 px-3 text-[12px] font-semibold border rounded-xl transition-all flex items-center justify-center gap-1.5 ${
-                    status === UserStatus.INACTIVE
+                  onClick={() => setStatus("INACTIVE")}
+                  className={`flex-1 py-2 px-3 text-[12px] border rounded-xl transition-all flex items-center justify-center gap-1.5 ${
+                    status === "INACTIVE"
                       ? "bg-error/10 border-error text-error font-bold"
                       : "bg-surface-bright border-outline-variant text-on-surface-variant hover:bg-surface-variant"
                   }`}
                 >
                   <span
-                    className={`w-2 h-2 rounded-full ${status === UserStatus.INACTIVE ? "bg-error" : "bg-neutral-400"}`}
+                    className={`w-2 h-2 rounded-full ${status === "INACTIVE" ? "bg-error" : "bg-neutral-400"}`}
                   />
                   Khóa
                 </button>
@@ -354,7 +393,7 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
             </div>
           )}
 
-          {/* Phân quyền vai trò  */}
+          {/* Phân quyền vai trò */}
           {(!isEditMode || !isEditingAdmin) && (
             <div>
               <label className="block text-[12px] font-bold text-on-surface mb-2">
@@ -368,7 +407,7 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
                       type="button"
                       key={role}
                       onClick={() => handleToggleRole(role)}
-                      className={`px-3 py-1.5 text-[12px] font-semibold rounded-lg border transition-all ${
+                      className={`px-3 py-1.5 text-[12px] font-semibold rounded-lg border transition-all cursor-pointer ${
                         isSelected
                           ? "bg-primary text-white border-primary shadow-sm"
                           : "bg-surface-bright text-on-surface-variant border-outline-variant hover:bg-surface-variant"
@@ -391,14 +430,14 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-surface-bright border border-outline-variant hover:bg-surface-variant text-on-surface py-2.5 rounded-xl font-semibold text-[14px] transition-colors"
+              className="flex-1 bg-surface-bright border border-outline-variant hover:bg-surface-variant text-on-surface py-2.5 rounded-xl font-semibold text-[14px] transition-colors cursor-pointer"
             >
               Hủy bỏ
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="flex-1 bg-primary hover:bg-primary/90 text-white py-2.5 rounded-xl font-semibold text-[14px] transition-colors disabled:opacity-50"
+              className="flex-1 bg-primary hover:bg-primary/90 text-white py-2.5 rounded-xl font-semibold text-[14px] transition-colors disabled:opacity-50 cursor-pointer"
             >
               {isPending
                 ? "Đang xử lý..."

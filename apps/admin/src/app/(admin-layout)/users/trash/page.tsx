@@ -1,4 +1,3 @@
-// apps/admin/src/app/(admin-layout)/users/trash/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -9,30 +8,36 @@ import { UserProfileModal } from "@/features/users/components/user-profile-modal
 import { TablePagination } from "@/components/ui/table-pagination";
 import { PageHeader } from "@/components/layout/page-header";
 
-import { User } from "@/features/users/users.types";
+import { User, UserFilterParams } from "@/features/users/users.types";
 
 export default function UserTrashPage() {
-  const [page, setPage] = useState<number>(1);
-  const [size] = useState<number>(10);
+  // Quản lý trạng thái nhập liệu tìm kiếm tức thời trên UI
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [debouncedSearch, setDebouncedSearch] = useState<string>("");
+
+  // Tập trung toàn bộ tham số phân trang & tìm kiếm vào một Object đồng bộ với Back-End
+  const [filters, setFilters] = useState<UserFilterParams>({
+    page: 1,
+    size: 10,
+    search: undefined,
+  });
 
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
+  // Xử lý cơ chế Debounce khi người dùng nhập từ khóa tìm kiếm
   useEffect(() => {
     const handler = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-      setPage(1);
+      setFilters((prev) => ({
+        ...prev,
+        search: searchQuery.trim() || undefined,
+        page: 1, // Reset về trang đầu tiên khi có từ khóa tìm kiếm mới
+      }));
     }, 400);
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  const { data: pageData, isLoading: isFetchLoading } = useUsersTrash(
-    page,
-    size,
-    debouncedSearch || undefined,
-  );
+  // Truyền object filters đồng nhất vào hook
+  const { data: pageData, isLoading: isFetchLoading } = useUsersTrash(filters);
 
   const trashList = pageData?.data || [];
   const totalPages = pageData?.totalPages || 1;
@@ -89,8 +94,17 @@ export default function UserTrashPage() {
                 currentPage={pageData.currentPage}
                 totalPages={totalPages}
                 totalElements={pageData.totalElements}
-                page={page}
-                onPageChange={setPage}
+                page={filters.page || 1}
+                onPageChange={(pageOrFn) => {
+                  setFilters((prev) => {
+                    const nextPage =
+                      typeof pageOrFn === "function"
+                        ? pageOrFn(prev.page || 1)
+                        : pageOrFn;
+
+                    return { ...prev, page: nextPage };
+                  });
+                }}
                 unitLabel="tài khoản"
               />
             </div>

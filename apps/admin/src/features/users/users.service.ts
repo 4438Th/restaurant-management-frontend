@@ -1,17 +1,13 @@
-import { apiClient, PageResponse } from '@repo/core';
-import { UserResponse, UserCreateRequest, UserUpdateRequest } from './users.types';
+import { apiClient, OffsetPageResponse } from '@repo/core';
+import { UserResponse, UserCreateRequest, UserUpdateRequest, UserFilterParams } from './users.types';
 
 export const usersService = {
-    getAll: (page = 1, size = 10, search?: string, status?: string, role?: string) => {
-        return apiClient.get<PageResponse<UserResponse>>('/users', {
-            params: { page, size, search, status, role },
-        });
+    getAll: (params: UserFilterParams) => {
+        return apiClient.get<OffsetPageResponse<UserResponse>>('/users', { params });
     },
 
-    getTrash: (page = 1, size = 10, search?: string) => {
-        return apiClient.get<PageResponse<UserResponse>>('/users/trash', {
-            params: { page, size, search },
-        });
+    getTrash: (params: UserFilterParams) => {
+        return apiClient.get<OffsetPageResponse<UserResponse>>('/users/trash', { params });
     },
 
     create: (payload: UserCreateRequest) => {
@@ -29,5 +25,4 @@ export const usersService = {
     restore: (id: string) => {
         return apiClient.post<string>(`/users/${id}/restore`);
     },
-
 };

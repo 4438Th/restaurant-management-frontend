@@ -2,13 +2,21 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ApiError } from '@repo/core';
 import { usersService } from './users.service';
-import { UserCreateRequest, UserUpdateRequest } from './users.types';
+import { UserCreateRequest, UserUpdateRequest, UserFilterParams } from './users.types';
 
-
-export const useUsers = (page: number, size: number, search?: string, status?: string, role?: string) => {
+export const useUsers = (params: UserFilterParams) => {
     return useQuery({
-        queryKey: ['users', { page, size, search, status, role }],
-        queryFn: () => usersService.getAll(page, size, search, status, role),
+        queryKey: ['users', params],
+        queryFn: () => usersService.getAll(params),
+        placeholderData: (previousData) => previousData,
+        staleTime: 30 * 1000,
+    });
+};
+
+export const useUsersTrash = (params: UserFilterParams) => {
+    return useQuery({
+        queryKey: ['users-trash', params],
+        queryFn: () => usersService.getTrash(params),
         placeholderData: (previousData) => previousData,
         staleTime: 30 * 1000,
     });
@@ -19,8 +27,8 @@ export const useCreateUser = () => {
     return useMutation<unknown, ApiError, UserCreateRequest>({
         mutationFn: (payload: UserCreateRequest) => usersService.create(payload),
         onSuccess: () => {
-            toast.success('Tạo thành công!');
-            queryClient.invalidateQueries({ queryKey: ['users'], exact: false });
+            toast.success('Tạo người dùng thành công!');
+            queryClient.invalidateQueries({ queryKey: ['users'] });
         },
         onError: (error: ApiError) => {
             toast.error(error.message || 'Tạo thất bại!');
@@ -33,8 +41,8 @@ export const useUpdateUser = () => {
     return useMutation<unknown, ApiError, { id: string; payload: UserUpdateRequest }>({
         mutationFn: ({ id, payload }) => usersService.update(id, payload),
         onSuccess: () => {
-            toast.success('Cập nhật thành công!');
-            queryClient.invalidateQueries({ queryKey: ['users'], exact: false });
+            toast.success('Cập nhật người dùng thành công!');
+            queryClient.invalidateQueries({ queryKey: ['users'] });
         },
         onError: (error: ApiError) => {
             toast.error(error.message || 'Cập nhật thất bại!');
@@ -47,33 +55,27 @@ export const useDeleteUser = () => {
     return useMutation<unknown, ApiError, string>({
         mutationFn: (id: string) => usersService.delete(id),
         onSuccess: () => {
-            toast.success('Đã xóa thành công!');
-            queryClient.invalidateQueries({ queryKey: ['users'], exact: false });
-            queryClient.invalidateQueries({ queryKey: ["users-trash"] });
-            queryClient.invalidateQueries({ queryKey: ["users"] });
+            toast.success('Đã chuyển người dùng vào thùng rác!');
+            queryClient.invalidateQueries({ queryKey: ['users'] });
+            queryClient.invalidateQueries({ queryKey: ['users-trash'] });
         },
         onError: (error: ApiError) => {
             toast.error(error.message || 'Xóa thất bại!');
         },
     });
 };
-export const useUsersTrash = (page: number, size: number, search?: string) => {
-    return useQuery({
-        queryKey: ['users-trash', { page, size, search }],
-        queryFn: () => usersService.getTrash(page, size, search),
-        placeholderData: (previousData) => previousData,
-        staleTime: 30 * 1000,
-    });
-};
 
 export const useRestoreUser = () => {
     const queryClient = useQueryClient();
-    return useMutation({
+    return useMutation<unknown, ApiError, string>({
         mutationFn: (id: string) => usersService.restore(id),
         onSuccess: () => {
-            toast.success("Đã khôi phục thành công!");
+            toast.success("Khôi phục người dùng thành công!");
             queryClient.invalidateQueries({ queryKey: ["users-trash"] });
             queryClient.invalidateQueries({ queryKey: ["users"] });
-        }
+        },
+        onError: (error: ApiError) => {
+            toast.error(error.message || 'Khôi phục thất bại!');
+        },
     });
 };

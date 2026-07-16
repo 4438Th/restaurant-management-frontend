@@ -40,10 +40,10 @@ const createBaseClient = (): AxiosInstance => {
         timeout: 15000,
     });
 };
-
+// Khởi tạo instance
 const instance = createBaseClient();
 
-
+// Gắn token vào header Authorization
 instance.interceptors.request.use(
     (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
         if (typeof window !== 'undefined') {
@@ -57,7 +57,7 @@ instance.interceptors.request.use(
     (error: unknown) => Promise.reject(error)
 );
 
-
+// Bóc tách dữ liệu và xử lý lỗi
 instance.interceptors.response.use(
     (response: AxiosResponse<ApiResponse<unknown>>): any => {
         return response.data.result;

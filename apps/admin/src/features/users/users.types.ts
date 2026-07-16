@@ -1,4 +1,4 @@
-import { AuditEntity } from "@repo/core";
+import { AuditEntity, WithOffsetPagination } from "@repo/core";
 
 export enum UserStatus {
     PENDING = 'Chờ duyệt',
@@ -62,5 +62,10 @@ export interface UserUpdateRequest {
     dob: string;
     roles: string[];
 }
-
+export interface UserFilter {
+    search?: string;
+    status?: string;
+    role?: string;
+}
+export type UserFilterParams = WithOffsetPagination<UserFilter>;
 export type User = UserResponse;

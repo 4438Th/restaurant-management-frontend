@@ -11,6 +11,22 @@ interface UserProfileModalProps {
   user: User | null;
 }
 
+// Hàm format ngày sinh nội bộ chuẩn Việt Nam (dd/MM/yyyy)
+const formatDate = (dateString?: string) => {
+  if (!dateString) return "---";
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString; // Trả về chuỗi gốc nếu không parse được
+    return new Intl.DateTimeFormat("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(date);
+  } catch {
+    return "---";
+  }
+};
+
 export function UserProfileModal({
   isOpen,
   onClose,
@@ -20,14 +36,13 @@ export function UserProfileModal({
   if (!isOpen || !user) return null;
 
   const handleActivate = () => {
-    if (confirm(`Xác nhận kích hoạt tài khoản "${user.fullName}"`)) {
-      // 🌟 ĐÃ SỬA: Chỉ bóc tách các trường chuẩn theo đúng cấu trúc của UserUpdateRequest
+    if (confirm(`Xác nhận kích hoạt tài khoản "${user.fullName}"?`)) {
       const payload: UserUpdateRequest = {
         fullName: user.fullName,
         email: user.email,
         phoneNumber: user.phoneNumber,
         dob: user.dob,
-        status: UserStatus.ACTIVE, // Cập nhật trạng thái kích hoạt thành ACTIVE
+        status: UserStatus.ACTIVE,
         roles: user.roles || [],
         password: "", // Để trống mật khẩu vì không thay đổi mật khẩu khi kích hoạt
       };
@@ -124,7 +139,7 @@ export function UserProfileModal({
               </span>
             </div>
 
-            {/* 🌟 ĐÃ BỔ SUNG UI: Số điện thoại */}
+            {/* Số điện thoại */}
             <div className="flex items-center justify-between text-[13px]">
               <span className="text-on-surface-variant font-medium">
                 Số điện thoại:
@@ -134,7 +149,7 @@ export function UserProfileModal({
               </span>
             </div>
 
-            {/* 🌟 ĐÃ BỔ SUNG UI: Địa chỉ Email */}
+            {/* Địa chỉ Email */}
             <div className="flex items-center justify-between text-[13px]">
               <span className="text-on-surface-variant font-medium">
                 Địa chỉ Email:
@@ -144,13 +159,13 @@ export function UserProfileModal({
               </span>
             </div>
 
-            {/* 🌟 ĐÃ BỔ SUNG UI: Ngày sinh */}
+            {/* Ngày sinh (Đã bọc hàm format định dạng vi-VN) */}
             <div className="flex items-center justify-between text-[13px]">
               <span className="text-on-surface-variant font-medium">
                 Ngày sinh:
               </span>
               <span className="text-on-surface font-semibold">
-                {user.dob || "---"}
+                {formatDate(user.dob)}
               </span>
             </div>
 

@@ -1,4 +1,3 @@
-// apps/admin/src/features/auth/auth.service.ts
 import { apiClient } from '@repo/core';
 import { LoginRequest, AuthenticationResponse } from './auth.types';
 

@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Icon } from "@/components/ui/icon";
 
@@ -12,8 +14,9 @@ export function UserHeader({ onCreateClick }: UserHeaderProps) {
         Tài khoản nhân sự
       </span>
       <button
+        type="button"
         onClick={onCreateClick}
-        className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-xl text-[13px] font-bold shadow-sm transition-colors"
+        className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-xl text-[13px] font-bold shadow-sm transition-colors cursor-pointer select-none"
       >
         <Icon name="Plus" className="w-4 h-4" />
         <span>Tạo mới</span>
