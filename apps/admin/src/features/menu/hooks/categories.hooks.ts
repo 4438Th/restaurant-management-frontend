@@ -3,13 +3,27 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ApiError } from '@repo/core';
 import { categoriesService } from '../services/categories.service';
-import { MenuCategoryCreateRequest, MenuCategoryUpdateRequest } from '../menu.types';
+import {
+    MenuCategoryCreateRequest,
+    MenuCategoryUpdateRequest,
+    MenuCategoryFilterParams
+} from '../menu.types';
 
-
-export const useMenuCategory = (page: number, size: number, search?: string, status?: string) => {
+// ĐỒNG BỘ: Chuyển các tham số rời rạc thành object `params: MenuCategoryFilterParams`
+export const useMenuCategory = (params: MenuCategoryFilterParams) => {
     return useQuery({
-        queryKey: ['menu/categories', { page, size, search, status }],
-        queryFn: () => categoriesService.getAll(page, size, search, status),
+        queryKey: ['menu/categories', params],
+        queryFn: () => categoriesService.getAll(params),
+        placeholderData: (previousData) => previousData,
+        staleTime: 30 * 1000,
+    });
+};
+
+// ĐỒNG BỘ: Đồng nhất cấu trúc tham số cho phần dữ liệu thùng rác
+export const useMenuCategoryTrash = (params: MenuCategoryFilterParams) => {
+    return useQuery({
+        queryKey: ['menu/categories/trash', params],
+        queryFn: () => categoriesService.getTrash(params),
         placeholderData: (previousData) => previousData,
         staleTime: 30 * 1000,
     });
@@ -20,11 +34,11 @@ export const useCreateMenuCategory = () => {
     return useMutation<unknown, ApiError, MenuCategoryCreateRequest>({
         mutationFn: (payload: MenuCategoryCreateRequest) => categoriesService.create(payload),
         onSuccess: () => {
-            toast.success('Tạo thành công!');
-            queryClient.invalidateQueries({ queryKey: ['menu/categories'], exact: false });
+            toast.success('Tạo danh mục món ăn thành công!');
+            queryClient.invalidateQueries({ queryKey: ['menu/categories'] });
         },
         onError: (error: ApiError) => {
-            toast.error(error.message || 'Tạo thất bại!');
+            toast.error(error.message || 'Tạo danh mục thất bại!');
         },
     });
 };
@@ -34,11 +48,11 @@ export const useUpdateMenuCategory = () => {
     return useMutation<unknown, ApiError, { id: string; payload: MenuCategoryUpdateRequest }>({
         mutationFn: ({ id, payload }) => categoriesService.update(id, payload),
         onSuccess: () => {
-            toast.success('Cập nhật thành công!');
-            queryClient.invalidateQueries({ queryKey: ['menu/categories'], exact: false });
+            toast.success('Cập nhật danh mục món ăn thành công!');
+            queryClient.invalidateQueries({ queryKey: ['menu/categories'] });
         },
         onError: (error: ApiError) => {
-            toast.error(error.message || 'Cập nhật thất bại!');
+            toast.error(error.message || 'Cập nhật danh mục thất bại!');
         },
     });
 };
@@ -48,36 +62,31 @@ export const useDeleteMenuCategory = () => {
     return useMutation<unknown, ApiError, string>({
         mutationFn: (id: string) => categoriesService.delete(id),
         onSuccess: () => {
-            toast.success('Đã xóa thành công!');
-            queryClient.invalidateQueries({ queryKey: ['menu/categories'], exact: false });
-            queryClient.invalidateQueries({ queryKey: ["menu/categories/trash"] });
-            queryClient.invalidateQueries({ queryKey: ["menu/categories"] });
+            toast.success('Đã chuyển danh mục món ăn vào thùng rác!');
+            queryClient.invalidateQueries({ queryKey: ['menu/categories'] });
+            queryClient.invalidateQueries({ queryKey: ['menu/categories/trash'] });
         },
         onError: (error: ApiError) => {
-            toast.error(error.message || 'Xóa thất bại!');
+            toast.error(error.message || 'Xóa danh mục thất bại!');
         },
-    });
-};
-export const useMenuCategoryTrash = (page: number, size: number, search?: string) => {
-    return useQuery({
-        queryKey: ['menu/categories/trash', { page, size, search }],
-        queryFn: () => categoriesService.getTrash(page, size, search),
-        placeholderData: (previousData) => previousData,
-        staleTime: 30 * 1000,
     });
 };
 
 export const useRestoreMenuCategory = () => {
     const queryClient = useQueryClient();
-    return useMutation({
+    return useMutation<unknown, ApiError, string>({
         mutationFn: (id: string) => categoriesService.restore(id),
         onSuccess: () => {
-            toast.success("Đã khôi phục thành công!");
+            toast.success("Khôi phục danh mục món ăn thành công!");
             queryClient.invalidateQueries({ queryKey: ["menu/categories/trash"] });
             queryClient.invalidateQueries({ queryKey: ["menu/categories"] });
-        }
+        },
+        onError: (error: ApiError) => {
+            toast.error(error.message || 'Khôi phục danh mục thất bại!');
+        },
     });
 };
+
 export const useMenuCategoryAnalytics = () => {
     return useQuery({
         queryKey: ['menu/categories/analytics'],

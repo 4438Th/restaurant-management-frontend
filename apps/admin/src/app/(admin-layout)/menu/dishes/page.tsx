@@ -12,7 +12,12 @@ import { DishAnalytics } from "@/features/menu/components/dish-analytics";
 
 import { useDish } from "@/features/menu/hooks/dishes.hooks";
 import { useMenuCategory } from "@/features/menu/hooks/categories.hooks";
-import { DishResponse, DishStatus, DishType } from "@/features/menu/menu.types";
+import {
+  DishResponse,
+  DishStatus,
+  DishType,
+  DishFilterParams,
+} from "@/features/menu/menu.types";
 
 export default function DishesPage() {
   const [page, setPage] = useState<number>(1);
@@ -27,7 +32,7 @@ export default function DishesPage() {
 
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [selectedDish, setSelectedDish] = useState<DishResponse | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -37,17 +42,26 @@ export default function DishesPage() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // LẤY DANH SÁCH DANH MỤC ĐỂ ĐƯA VÀO SELECT BOX TRONG TOOLBAR
-  const { data: categoryData } = useMenuCategory(1, 100, undefined, undefined);
+  // ĐỒNG BỘ: Sử dụng object params gộp thay vì truyền đối số rời rạc cho danh mục
+  const { data: categoryData } = useMenuCategory({
+    page: 1,
+    size: 100,
+  });
   const categoriesList = categoryData?.data || [];
-  const { data: pageData, isLoading: isFetchLoading } = useDish(
+
+  // ĐỒNG BỘ: Khởi tạo object filter params chuẩn chỉnh cho món ăn
+  const dishParams: DishFilterParams = {
     page,
     size,
-    debouncedSearch || undefined,
-    selectedStatus === "All" ? undefined : (selectedStatus as DishStatus),
-    selectedType === "All" ? undefined : (selectedType as DishType),
-    selectedCategory === "All" ? undefined : selectedCategory,
-  );
+    search: debouncedSearch.trim() || undefined,
+    status:
+      selectedStatus === "All" ? undefined : (selectedStatus as DishStatus),
+    type: selectedType === "All" ? undefined : (selectedType as DishType),
+    categoryId: selectedCategory === "All" ? undefined : selectedCategory,
+  };
+
+  // ĐỒNG BỘ: Truyền duy nhất một object params tập trung
+  const { data: pageData, isLoading: isFetchLoading } = useDish(dishParams);
 
   const dishList = pageData?.data || [];
   const totalPages = pageData?.totalPages || 1;
@@ -62,7 +76,7 @@ export default function DishesPage() {
     setIsDrawerOpen(true);
   };
 
-  const handleRowClick = (dish: DishResponse) => {
+  const handleRowClick = (dish: DishResponse): void => {
     setSelectedDish(dish);
     setIsModalOpen(true);
   };

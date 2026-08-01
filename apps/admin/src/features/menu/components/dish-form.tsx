@@ -9,6 +9,7 @@ import {
   DishUpdateRequest,
   DishStatusLabel,
   DishTypeLabel,
+  MenuCategoryFilterParams,
 } from "../menu.types";
 import { useCreateDish, useUpdateDish } from "../hooks/dishes.hooks";
 import { useMenuCategory } from "../hooks/categories.hooks";
@@ -22,8 +23,11 @@ interface DishFormProps {
 export function DishForm({ isOpen, onClose, dish }: DishFormProps) {
   const createMutation = useCreateDish();
   const updateMutation = useUpdateDish();
-
-  const { data: categoriesData } = useMenuCategory(1, 100);
+  const filterParams: MenuCategoryFilterParams = {
+    page: 1,
+    size: 100,
+  };
+  const { data: categoriesData } = useMenuCategory(filterParams);
   const categories = categoriesData?.data || [];
 
   const [dishName, setDishName] = useState("");

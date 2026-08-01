@@ -1,17 +1,21 @@
-import { apiClient, PageResponse } from '@repo/core';
-import { DishCreateRequest, DishUpdateRequest, DishResponse, DishAnalyticsResponse } from '../menu.types';
+import { apiClient, OffsetPageResponse } from '@repo/core';
+import {
+    DishCreateRequest,
+    DishUpdateRequest,
+    DishResponse,
+    DishAnalyticsResponse,
+    DishFilterParams // Sử dụng Type Filter đã đồng bộ từ cấu trúc DTO Backend
+} from '../menu.types';
 
 export const dishesService = {
-    getAll: (page = 1, size = 10, search?: string, status?: string, type?: string, categoryId?: string) => {
-        return apiClient.get<PageResponse<DishResponse>>('/menu/dishes', {
-            params: { page, size, search, status, type, categoryId },
-        });
+    // ĐỒNG BỘ: Sử dụng OffsetPageResponse và object params gộp
+    getAll: (params: DishFilterParams) => {
+        return apiClient.get<OffsetPageResponse<DishResponse>>('/menu/dishes', { params });
     },
 
-    getTrash: (page = 1, size = 10, search?: string) => {
-        return apiClient.get<PageResponse<DishResponse>>('/menu/dishes/trash', {
-            params: { page, size, search },
-        });
+    // ĐỒNG BỘ: Dùng chung cấu trúc filter cho cả phần thùng rác
+    getTrash: (params: DishFilterParams) => {
+        return apiClient.get<OffsetPageResponse<DishResponse>>('/menu/dishes/trash', { params });
     },
 
     create: (payload: DishCreateRequest) => {
@@ -29,6 +33,7 @@ export const dishesService = {
     restore: (id: string) => {
         return apiClient.post<string>(`/menu/dishes/${id}/restore`);
     },
+
     getAnalytics: () => {
         return apiClient.get<DishAnalyticsResponse>('/menu/dishes/analytics');
     },

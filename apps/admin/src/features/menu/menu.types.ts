@@ -1,4 +1,4 @@
-import { AuditEntity } from "@repo/core";
+import { AuditEntity, WithOffsetPagination } from "@repo/core";
 
 export enum DishStatus {
     AVAILABLE = 'Đang bán',
@@ -25,16 +25,15 @@ export const DishTypeLabel: Record<string, string> = {
     'OTHER': DishType.OTHER,
 };
 export enum MenuCategoryStatus {
-    DRAFT = 'Bản nháp',
-    ACTIVE = 'Đang hoạt động',
-    INACTIVE = 'Không hoạt động',
-    DELETED = 'Đã xóa',
+    DRAFT = 'DRAFT',
+    ACTIVE = 'ACTIVE',
+    INACTIVE = 'INACTIVE',
 }
+
 export const MenuCategoryStatusLabel: Record<string, string> = {
-    'DRAFT': MenuCategoryStatus.DRAFT,
-    'ACTIVE': MenuCategoryStatus.ACTIVE,
-    'INACTIVE': MenuCategoryStatus.INACTIVE,
-    'DELETED': MenuCategoryStatus.DELETED
+    'DRAFT': 'Bản nháp',
+    'ACTIVE': 'Hoạt động',
+    'INACTIVE': 'Tạm ẩn',
 };
 export interface MenuCategoryCreateRequest {
     categoryName: string;
@@ -43,7 +42,7 @@ export interface MenuCategoryCreateRequest {
 export interface MenuCategoryUpdateRequest {
     categoryName: string;
     description: string;
-    status: MenuCategoryStatus;
+    status: string;
 }
 export interface MenuCategoryResponse extends AuditEntity {
     id: string;
@@ -95,3 +94,18 @@ export interface DishAnalyticsResponse {
     totalByStatus: Record<DishStatus, number>;
     totalByType: Record<DishType, number>;
 }
+export interface MenuCategoryFilter {
+    search?: string;
+    status?: string;
+}
+
+export type MenuCategoryFilterParams = WithOffsetPagination<MenuCategoryFilter>;
+
+export interface DishFilter {
+    search?: string;
+    status?: string;
+    type?: string;
+    categoryId?: string;
+}
+
+export type DishFilterParams = WithOffsetPagination<DishFilter>;

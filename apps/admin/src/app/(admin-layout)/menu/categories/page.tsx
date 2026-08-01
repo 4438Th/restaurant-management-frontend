@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 import { MenuCategoryToolbar } from "@/features/menu/components/menu-category-toolbar";
 import { MenuCategoryTable } from "@/features/menu/components/menu-category-table";
 import { MenuCategoryForm } from "@/features/menu/components/menu-category-form";
-import { MenuCategoryAnalytics } from "@/features/menu/components/menu-category-analytics"; // Component mới tách
+import { MenuCategoryAnalytics } from "@/features/menu/components/menu-category-analytics";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { PageHeader } from "@/components/layout/page-header";
 
@@ -13,6 +13,7 @@ import { useMenuCategory } from "@/features/menu/hooks/categories.hooks";
 import {
   MenuCategoryResponse,
   MenuCategoryStatus,
+  MenuCategoryFilterParams,
 } from "@/features/menu/menu.types";
 
 export default function MenuCategoriesPage() {
@@ -34,15 +35,20 @@ export default function MenuCategoriesPage() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // Hook lấy danh sách phân trang danh mục
-  const { data: pageData, isLoading: isFetchLoading } = useMenuCategory(
+  // ĐỒNG BỘ: Tạo object filter params theo đúng định nghĩa MenuCategoryFilterParams
+  const filterParams: MenuCategoryFilterParams = {
     page,
     size,
-    debouncedSearch || undefined,
-    selectedStatus === "All"
-      ? undefined
-      : (selectedStatus as MenuCategoryStatus),
-  );
+    search: debouncedSearch.trim() || undefined,
+    status:
+      selectedStatus === "All"
+        ? undefined
+        : (selectedStatus as MenuCategoryStatus),
+  };
+
+  // ĐỒNG BỘ: Truyền duy nhất một object params vào Hook
+  const { data: pageData, isLoading: isFetchLoading } =
+    useMenuCategory(filterParams);
 
   const categoriesList = pageData?.data || [];
   const totalPages = pageData?.totalPages || 1;
@@ -59,9 +65,7 @@ export default function MenuCategoriesPage() {
 
   return (
     <>
-      {/* VÙNG CUỘN ĐỘC LẬP CHO NỘI DUNG MENU CATEGORY */}
       <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-surface flex flex-col gap-6 h-full">
-        {/* TIÊU ĐỀ TRANG VÀ NÚT CHUYỂN HƯỚNG TỚI THÙNG RÁC */}
         <PageHeader
           title="Danh mục thực đơn"
           description="Phân loại thực đơn giúp khách hàng và nhân viên dễ dàng tìm kiếm món."
@@ -70,13 +74,11 @@ export default function MenuCategoriesPage() {
           trashLink="/menu/categories/trash"
         />
 
-        {/* CONTAINER CARD BẢO VỆ BẢNG KHÔNG BỊ TRÀN VỠ */}
         <div
           className="flex-1 min-h-0 bg-surface-container-lowest
          border border-outline-variant rounded-2xl flex flex-col
           shadow-sm overflow-hidden"
         >
-          {/* THANH CÔNG CỤ TÌM KIẾM & BỘ LỌC */}
           <MenuCategoryToolbar
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
@@ -87,7 +89,6 @@ export default function MenuCategoriesPage() {
             }}
           />
 
-          {/* VÙNG CHỨA TABLE: CHO PHÉP SCROLL NGANG NẾU DỮ LIỆU DÀI */}
           <div className="flex-1 overflow-auto min-h-0">
             <MenuCategoryTable
               categories={categoriesList}
@@ -96,7 +97,6 @@ export default function MenuCategoriesPage() {
             />
           </div>
 
-          {/* THANH PHÂN TRANG GẮN ĐÁY BOX */}
           {pageData && (
             <div className="border-t border-outline-variant shrink-0">
               <TablePagination
@@ -110,11 +110,9 @@ export default function MenuCategoriesPage() {
             </div>
           )}
         </div>
-        {/* VÙNG THỐNG KÊ ANALYTICS CARDS (Đã bọc lại thành 1 component sạch sẽ) */}
         <MenuCategoryAnalytics />
       </main>
 
-      {/* THÀNH PHẦN FORM DRAWER NẰM CHỜ KÍCH HOẠT */}
       <MenuCategoryForm
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}

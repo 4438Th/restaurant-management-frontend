@@ -6,6 +6,7 @@ import { useMenuCategoryTrash } from "@/features/menu/hooks/categories.hooks";
 import { CategoryTrashTable } from "@/features/menu/components/menu-category-trash-table";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { PageHeader } from "@/components/layout/page-header";
+import { MenuCategoryFilterParams } from "@/features/menu/menu.types";
 
 export default function MenuCategoryTrashPage() {
   const [page, setPage] = useState<number>(1);
@@ -21,29 +22,30 @@ export default function MenuCategoryTrashPage() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  const { data: pageData, isLoading: isFetchLoading } = useMenuCategoryTrash(
+  // ĐỒNG BỘ: Tạo object filter params đồng nhất cấu trúc
+  const filterParams: MenuCategoryFilterParams = {
     page,
     size,
-    debouncedSearch || undefined,
-  );
+    search: debouncedSearch.trim() || undefined,
+  };
+
+  // ĐỒNG BỘ: Truyền object params tập trung vào hook xử lý thùng rác
+  const { data: pageData, isLoading: isFetchLoading } =
+    useMenuCategoryTrash(filterParams);
 
   const trashList = pageData?.data || [];
   const totalPages = pageData?.totalPages || 1;
 
   return (
     <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-surface flex flex-col gap-6 h-full">
-      {/* TIÊU ĐỀ TRANG VÀ NÚT QUAY LẠI */}
       <PageHeader
         title="Thùng rác"
-        description=" Danh sách danh mục thực đơn đã xóa. Bạn có thể khôi phục lại hoạt
-            động của chúng."
+        description="Danh sách danh mục thực đơn đã xóa. Bạn có thể khôi phục lại hoạt động của chúng."
         isTrash={true}
         backLink="/menu/categories"
       />
 
-      {/* CONTAINER CARD CHỐNG TRÀN BẢNG */}
       <div className="flex-1 min-h-0 bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col shadow-sm overflow-hidden">
-        {/* Ô TÌM KIẾM NHANH */}
         <div className="p-4 border-b border-outline-variant bg-surface-bright flex gap-4 shrink-0">
           <div className="relative flex-1 max-w-sm">
             <Icon
@@ -60,7 +62,6 @@ export default function MenuCategoryTrashPage() {
           </div>
         </div>
 
-        {/* VÙNG CHỨA BẢNG */}
         <div className="flex-1 overflow-auto min-h-0">
           <CategoryTrashTable
             categories={trashList}
@@ -68,7 +69,6 @@ export default function MenuCategoryTrashPage() {
           />
         </div>
 
-        {/* BỘ PHÂN TRANG GẮN CHẶT ĐÁY BOX */}
         {pageData && (
           <div className="border-t border-outline-variant shrink-0">
             <TablePagination
