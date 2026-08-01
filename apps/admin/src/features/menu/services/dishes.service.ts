@@ -4,16 +4,14 @@ import {
     DishUpdateRequest,
     DishResponse,
     DishAnalyticsResponse,
-    DishFilterParams // Sử dụng Type Filter đã đồng bộ từ cấu trúc DTO Backend
+    DishFilterParams
 } from '../menu.types';
 
 export const dishesService = {
-    // ĐỒNG BỘ: Sử dụng OffsetPageResponse và object params gộp
     getAll: (params: DishFilterParams) => {
         return apiClient.get<OffsetPageResponse<DishResponse>>('/menu/dishes', { params });
     },
 
-    // ĐỒNG BỘ: Dùng chung cấu trúc filter cho cả phần thùng rác
     getTrash: (params: DishFilterParams) => {
         return apiClient.get<OffsetPageResponse<DishResponse>>('/menu/dishes/trash', { params });
     },

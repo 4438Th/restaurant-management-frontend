@@ -1,28 +1,28 @@
 import { AuditEntity, WithOffsetPagination } from "@repo/core";
 
 export enum DishStatus {
-    AVAILABLE = 'Đang bán',
-    ARCHIVED = 'Lưu trữ',
-    OUT_OF_STOCK = 'Tạm hết món',
-    DISCONTINUED = 'Ngừng bán',
-    DELETED = 'Đã xóa',
+    AVAILABLE = 'AVAILABLE',
+    ARCHIVED = 'ARCHIVED',
+    OUT_OF_STOCK = 'OUT_OF_STOCK',
+    DISCONTINUED = 'DISCONTINUED',
+    DELETED = 'DELETED',
 }
 export const DishStatusLabel: Record<string, string> = {
-    'AVAILABLE': DishStatus.AVAILABLE,
-    'ARCHIVED': DishStatus.ARCHIVED,
-    'OUT_OF_STOCK': DishStatus.OUT_OF_STOCK,
-    'DISCONTINUED': DishStatus.DISCONTINUED,
-    'DELETED': DishStatus.DELETED,
+    'Đang bán': DishStatus.AVAILABLE,
+    'Lưu trữ': DishStatus.ARCHIVED,
+    'Tạm hết món': DishStatus.OUT_OF_STOCK,
+    'Ngừng bán': DishStatus.DISCONTINUED,
+    'Đã xóa': DishStatus.DELETED,
 };
 export enum DishType {
-    FOOD = 'Đồ ăn',
-    BEVERAGE = 'Đồ uống',
-    OTHER = 'Khác'
+    FOOD = 'FOOD',
+    BEVERAGE = 'BEVERAGE',
+    OTHER = 'OTHER'
 }
 export const DishTypeLabel: Record<string, string> = {
-    'FOOD': DishType.FOOD,
-    'BEVERAGE': DishType.BEVERAGE,
-    'OTHER': DishType.OTHER,
+    'Đồ ăn': DishType.FOOD,
+    'Đồ uống': DishType.BEVERAGE,
+    'Khác': DishType.OTHER,
 };
 export enum MenuCategoryStatus {
     DRAFT = 'DRAFT',
@@ -31,9 +31,9 @@ export enum MenuCategoryStatus {
 }
 
 export const MenuCategoryStatusLabel: Record<string, string> = {
-    'DRAFT': 'Bản nháp',
-    'ACTIVE': 'Hoạt động',
-    'INACTIVE': 'Tạm ẩn',
+    'Bản nháp': MenuCategoryStatus.DRAFT,
+    'Hoạt động': MenuCategoryStatus.ACTIVE,
+    'Tạm ẩn': MenuCategoryStatus.INACTIVE,
 };
 export interface MenuCategoryCreateRequest {
     categoryName: string;

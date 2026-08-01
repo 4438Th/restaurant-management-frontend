@@ -15,6 +15,7 @@ const routeLabels: Record<string, string> = {
   menu: "Thực đơn",
   categories: "Danh mục",
   dishes: "Món ăn",
+  tables: "Bàn ăn",
   orders: "Đơn hàng",
   bills: "Hóa đơn",
 };
