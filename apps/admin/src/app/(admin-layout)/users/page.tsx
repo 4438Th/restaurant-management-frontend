@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { TablePagination } from "@/components/ui/table-pagination";
-import { UserTable } from "@/features/users/components/user-table";
-import { UserToolbar } from "@/features/users/components/user-toolbar";
-import { UserForm } from "@/features/users/components/user-form";
-import { UserProfileModal } from "@/features/users/components/user-profile-modal";
-import { PageHeader } from "@/components/layout/page-header";
+import { TablePagination } from "@/components/ui";
+import { UserTable } from "@/features/users/components";
+import { UserToolbar } from "@/features/users/components";
+import { UserForm } from "@/features/users/components";
+import { UserProfileModal } from "@/features/users/components";
+import { PageHeader } from "@/components/layout";
 
-import { useUsers } from "@/features/users/users.hooks";
-import { User, UserFilterParams } from "@/features/users/users.types";
+import { useUsers } from "@repo/shared-features/users";
+import { User, UserFilterParams } from "@repo/shared-features/users";
 
 export default function UserManagementPage() {
   // Trạng thái nhập liệu tìm kiếm tức thời trên UI trước khi debounce

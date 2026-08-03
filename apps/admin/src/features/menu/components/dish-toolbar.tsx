@@ -1,12 +1,12 @@
 "use client";
 
 import React from "react";
-import { Icon } from "@/components/ui/icon";
+import { Icon } from "@/components/ui";
 import {
   DishStatusLabel,
   DishTypeLabel,
   MenuCategoryResponse,
-} from "../menu.types";
+} from "@repo/shared-features/menu";
 
 interface DishToolbarProps {
   searchQuery: string;

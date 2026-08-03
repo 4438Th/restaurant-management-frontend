@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { ApiError } from "@repo/core";
-import { Icon } from "@/components/ui/icon";
-import { useCreateUser, useUpdateUser } from "../users.hooks";
 import DatePicker from "react-datepicker";
 import { vi } from "date-fns/locale/vi";
 import { parse, format, isValid } from "date-fns";
 import "react-datepicker/dist/react-datepicker.css";
+
+import { Icon } from "@/components/ui";
+import { ApiError } from "@repo/core";
+import { useCreateUser, useUpdateUser } from "@repo/shared-features/users";
 import {
   User,
   UserUpdateRequest,
@@ -16,7 +17,7 @@ import {
   UserStatus,
   UserRoles,
   UserRolesLabel,
-} from "../users.types";
+} from "@repo/shared-features/users";
 
 interface UserFormProps {
   isOpen: boolean;

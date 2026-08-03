@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { Icon } from "@/components/ui/icon";
-import { User, UserStatusLabel } from "../users.types";
-import { useDeleteUser } from "../users.hooks";
+import { Icon } from "@/components/ui";
+import { User, UserStatusLabel } from "@repo/shared-features/users";
+import { useDeleteUser } from "@repo/shared-features/users";
 
 interface UserTableProps {
   users: User[];

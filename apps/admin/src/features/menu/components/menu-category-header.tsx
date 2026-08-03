@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Icon } from "@/components/ui/icon";
+import { Icon } from "@/components/ui";
 
 interface MenuCategoryHeaderProps {
   onAddClick: () => void;

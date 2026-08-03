@@ -7,7 +7,7 @@ import {
   TableStatusLabel,
   TableArea,
   TableAreaLabel,
-} from "../tables.types";
+} from "@repo/shared-features/tables";
 
 interface TableToolbarProps {
   searchQuery: string;

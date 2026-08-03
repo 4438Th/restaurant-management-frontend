@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Icon } from "@/components/ui/icon";
+import { Icon } from "@/components/ui";
 import { CldUploadWidget } from "next-cloudinary";
 import {
   DishResponse,
@@ -10,9 +10,9 @@ import {
   DishStatusLabel,
   DishTypeLabel,
   MenuCategoryFilterParams,
-} from "../menu.types";
-import { useCreateDish, useUpdateDish } from "../hooks/dishes.hooks";
-import { useMenuCategory } from "../hooks/categories.hooks";
+} from "@repo/shared-features/menu";
+import { useCreateDish, useUpdateDish } from "@repo/shared-features/menu";
+import { useMenuCategory } from "@repo/shared-features/menu";
 
 interface DishFormProps {
   isOpen: boolean;

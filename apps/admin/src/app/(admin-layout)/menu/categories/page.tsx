@@ -2,19 +2,19 @@
 
 import React, { useState, useEffect } from "react";
 
-import { MenuCategoryToolbar } from "@/features/menu/components/menu-category-toolbar";
-import { MenuCategoryTable } from "@/features/menu/components/menu-category-table";
-import { MenuCategoryForm } from "@/features/menu/components/menu-category-form";
-import { MenuCategoryAnalytics } from "@/features/menu/components/menu-category-analytics";
-import { TablePagination } from "@/components/ui/table-pagination";
-import { PageHeader } from "@/components/layout/page-header";
+import { MenuCategoryToolbar } from "@/features/menu/components";
+import { MenuCategoryTable } from "@/features/menu/components";
+import { MenuCategoryForm } from "@/features/menu/components";
+import { MenuCategoryAnalytics } from "@/features/menu/components";
+import { TablePagination } from "@/components/ui";
+import { PageHeader } from "@/components/layout";
 
-import { useMenuCategory } from "@/features/menu/hooks/categories.hooks";
+import { useMenuCategory } from "@repo/shared-features/menu";
 import {
   MenuCategoryResponse,
   MenuCategoryStatus,
   MenuCategoryFilterParams,
-} from "@/features/menu/menu.types";
+} from "@repo/shared-features/menu";
 
 export default function MenuCategoriesPage() {
   const [page, setPage] = useState<number>(1);

@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { Icon } from "@/components/ui/icon";
-import { User } from "../users.types";
-import { useRestoreUser } from "../users.hooks";
+import { Icon } from "@/components/ui";
+import { User } from "@repo/shared-features/users";
+import { useRestoreUser } from "@repo/shared-features/users";
 
 interface UserTrashTableProps {
   users: User[];

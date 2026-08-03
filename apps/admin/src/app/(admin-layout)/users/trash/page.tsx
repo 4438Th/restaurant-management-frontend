@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Icon } from "@/components/ui/icon";
-import { useUsersTrash } from "@/features/users/users.hooks";
-import { UserTrashTable } from "@/features/users/components/user-trash-table";
-import { UserProfileModal } from "@/features/users/components/user-profile-modal";
-import { TablePagination } from "@/components/ui/table-pagination";
-import { PageHeader } from "@/components/layout/page-header";
+import { Icon } from "@/components/ui";
+import { useUsersTrash } from "@repo/shared-features/users";
+import { UserTrashTable } from "@/features/users/components";
+import { UserProfileModal } from "@/features/users/components";
+import { TablePagination } from "@/components/ui";
+import { PageHeader } from "@/components/layout";
 
-import { User, UserFilterParams } from "@/features/users/users.types";
+import { User, UserFilterParams } from "@repo/shared-features/users";
 
 export default function UserTrashPage() {
   // Quản lý trạng thái nhập liệu tìm kiếm tức thời trên UI

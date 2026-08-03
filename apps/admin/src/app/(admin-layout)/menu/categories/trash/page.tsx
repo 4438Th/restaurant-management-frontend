@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Icon } from "@/components/ui/icon";
-import { useMenuCategoryTrash } from "@/features/menu/hooks/categories.hooks";
-import { CategoryTrashTable } from "@/features/menu/components/menu-category-trash-table";
-import { TablePagination } from "@/components/ui/table-pagination";
-import { PageHeader } from "@/components/layout/page-header";
-import { MenuCategoryFilterParams } from "@/features/menu/menu.types";
+import { Icon } from "@/components/ui";
+import { useMenuCategoryTrash } from "@repo/shared-features/menu";
+import { CategoryTrashTable } from "@/features/menu/components";
+import { TablePagination } from "@/components/ui";
+import { PageHeader } from "@/components/layout";
+import { MenuCategoryFilterParams } from "@repo/shared-features/menu";
 
 export default function MenuCategoryTrashPage() {
   const [page, setPage] = useState<number>(1);

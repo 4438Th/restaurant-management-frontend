@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Icon } from "@/components/ui/icon";
-import { useTableTrash } from "@/features/tables/tables.hooks";
-import { TableTrashTable } from "@/features/tables/components/table-trash-table";
-import { TablePagination } from "@/components/ui/table-pagination";
-import { PageHeader } from "@/components/layout/page-header";
-import { TableFilterParams } from "@/features/tables/tables.types";
+import { Icon } from "@/components/ui";
+import { TableTrashTable } from "@/features/tables/components";
+import { TablePagination } from "@/components/ui";
+import { PageHeader } from "@/components/layout";
+
+import { useTableTrash } from "@repo/shared-features/tables";
+import { TableFilterParams } from "@repo/shared-features/tables";
 
 export default function TableTrashPage() {
   const [page, setPage] = useState<number>(1);

@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { Icon } from "@/components/ui/icon";
-import { useDishTrash } from "@/features/menu/hooks/dishes.hooks";
-import { DishTrashTable } from "@/features/menu/components/dish-trash-table";
-import { TablePagination } from "@/components/ui/table-pagination";
-import { PageHeader } from "@/components/layout/page-header";
-import { DishFilterParams } from "@/features/menu/menu.types";
+import { useDishTrash } from "@repo/shared-features/menu";
+import { DishTrashTable } from "@/features/menu/components";
+import { TablePagination } from "@/components/ui";
+import { PageHeader } from "@/components/layout";
+import { DishFilterParams } from "@repo/shared-features/menu";
 
 export default function DishTrashPage() {
   const [page, setPage] = useState<number>(1);

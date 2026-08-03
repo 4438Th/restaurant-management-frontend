@@ -2,12 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Icon } from "@/components/ui/icon";
+import { Icon } from "@/components/ui";
 import {
   useCreateMenuCategory,
   useUpdateMenuCategory,
-} from "../hooks/categories.hooks";
-import { MenuCategoryResponse, MenuCategoryStatusLabel } from "../menu.types";
+} from "@repo/shared-features/menu";
+import {
+  MenuCategoryResponse,
+  MenuCategoryStatusLabel,
+} from "@repo/shared-features/menu";
 
 export interface MenuCategoryFormProps {
   isOpen: boolean;

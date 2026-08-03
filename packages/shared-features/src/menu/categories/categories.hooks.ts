@@ -2,12 +2,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ApiError } from '@repo/core';
-import { categoriesService } from '../services/categories.service';
+import { categoriesService } from './categories.service';
 import {
     MenuCategoryCreateRequest,
     MenuCategoryUpdateRequest,
     MenuCategoryFilterParams
-} from '../menu.types';
+} from './categories.types';
 
 // ĐỒNG BỘ: Chuyển các tham số rời rạc thành object `params: MenuCategoryFilterParams`
 export const useMenuCategory = (params: MenuCategoryFilterParams) => {

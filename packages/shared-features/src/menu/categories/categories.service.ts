@@ -5,7 +5,7 @@ import {
     MenuCategoryUpdateRequest,
     MenuCategoryAnalyticsResponse,
     MenuCategoryFilterParams
-} from '../menu.types';
+} from './categories.types';
 
 export const categoriesService = {
 

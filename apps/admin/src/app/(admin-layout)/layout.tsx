@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { Sidebar } from "@/components/layout/side-bar";
-import { TopBar } from "@/components/layout/top-bar";
-import { Icon } from "@/components/ui/icon";
+import { Sidebar } from "@/components/layout";
+import { TopBar } from "@/components/layout";
+import { Icon } from "@/components/ui";
 
 interface AdminLayoutProps {
   children: React.ReactNode;

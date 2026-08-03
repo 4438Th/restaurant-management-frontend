@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { TableResponse } from "../tables.types";
+import { TableResponse } from "@repo/shared-features/tables";
 import { TableCard } from "./table-card";
 
 interface TableGridProps {

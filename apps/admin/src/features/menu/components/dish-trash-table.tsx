@@ -2,9 +2,13 @@
 
 import React from "react";
 import Image from "next/image";
-import { Icon } from "@/components/ui/icon";
-import { DishResponse, DishStatus, DishTypeLabel } from "../menu.types";
-import { useRestoreDish } from "../hooks/dishes.hooks";
+import { Icon } from "@/components/ui";
+import {
+  DishResponse,
+  DishStatus,
+  DishTypeLabel,
+} from "@repo/shared-features/menu";
+import { useRestoreDish } from "@repo/shared-features/menu";
 
 interface DishTrashTableProps {
   dishes: DishResponse[];

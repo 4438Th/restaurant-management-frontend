@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { Icon } from "@/components/ui/icon";
-import { MenuCategoryResponse } from "../menu.types";
-import { useRestoreMenuCategory } from "../hooks/categories.hooks";
+import { Icon } from "@/components/ui/";
+import { MenuCategoryResponse } from "@repo/shared-features/menu";
+import { useRestoreMenuCategory } from "@repo/shared-features/menu";
 
 interface CategoryTrashTableProps {
   categories: MenuCategoryResponse[];

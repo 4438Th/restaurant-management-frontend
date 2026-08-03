@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ["@restaurant/core", "@repo/tailwind-config"],
+  transpilePackages: [
+    "@restaurant/core",
+    "@restaurant/shared-features",
+    "@repo/tailwind-config",
+  ],
   images: {
     remotePatterns: [
       {

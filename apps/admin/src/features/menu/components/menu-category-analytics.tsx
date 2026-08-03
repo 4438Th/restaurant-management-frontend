@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { Icon } from "@/components/ui/icon";
-import { useMenuCategoryAnalytics } from "@/features/menu/hooks/categories.hooks";
+import { Icon } from "@/components/ui";
+import { useMenuCategoryAnalytics } from "@repo/shared-features/menu";
 
 export function MenuCategoryAnalytics() {
   const { data: analyticsData, isLoading: isAnalyticsLoading } =

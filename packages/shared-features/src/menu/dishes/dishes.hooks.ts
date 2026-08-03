@@ -1,12 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { ApiError } from '@repo/core';
-import { dishesService } from '../services/dishes.service';
+import { dishesService } from './dishes.service';
 import {
     DishCreateRequest,
     DishUpdateRequest,
     DishFilterParams
-} from '../menu.types';
+} from './dishes.types';
 
 // ĐỒNG BỘ: Chuyển các tham số rời rạc thành object `params`
 export const useDish = (params: DishFilterParams) => {

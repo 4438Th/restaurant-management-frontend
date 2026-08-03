@@ -1,15 +1,15 @@
 "use client";
 
 import React from "react";
-import { Icon } from "@/components/ui/icon";
+import { Icon } from "@/components/ui";
 import {
   TableResponse,
   TableStatus,
   TableStatusLabel,
   TableAreaLabel,
   TableTypeLabel,
-} from "../tables.types";
-import { useRestoreTable } from "../tables.hooks";
+} from "@repo/shared-features/tables";
+import { useRestoreTable } from "@repo/shared-features/tables";
 
 interface TableTrashTableProps {
   tables: TableResponse[];

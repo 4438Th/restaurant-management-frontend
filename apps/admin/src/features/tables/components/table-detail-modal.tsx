@@ -8,7 +8,7 @@ import {
   TableStatusLabel,
   TableAreaLabel,
   TableTypeLabel,
-} from "../tables.types";
+} from "@repo/shared-features/tables";
 
 interface TableDetailModalProps {
   isOpen: boolean;

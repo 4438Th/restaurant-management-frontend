@@ -1,18 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { TablePagination } from "@/components/ui/table-pagination";
-import { TableGrid } from "@/features/tables/components/table-grid";
-import { TableToolbar } from "@/features/tables/components/table-toolbar";
-import { TableForm } from "@/features/tables/components/table-form";
-import { TableDetailModal } from "@/features/tables/components/table-detail-modal";
-import { PageHeader } from "@/components/layout/page-header";
+import { TablePagination } from "@/components/ui";
+import { TableGrid } from "@/features/tables/components";
+import { TableToolbar } from "@/features/tables/components";
+import { TableForm } from "@/features/tables/components";
+import { TableDetailModal } from "@/features/tables/components";
+import { PageHeader } from "@/components/layout";
 
-import { useTable, useDeleteTable } from "@/features/tables/tables.hooks";
-import {
-  TableResponse,
-  TableFilterParams,
-} from "@/features/tables/tables.types";
+import { useTable, useDeleteTable } from "@repo/shared-features/tables";
+import { TableResponse, TableFilterParams } from "@repo/shared-features/tables";
 
 export default function TableManagementPage() {
   // Trạng thái nhập liệu tìm kiếm tức thời trên UI (Tên bàn/Số bàn)

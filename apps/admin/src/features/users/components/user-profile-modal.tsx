@@ -1,9 +1,13 @@
 "use client";
 
 import React from "react";
-import { Icon } from "@/components/ui/icon";
-import { User, UserStatus, UserUpdateRequest } from "../users.types";
-import { useUpdateUser } from "../users.hooks";
+import { Icon } from "@/components/ui";
+import {
+  User,
+  UserStatus,
+  UserUpdateRequest,
+} from "@repo/shared-features/users";
+import { useUpdateUser } from "@repo/shared-features/users";
 
 interface UserProfileModalProps {
   isOpen: boolean;

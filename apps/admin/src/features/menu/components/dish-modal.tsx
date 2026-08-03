@@ -1,8 +1,12 @@
 "use client";
 
 import React from "react";
-import { Icon } from "@/components/ui/icon";
-import { DishResponse, DishStatusLabel, DishTypeLabel } from "../menu.types";
+import { Icon } from "@/components/ui";
+import {
+  DishResponse,
+  DishStatusLabel,
+  DishTypeLabel,
+} from "@repo/shared-features/menu";
 
 interface DishModalProps {
   isOpen: boolean;

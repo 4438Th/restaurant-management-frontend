@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useLogout } from "@/features/auth/auth.hooks";
+import { useLogout } from "@repo/shared-features/auth";
 
 export default function LogoutPage() {
   const { mutate: executeLogout } = useLogout();

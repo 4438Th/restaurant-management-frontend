@@ -5,7 +5,7 @@ import {
     DishResponse,
     DishAnalyticsResponse,
     DishFilterParams
-} from '../menu.types';
+} from './dishes.types';
 
 export const dishesService = {
     getAll: (params: DishFilterParams) => {

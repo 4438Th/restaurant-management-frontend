@@ -1,9 +1,12 @@
 "use client";
 
 import React from "react";
-import { Icon } from "@/components/ui/icon";
-import { MenuCategoryResponse, MenuCategoryStatus } from "../menu.types";
-import { useDeleteMenuCategory } from "../hooks/categories.hooks";
+import { Icon } from "@/components/ui";
+import {
+  MenuCategoryResponse,
+  MenuCategoryStatus,
+} from "@repo/shared-features/menu";
+import { useDeleteMenuCategory } from "@repo/shared-features/menu";
 
 interface CategoryTableProps {
   categories: MenuCategoryResponse[];

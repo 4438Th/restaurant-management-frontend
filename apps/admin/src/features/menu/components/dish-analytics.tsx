@@ -1,14 +1,14 @@
 "use client";
 
 import React from "react";
-import { Icon } from "@/components/ui/icon";
-import { useDishAnalytics } from "../hooks/dishes.hooks";
+import { Icon } from "@/components/ui";
+import { useDishAnalytics } from "@repo/shared-features/menu";
 import {
   DishStatus,
   DishStatusLabel,
   DishType,
   DishTypeLabel,
-} from "../menu.types";
+} from "@repo/shared-features/menu";
 
 export function DishAnalytics() {
   const { data: rawData, isLoading } = useDishAnalytics();

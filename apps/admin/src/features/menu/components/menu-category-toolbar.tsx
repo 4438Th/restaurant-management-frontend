@@ -1,7 +1,6 @@
-// apps/admin/src/features/menu/components/menu-category-toolbar.tsx
 "use client";
 
-import { Icon } from "@/components/ui/icon";
+import { Icon } from "@/components/ui";
 
 export interface MenuCategoryToolbarProps {
   searchQuery: string;

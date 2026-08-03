@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Icon } from "@/components/ui/icon";
+import { Icon } from "@/components/ui";
 import {
   UserStatusLabel,
   UserRolesLabel,
   UserRoles,
   UserStatus,
-} from "../users.types";
+} from "@repo/shared-features/users";
 
 interface UserToolbarProps {
   searchQuery: string;

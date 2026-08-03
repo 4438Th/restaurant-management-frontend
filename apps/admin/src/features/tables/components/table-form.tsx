@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Icon } from "@/components/ui/icon";
+import { Icon } from "@/components/ui";
 import {
   TableResponse,
   TableCreateRequest,
@@ -12,8 +12,8 @@ import {
   TableTypeLabel,
   TableArea,
   TableAreaLabel,
-} from "../tables.types";
-import { useCreateTable, useUpdateTable } from "../tables.hooks";
+} from "@repo/shared-features/tables";
+import { useCreateTable, useUpdateTable } from "@repo/shared-features/tables";
 
 interface TableFormProps {
   isOpen: boolean;

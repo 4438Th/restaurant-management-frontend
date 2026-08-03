@@ -2,22 +2,21 @@
 
 import React, { useState, useEffect } from "react";
 
-import { DishToolbar } from "@/features/menu/components/dish-toolbar";
-import { DishTable } from "@/features/menu/components/dish-table";
-import { DishForm } from "@/features/menu/components/dish-form";
-import { DishModal } from "@/features/menu/components/dish-modal";
-import { TablePagination } from "@/components/ui/table-pagination";
-import { PageHeader } from "@/components/layout/page-header";
-import { DishAnalytics } from "@/features/menu/components/dish-analytics";
+import { DishToolbar } from "@/features/menu/components";
+import { DishTable } from "@/features/menu/components";
+import { DishForm } from "@/features/menu/components";
+import { DishModal } from "@/features/menu/components";
+import { TablePagination } from "@/components/ui";
+import { PageHeader } from "@/components/layout";
+import { DishAnalytics } from "@/features/menu/components";
 
-import { useDish } from "@/features/menu/hooks/dishes.hooks";
-import { useMenuCategory } from "@/features/menu/hooks/categories.hooks";
+import { useDish, useMenuCategory } from "@repo/shared-features/menu";
 import {
   DishResponse,
   DishStatus,
   DishType,
   DishFilterParams,
-} from "@/features/menu/menu.types";
+} from "@repo/shared-features/menu";
 
 export default function DishesPage() {
   const [page, setPage] = useState<number>(1);
