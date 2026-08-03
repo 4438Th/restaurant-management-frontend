@@ -28,12 +28,14 @@ export enum MenuCategoryStatus {
     DRAFT = 'DRAFT',
     ACTIVE = 'ACTIVE',
     INACTIVE = 'INACTIVE',
+    DELETED = 'DELETED',
 }
 
 export const MenuCategoryStatusLabel: Record<string, string> = {
     'Bản nháp': MenuCategoryStatus.DRAFT,
     'Hoạt động': MenuCategoryStatus.ACTIVE,
     'Tạm ẩn': MenuCategoryStatus.INACTIVE,
+    'Đã xóa': MenuCategoryStatus.DELETED,
 };
 export interface MenuCategoryCreateRequest {
     categoryName: string;
