@@ -1,45 +1,23 @@
 "use client";
 
 import React from "react";
-import { Icon } from "@/components/ui";
-import {
-  TableResponse,
-  TableStatus,
-  TableStatusLabel,
-  TableAreaLabel,
-  TableTypeLabel,
-} from "@repo/shared-features/tables";
-import { useRestoreTable } from "@repo/shared-features/tables";
+import { Icon } from "@repo/ui";
+import { TableResponse } from "@repo/shared-features/tables";
+import { TableTrashTableRow } from "./table-trash-table-row";
 
-interface TableTrashTableProps {
+export interface TableTrashTableProps {
   tables: TableResponse[];
   isLoading: boolean;
+  onRestore: (id: string) => void;
+  restoringTableId?: string | null;
 }
 
-export function TableTrashTable({ tables, isLoading }: TableTrashTableProps) {
-  const restoreMutation = useRestoreTable();
-
-  const handleRestore = (id: string) => {
-    restoreMutation.mutate(id);
-  };
-
-  const getStatusBadgeClass = (status: TableStatus) => {
-    switch (status) {
-      case TableStatus.AVAILABLE:
-        return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
-      case TableStatus.OCCUPIED:
-        return "bg-amber-500/10 text-amber-600 border-amber-500/20";
-      case TableStatus.RESERVED:
-        return "bg-blue-500/10 text-blue-600 border-blue-500/20";
-      case TableStatus.MAINTENANCE:
-        return "bg-rose-500/10 text-rose-600 border-rose-500/20";
-      case TableStatus.DELETED:
-        return "bg-red-500/10 text-red-600 border-red-500/20";
-      default:
-        return "bg-slate-500/10 text-slate-600 border-slate-500/20";
-    }
-  };
-
+export function TableTrashTable({
+  tables,
+  isLoading,
+  onRestore,
+  restoringTableId = null,
+}: TableTrashTableProps) {
   // 1. Trạng thái Loading (Skeleton Rows)
   if (isLoading) {
     return (
@@ -117,57 +95,12 @@ export function TableTrashTable({ tables, isLoading }: TableTrashTableProps) {
         </thead>
         <tbody className="divide-y divide-outline-variant/60 bg-surface-container-lowest">
           {tables.map((table) => (
-            <tr
+            <TableTrashTableRow
               key={table.id}
-              className="hover:bg-surface-container-low transition-colors group"
-            >
-              {/* Tên bàn */}
-              <td className="py-3.5 px-4 font-semibold text-on-surface">
-                {table.tableName}
-              </td>
-
-              {/* Khu vực */}
-              <td className="py-3.5 px-4 text-on-surface-variant text-xs">
-                {TableAreaLabel[table.area] || table.area}
-              </td>
-
-              {/* Loại bàn */}
-              <td className="py-3.5 px-4 text-on-surface-variant text-xs">
-                {TableTypeLabel[table.type] || table.type}
-              </td>
-
-              {/* Sức chứa */}
-              <td className="py-3.5 px-4 text-on-surface-variant text-xs">
-                {table.capacity} người
-              </td>
-
-              {/* Trạng thái */}
-              <td className="py-3.5 px-4 text-xs">
-                <span
-                  className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadgeClass(
-                    table.status,
-                  )}`}
-                >
-                  {TableStatusLabel[table.status] || table.status}
-                </span>
-              </td>
-
-              {/* Thao tác Restore */}
-              <td className="py-3.5 px-4 text-right">
-                <div className="flex items-center justify-end gap-1">
-                  <button
-                    type="button"
-                    onClick={() => handleRestore(table.id)}
-                    disabled={restoreMutation.isPending}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-600 hover:bg-emerald-500/10 transition-colors disabled:opacity-50"
-                    title="Khôi phục bàn"
-                  >
-                    <Icon name="RotateCcw" className="w-3.5 h-3.5" />
-                    <span>Khôi phục</span>
-                  </button>
-                </div>
-              </td>
-            </tr>
+              table={table}
+              onRestore={onRestore}
+              isRestoring={restoringTableId === table.id}
+            />
           ))}
         </tbody>
       </table>

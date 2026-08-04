@@ -1,15 +1,29 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { ConfirmModal } from "@repo/ui";
+import { ApiError } from "@repo/core";
 import { TablePagination } from "@/components/ui";
-import { TableGrid } from "@/features/tables/components";
-import { TableToolbar } from "@/features/tables/components";
-import { TableForm } from "@/features/tables/components";
-import { TableDetailModal } from "@/features/tables/components";
 import { PageHeader } from "@/components/layout";
+import {
+  TableGrid,
+  TableToolbar,
+  TableForm,
+  TableDetailModal,
+  TableFormSubmitData,
+} from "@/features/tables/components";
 
-import { useTable, useDeleteTable } from "@repo/shared-features/tables";
-import { TableResponse, TableFilterParams } from "@repo/shared-features/tables";
+import {
+  useTable,
+  useCreateTable,
+  useUpdateTable,
+  useDeleteTable,
+  TableResponse,
+  TableFilterParams,
+  TableCreateRequest,
+  TableUpdateRequest,
+} from "@repo/shared-features/tables";
 
 export default function TableManagementPage() {
   // Trạng thái nhập liệu tìm kiếm tức thời trên UI (Tên bàn/Số bàn)
@@ -32,8 +46,19 @@ export default function TableManagementPage() {
     null,
   );
 
-  // Hook xóa bàn ăn
+  // State quản lý việc hiển thị ConfirmModal Xóa
+  const [tableToDelete, setTableToDelete] = useState<TableResponse | null>(
+    null,
+  );
+
+  // Hooks Mutation API
+  const createTableMutation = useCreateTable();
+  const updateTableMutation = useUpdateTable();
   const deleteTableMutation = useDeleteTable();
+
+  // Trạng thái pending chung cho cả Tạo mới và Cập nhật
+  const isFormPending =
+    createTableMutation.isPending || updateTableMutation.isPending;
 
   // Đồng bộ hóa cơ chế Debounce Search và tích hợp các bộ lọc cứng vào State filters
   useEffect(() => {
@@ -72,9 +97,67 @@ export default function TableManagementPage() {
   };
 
   const handleDeleteClick = (table: TableResponse): void => {
-    if (confirm(`Bạn có chắc chắn muốn xóa "${table.tableName}" không?`)) {
-      deleteTableMutation.mutate(table.id);
+    setTableToDelete(table);
+  };
+
+  // 1. XỬ LÝ SUBMIT TỪ PURE TABLEFORM
+  const handleFormSubmit = ({
+    isEditMode,
+    tableId,
+    tableName,
+    payload,
+  }: TableFormSubmitData) => {
+    if (isEditMode && tableId) {
+      updateTableMutation.mutate(
+        {
+          id: tableId,
+          payload: payload as TableUpdateRequest,
+        },
+        {
+          onSuccess: () => {
+            toast.success(
+              `Đã cập nhật thông tin bàn "${tableName}" thành công!`,
+            );
+            setIsDrawerOpen(false);
+          },
+          onError: (error: ApiError) => {
+            toast.error(
+              error.message || `Cập nhật bàn "${tableName}" thất bại!`,
+            );
+          },
+        },
+      );
+    } else {
+      createTableMutation.mutate(payload as TableCreateRequest, {
+        onSuccess: () => {
+          toast.success(`Đã tạo thành công bàn mới "${tableName}"!`);
+          setIsDrawerOpen(false);
+        },
+        onError: (error: ApiError) => {
+          toast.error(error.message || `Tạo bàn mới "${tableName}" thất bại!`);
+        },
+      });
     }
+  };
+
+  // 2. THỰC THI LỆNH XÓA BẰNG API MUTATION
+  const handleConfirmDelete = (): void => {
+    if (!tableToDelete) return;
+
+    deleteTableMutation.mutate(tableToDelete.id, {
+      onSuccess: () => {
+        toast.success(
+          `Đã chuyển bàn "${tableToDelete.tableName}" vào thùng rác`,
+        );
+        setTableToDelete(null); // Đóng modal sau khi xóa thành công
+      },
+      onError: (error: ApiError) => {
+        toast.error(
+          error.message ||
+            `Có lỗi xảy ra khi xóa bàn "${tableToDelete.tableName}"!`,
+        );
+      },
+    });
   };
 
   return (
@@ -91,11 +174,7 @@ export default function TableManagementPage() {
         />
 
         {/* CONTAINER CARD BẢO VỆ BẢNG / GRID KHÔNG BỊ TRÀN VỠ */}
-        <div
-          className="flex-1 min-h-0 bg-surface-container-lowest
-          border border-outline-variant rounded-2xl flex flex-col
-          shadow-sm overflow-hidden"
-        >
+        <div className="flex-1 min-h-0 bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col shadow-sm overflow-hidden">
           {/* Thanh Toolbar lọc theo từ khóa, Trạng thái và Khu vực */}
           <TableToolbar
             searchQuery={searchQuery}
@@ -126,7 +205,7 @@ export default function TableManagementPage() {
                 totalElements={pageData.totalElements}
                 page={filters.page || 1}
                 onPageChange={(pageOrFn) => {
-                  setFilters((prev) => {
+                  setFilters((prev: TableFilterParams) => {
                     const nextPage =
                       typeof pageOrFn === "function"
                         ? pageOrFn(prev.page || 1)
@@ -142,17 +221,40 @@ export default function TableManagementPage() {
         </div>
       </main>
 
-      {/* CÁC THÀNH PHẦN FORM MODAL & DRAWERS NẰM NGOÀI ĐỢI KÍCH HOẠT */}
+      {/* PURE UI TABLE FORM */}
       <TableForm
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         table={selectedTable}
+        isPending={isFormPending}
+        onSubmit={handleFormSubmit}
+        onErrorValidation={(msg) => toast.warning(msg)}
       />
 
+      {/* MODAL CHI TIẾT BÀN ÁN */}
       <TableDetailModal
         isOpen={isDetailOpen}
         onClose={() => setIsDetailOpen(false)}
         table={selectedTable}
+      />
+
+      {/* MODAL XÁC NHẬN XÓA TÁI SỬ DỤNG */}
+      <ConfirmModal
+        isOpen={!!tableToDelete}
+        onClose={() => setTableToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa bàn"
+        description="Hành động này sẽ chuyển bàn ăn vào thùng rác."
+        message={
+          <>
+            Bạn có chắc chắn muốn xóa bàn{" "}
+            <strong className="text-primary">{tableToDelete?.tableName}</strong>{" "}
+            không?
+          </>
+        }
+        confirmText="Xóa bàn"
+        variant="danger"
+        isLoading={deleteTableMutation.isPending}
       />
     </>
   );

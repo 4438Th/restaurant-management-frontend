@@ -2,6 +2,7 @@
 const nextConfig = {
   transpilePackages: [
     "@restaurant/core",
+    "@restaurant/ui",
     "@restaurant/shared-features",
     "@repo/tailwind-config",
   ],

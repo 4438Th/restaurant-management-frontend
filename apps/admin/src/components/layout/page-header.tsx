@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Icon } from "@/components/ui/icon";
+import { Icon } from "@repo/ui";
 import type { ComponentProps } from "react";
 
 interface PageHeaderProps {

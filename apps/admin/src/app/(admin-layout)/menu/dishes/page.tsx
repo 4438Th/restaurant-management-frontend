@@ -1,21 +1,32 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
 
-import { DishToolbar } from "@/features/menu/components";
-import { DishTable } from "@/features/menu/components";
-import { DishForm } from "@/features/menu/components";
-import { DishModal } from "@/features/menu/components";
+import {
+  DishToolbar,
+  DishTable,
+  DishForm,
+  DishModal,
+  DishAnalytics,
+  DishFormSubmitData,
+} from "@/features/menu/components";
 import { TablePagination } from "@/components/ui";
 import { PageHeader } from "@/components/layout";
-import { DishAnalytics } from "@/features/menu/components";
+import { ConfirmModal } from "@repo/ui";
 
-import { useDish, useMenuCategory } from "@repo/shared-features/menu";
 import {
+  useDish,
+  useMenuCategory,
+  useCreateDish,
+  useUpdateDish,
+  useDeleteDish,
   DishResponse,
   DishStatus,
   DishType,
   DishFilterParams,
+  DishCreateRequest,
+  DishUpdateRequest,
 } from "@repo/shared-features/menu";
 
 export default function DishesPage() {
@@ -24,15 +35,25 @@ export default function DishesPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");
 
-  // STATE CÁC BỘ LỌC
+  // STATE BỘ LỌC
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
   const [selectedType, setSelectedType] = useState<string>("All");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
 
+  // STATE DRAWER & MODAL
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [selectedDish, setSelectedDish] = useState<DishResponse | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
+  // STATE CONFIRM DELETE MODAL
+  const [dishToDelete, setDishToDelete] = useState<DishResponse | null>(null);
+
+  // MUTATIONS
+  const createMutation = useCreateDish();
+  const updateMutation = useUpdateDish();
+  const deleteMutation = useDeleteDish();
+
+  // Debounce tìm kiếm
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -41,14 +62,14 @@ export default function DishesPage() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // ĐỒNG BỘ: Sử dụng object params gộp thay vì truyền đối số rời rạc cho danh mục
+  // Lấy danh sách danh mục
   const { data: categoryData } = useMenuCategory({
     page: 1,
     size: 100,
   });
   const categoriesList = categoryData?.data || [];
 
-  // ĐỒNG BỘ: Khởi tạo object filter params chuẩn chỉnh cho món ăn
+  // Lấy danh sách món ăn
   const dishParams: DishFilterParams = {
     page,
     size,
@@ -59,12 +80,11 @@ export default function DishesPage() {
     categoryId: selectedCategory === "All" ? undefined : selectedCategory,
   };
 
-  // ĐỒNG BỘ: Truyền duy nhất một object params tập trung
   const { data: pageData, isLoading: isFetchLoading } = useDish(dishParams);
-
   const dishList = pageData?.data || [];
   const totalPages = pageData?.totalPages || 1;
 
+  // HANDLERS
   const handleCreateClick = (): void => {
     setSelectedDish(null);
     setIsDrawerOpen(true);
@@ -79,6 +99,74 @@ export default function DishesPage() {
     setSelectedDish(dish);
     setIsModalOpen(true);
   };
+
+  // Mở modal xác nhận xóa
+  const handleDeleteDish = (dish: DishResponse) => {
+    setDishToDelete(dish);
+  };
+
+  // Thực thi hành động xóa món
+  const handleConfirmDelete = () => {
+    if (!dishToDelete) return;
+
+    deleteMutation.mutate(dishToDelete.id, {
+      onSuccess: () => {
+        toast.success(`Đã chuyển "${dishToDelete.dishName}" vào thùng rác!`);
+        setDishToDelete(null);
+        // Tự động lùi trang nếu xóa phần tử cuối cùng của trang hiện tại
+        if (dishList.length === 1 && page > 1) {
+          setPage((prev) => prev - 1);
+        }
+      },
+      onError: (error) => {
+        toast.error(
+          error?.message || `Xóa "${dishToDelete.dishName}" thất bại!`,
+        );
+      },
+    });
+  };
+
+  // SUBMIT TẬP TRUNG + TOAST NOTIFICATION
+  const handleFormSubmit = ({
+    isEditMode,
+    dishId,
+    dishName,
+    payload,
+  }: DishFormSubmitData) => {
+    if (isEditMode && dishId) {
+      updateMutation.mutate(
+        {
+          id: dishId,
+          payload: payload as DishUpdateRequest,
+        },
+        {
+          onSuccess: () => {
+            toast.success(`Cập nhật món "${dishName}" thành công!`);
+            setIsDrawerOpen(false);
+            setSelectedDish(null);
+          },
+          onError: (error) => {
+            toast.error(
+              error?.message || `Cập nhật món "${dishName}" thất bại!`,
+            );
+          },
+        },
+      );
+    } else {
+      createMutation.mutate(payload as DishCreateRequest, {
+        onSuccess: () => {
+          toast.success(`Thêm mới món "${dishName}" thành công!`);
+          setIsDrawerOpen(false);
+          setSelectedDish(null);
+        },
+        onError: (error) => {
+          toast.error(error?.message || `Tạo mới món "${dishName}" thất bại!`);
+        },
+      });
+    }
+  };
+
+  const isFormPending = createMutation.isPending || updateMutation.isPending;
 
   return (
     <>
@@ -117,7 +205,13 @@ export default function DishesPage() {
             <DishTable
               dishes={dishList}
               isLoading={isFetchLoading}
+              deletingDishId={
+                deleteMutation.isPending
+                  ? (deleteMutation.variables as string)
+                  : null
+              }
               onEditClick={handleEditClick}
+              onDeleteClick={handleDeleteDish}
               onRowClick={handleRowClick}
             />
           </div>
@@ -135,14 +229,25 @@ export default function DishesPage() {
             </div>
           )}
         </div>
+
         <DishAnalytics />
       </main>
 
+      {/* FORM DRAWER */}
       <DishForm
         isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
+        onClose={() => {
+          setIsDrawerOpen(false);
+          setSelectedDish(null);
+        }}
         dish={selectedDish}
+        categories={categoriesList}
+        isPending={isFormPending}
+        onSubmit={handleFormSubmit}
+        onErrorValidation={(msg) => toast.warning(msg)}
       />
+
+      {/* DETAIL MODAL */}
       <DishModal
         isOpen={isModalOpen}
         onClose={() => {
@@ -150,6 +255,19 @@ export default function DishesPage() {
           setSelectedDish(null);
         }}
         dish={selectedDish}
+      />
+
+      {/* MODAL XÁC NHẬN XÓA MÓN */}
+      <ConfirmModal
+        isOpen={!!dishToDelete}
+        onClose={() => setDishToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa món"
+        description="Món này sẽ bị ẩn khỏi thực đơn và chuyển vào thùng rác."
+        message={<>Bạn có chắc chắn muốn xóa món này không?</>}
+        confirmText="Xóa món"
+        variant="danger"
+        isLoading={deleteMutation.isPending}
       />
     </>
   );

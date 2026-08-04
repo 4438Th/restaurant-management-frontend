@@ -8,11 +8,11 @@ export enum MenuCategoryStatus {
     DELETED = 'DELETED',
 }
 
-export const MenuCategoryStatusLabel: Record<string, string> = {
-    'Bản nháp': MenuCategoryStatus.DRAFT,
-    'Hoạt động': MenuCategoryStatus.ACTIVE,
-    'Tạm ẩn': MenuCategoryStatus.INACTIVE,
-    'Đã xóa': MenuCategoryStatus.DELETED,
+export const MenuCategoryStatusLabel: Record<MenuCategoryStatus, string> = {
+    [MenuCategoryStatus.DRAFT]: 'Bản nháp',
+    [MenuCategoryStatus.ACTIVE]: 'Hoạt động',
+    [MenuCategoryStatus.INACTIVE]: 'Tạm ẩn',
+    [MenuCategoryStatus.DELETED]: 'Đã xóa',
 };
 export interface MenuCategoryCreateRequest {
     categoryName: string;

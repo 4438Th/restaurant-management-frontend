@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Sidebar } from "@/components/layout";
 import { TopBar } from "@/components/layout";
-import { Icon } from "@/components/ui";
+import { Icon } from "@repo/ui";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -39,9 +39,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <header className="h-16 w-full shrink-0 border-b border-outline-variant bg-surface-container-lowest flex items-center px-4 md:px-0">
           {/* NÚT TOGGLE MENU (Chỉ hiển thị trên thiết bị di động < md) */}
           <button
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            type="button"
+            onClick={() => setIsSidebarOpen((prev) => !prev)}
             className="md:hidden p-2 mr-2 text-on-surface-variant hover:bg-surface-container rounded-xl transition-colors"
             aria-label="Toggle Sidebar"
+            aria-expanded={isSidebarOpen}
           >
             <Icon name="Menu" className="w-6 h-6" />
           </button>
@@ -55,7 +57,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         {/* VÙNG NỘI DUNG ĐỘNG CỦA CÁC PAGE CON */}
         <div className="flex-1 w-full overflow-hidden relative flex flex-col">
           {children}
-          <div id="root-portal"></div>
+          <div id="root-portal" />
         </div>
       </div>
     </div>

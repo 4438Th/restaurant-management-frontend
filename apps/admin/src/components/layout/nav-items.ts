@@ -1,6 +1,4 @@
-import * as Icons from "lucide-react";
-
-export type IconName = keyof typeof Icons;
+import { type IconName } from "@repo/ui";
 
 export interface NavItem {
     title: string;
@@ -35,5 +33,5 @@ export const sidebarNavItems: NavItem[] = [
         title: "Quản lý bàn ăn",
         href: "/tables",
         icon: "Grid",
-    }
+    },
 ];

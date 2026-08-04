@@ -1,5 +1,4 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { ApiError } from '@repo/core';
 import { dishesService } from './dishes.service';
 import {
@@ -33,11 +32,7 @@ export const useCreateDish = () => {
     return useMutation<unknown, ApiError, DishCreateRequest>({
         mutationFn: (payload: DishCreateRequest) => dishesService.create(payload),
         onSuccess: () => {
-            toast.success('Tạo món ăn thành công!');
             queryClient.invalidateQueries({ queryKey: ['menu/dishes'] });
-        },
-        onError: (error: ApiError) => {
-            toast.error(error.message || 'Tạo món ăn thất bại!');
         },
     });
 };
@@ -47,11 +42,7 @@ export const useUpdateDish = () => {
     return useMutation<unknown, ApiError, { id: string; payload: DishUpdateRequest }>({
         mutationFn: ({ id, payload }) => dishesService.update(id, payload),
         onSuccess: () => {
-            toast.success('Cập nhật món ăn thành công!');
             queryClient.invalidateQueries({ queryKey: ['menu/dishes'] });
-        },
-        onError: (error: ApiError) => {
-            toast.error(error.message || 'Cập nhật món ăn thất bại!');
         },
     });
 };
@@ -61,12 +52,8 @@ export const useDeleteDish = () => {
     return useMutation<unknown, ApiError, string>({
         mutationFn: (id: string) => dishesService.delete(id),
         onSuccess: () => {
-            toast.success('Đã chuyển món ăn vào thùng rác!');
             queryClient.invalidateQueries({ queryKey: ['menu/dishes'] });
             queryClient.invalidateQueries({ queryKey: ['menu/dishes/trash'] });
-        },
-        onError: (error: ApiError) => {
-            toast.error(error.message || 'Xóa món ăn thất bại!');
         },
     });
 };
@@ -76,12 +63,8 @@ export const useRestoreDish = () => {
     return useMutation<unknown, ApiError, string>({
         mutationFn: (id: string) => dishesService.restore(id),
         onSuccess: () => {
-            toast.success("Khôi phục món ăn thành công!");
-            queryClient.invalidateQueries({ queryKey: ["menu/dishes/trash"] });
-            queryClient.invalidateQueries({ queryKey: ["menu/dishes"] });
-        },
-        onError: (error: ApiError) => {
-            toast.error(error.message || 'Khôi phục món ăn thất bại!');
+            queryClient.invalidateQueries({ queryKey: ['menu/dishes/trash'] });
+            queryClient.invalidateQueries({ queryKey: ['menu/dishes'] });
         },
     });
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Icon } from "@/components/ui";
+import { Icon } from "@repo/ui";
 import {
   UserStatusLabel,
   UserRolesLabel,

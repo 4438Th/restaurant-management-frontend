@@ -1,12 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Icon } from "@/components/ui";
+import { toast } from "sonner";
+import { ApiError } from "@repo/core";
+import { Icon } from "@repo/ui";
 import { TableTrashTable } from "@/features/tables/components";
 import { TablePagination } from "@/components/ui";
 import { PageHeader } from "@/components/layout";
 
-import { useTableTrash } from "@repo/shared-features/tables";
+import { useTableTrash, useRestoreTable } from "@repo/shared-features/tables";
 import { TableFilterParams } from "@repo/shared-features/tables";
 
 export default function TableTrashPage() {
@@ -15,6 +17,7 @@ export default function TableTrashPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");
 
+  // Debounce tìm kiếm (400ms)
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -23,19 +26,36 @@ export default function TableTrashPage() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // ĐỒNG BỘ: Gộp cấu trúc filter params cho thùng rác bàn ăn
+  // Cấu trúc filter params cho thùng rác bàn ăn
   const trashParams: TableFilterParams = {
     page,
     size,
     search: debouncedSearch.trim() || undefined,
   };
 
-  // ĐỒNG BỘ: Gọi hook lấy danh sách bàn ăn đã bị xóa tạm thời
+  // Gọi hook lấy danh sách bàn ăn trong thùng rác & khôi phục bàn
   const { data: pageData, isLoading: isFetchLoading } =
     useTableTrash(trashParams);
+  const restoreMutation = useRestoreTable();
 
   const trashList = pageData?.data || [];
   const totalPages = pageData?.totalPages || 1;
+
+  // Xử lý khôi phục bàn ăn
+  const handleRestore = (id: string) => {
+    restoreMutation.mutate(id, {
+      onSuccess: () => {
+        toast.success("Khôi phục bàn ăn thành công!");
+        // Nếu item bị khôi phục là item cuối cùng trên trang hiện tại (và không ở trang 1) -> lùi 1 trang
+        if (trashList.length === 1 && page > 1) {
+          setPage((prev) => prev - 1);
+        }
+      },
+      onError: (error: ApiError) => {
+        toast.error(error?.message || "Có lỗi xảy ra khi khôi phục bàn ăn!");
+      },
+    });
+  };
 
   return (
     <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-surface flex flex-col gap-6 h-full">
@@ -66,7 +86,16 @@ export default function TableTrashPage() {
 
         {/* Bảng dữ liệu thùng rác */}
         <div className="flex-1 overflow-auto min-h-0">
-          <TableTrashTable tables={trashList} isLoading={isFetchLoading} />
+          <TableTrashTable
+            tables={trashList}
+            isLoading={isFetchLoading}
+            onRestore={handleRestore}
+            restoringTableId={
+              restoreMutation.isPending
+                ? (restoreMutation.variables as string)
+                : null
+            }
+          />
         </div>
 
         {/* Thanh phân trang */}

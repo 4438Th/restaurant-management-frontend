@@ -1,51 +1,29 @@
 "use client";
 
 import React from "react";
-import { Icon } from "@/components/ui";
-import { User, UserStatusLabel } from "@repo/shared-features/users";
-import { useDeleteUser } from "@repo/shared-features/users";
+import { User } from "@repo/shared-features/users";
+import { UserTableRow } from "./user-table-row";
 
 interface UserTableProps {
   users: User[];
   isLoading: boolean;
   onEditClick?: (user: User) => void;
+  onDeleteClick?: (user: User) => void; // Thêm callback xóa user
   onRowClick?: (user: User) => void;
+  deletingUserId?: string | null; // (Tùy chọn) Truyền ID user đang trong trạng thái loading xóa
 }
 
 export function UserTable({
   users,
   isLoading,
   onEditClick,
+  onDeleteClick,
   onRowClick,
+  deletingUserId,
 }: UserTableProps) {
-  const deleteUserMutation = useDeleteUser();
-
   const handleDelete = (e: React.MouseEvent, user: User) => {
-    e.stopPropagation();
-
-    if (
-      typeof window !== "undefined" &&
-      confirm(
-        `Bạn có chắc chắn muốn tạm dừng tài khoản "${user.username}" không?`,
-      )
-    ) {
-      deleteUserMutation.mutate(user.id);
-    }
-  };
-
-  // Đồng bộ lại chuẩn màu sắc theo đúng logic form trạng thái
-  const getStatusStyle = (statusKey: string) => {
-    switch (statusKey) {
-      case "ACTIVE":
-        return "bg-green-600/10 text-green-600 border border-green-500/20";
-      case "PENDING":
-        return "bg-amber-500/10 text-amber-600 border border-amber-500/20";
-      case "INACTIVE":
-      case "DELETED":
-        return "bg-error/10 text-error border border-error/20";
-      default:
-        return "bg-on-surface/5 text-on-surface-variant border border-outline-variant";
-    }
+    e.stopPropagation(); // Tránh kích hoạt sự kiện click dòng (onRowClick)
+    onDeleteClick?.(user);
   };
 
   return (
@@ -53,13 +31,6 @@ export function UserTable({
       <table className="w-full text-left border-collapse table-auto min-w-175">
         <thead>
           <tr className="bg-surface-bright text-[12px] font-semibold text-on-surface-variant border-b border-outline-variant sticky top-0 z-10">
-            <th className="p-4 w-12 text-center">
-              <input
-                type="checkbox"
-                className="rounded border-outline-variant text-primary cursor-pointer"
-                onClick={(e) => e.stopPropagation()}
-              />
-            </th>
             <th className="p-4">Nhân viên</th>
             <th className="p-4">Tên đăng nhập</th>
             <th className="p-4">Vai trò</th>
@@ -71,7 +42,7 @@ export function UserTable({
           {isLoading ? (
             <tr>
               <td
-                colSpan={6}
+                colSpan={5}
                 className="p-8 text-center text-on-surface-variant text-[13px]"
               >
                 Đang tải dữ liệu...
@@ -80,97 +51,23 @@ export function UserTable({
           ) : users.length === 0 ? (
             <tr>
               <td
-                colSpan={6}
+                colSpan={5}
                 className="p-8 text-center text-on-surface-variant text-[13px]"
               >
                 Không tìm thấy tài khoản nào phù hợp.
               </td>
             </tr>
           ) : (
-            users.map((user) => {
-              const isDeleting =
-                deleteUserMutation.isPending &&
-                deleteUserMutation.variables === user.id;
-
-              return (
-                <tr
-                  key={user.id}
-                  onClick={() => !isDeleting && onRowClick?.(user)}
-                  className={`transition-colors border-b border-outline-variant select-none ${
-                    isDeleting
-                      ? "bg-surface-container-low opacity-50 pointer-events-none"
-                      : "hover:bg-surface-container-low cursor-pointer"
-                  }`}
-                >
-                  <td
-                    className="p-4 text-center"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <input
-                      type="checkbox"
-                      disabled={isDeleting}
-                      className="rounded border-outline-variant text-primary cursor-pointer disabled:cursor-not-allowed"
-                    />
-                  </td>
-                  <td className="p-4">
-                    <div className="font-semibold">{user.fullName}</div>
-                  </td>
-                  <td className="p-4 font-mono text-[13px] text-primary">
-                    {user.username}
-                  </td>
-                  <td className="p-4">
-                    <div className="flex flex-wrap gap-1">
-                      {user.roles && user.roles.length > 0 ? (
-                        user.roles.map((role) => (
-                          <span
-                            key={role}
-                            className="px-2 py-0.5 bg-primary-container/10 text-primary font-bold text-[11px] rounded border border-primary/20 uppercase"
-                          >
-                            {role}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-[12px] text-on-surface-variant italic">
-                          Chưa phân quyền
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="p-4 text-center">
-                    <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${getStatusStyle(user.status)}`}
-                    >
-                      {UserStatusLabel[user.status] || user.status}
-                    </span>
-                  </td>
-                  <td
-                    className="p-4 text-right flex justify-end gap-1"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {onEditClick && (
-                      <button
-                        onClick={() => onEditClick(user)}
-                        disabled={isDeleting}
-                        className="p-2 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-xl transition-colors disabled:opacity-30 disabled:pointer-events-none"
-                      >
-                        <Icon name="Pencil" className="w-4 h-4" />
-                      </button>
-                    )}
-                    <button
-                      onClick={(e) => handleDelete(e, user)}
-                      disabled={isDeleting}
-                      className="p-2 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-xl transition-colors flex items-center justify-center min-w-[32px]"
-                    >
-                      {isDeleting ? (
-                        <div className="w-4 h-4 border-2 border-error border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <Icon name="Trash2" className="w-4 h-4" />
-                      )}
-                    </button>
-                  </td>
-                </tr>
-              );
-            })
+            users.map((user) => (
+              <UserTableRow
+                key={user.id}
+                user={user}
+                isDeleting={deletingUserId === user.id}
+                onEditClick={onEditClick}
+                onRowClick={onRowClick}
+                onDeleteClick={(e) => handleDelete(e, user)}
+              />
+            ))
           )}
         </tbody>
       </table>

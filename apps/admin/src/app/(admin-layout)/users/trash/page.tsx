@@ -1,18 +1,23 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Icon } from "@/components/ui";
-import { useUsersTrash } from "@repo/shared-features/users";
-import { UserTrashTable } from "@/features/users/components";
-import { UserProfileModal } from "@/features/users/components";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { ApiError } from "@repo/core";
 import { TablePagination } from "@/components/ui";
+import { Icon } from "@repo/ui";
 import { PageHeader } from "@/components/layout";
+import { UserTrashTable, UserProfileModal } from "@/features/users/components";
 
-import { User, UserFilterParams } from "@repo/shared-features/users";
+import {
+  User,
+  UserFilterParams,
+  useUsersTrash,
+  useRestoreUser,
+} from "@repo/shared-features/users";
 
 export default function UserTrashPage() {
   // Quản lý trạng thái nhập liệu tìm kiếm tức thời trên UI
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Tập trung toàn bộ tham số phân trang & tìm kiếm vào một Object đồng bộ với Back-End
   const [filters, setFilters] = useState<UserFilterParams>({
@@ -21,13 +26,13 @@ export default function UserTrashPage() {
     search: undefined,
   });
 
-  const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  // Xử lý cơ chế Debounce khi người dùng nhập từ khóa tìm kiếm
+  // Xử lý cơ chế Debounce khi người dùng nhập từ khóa tìm kiếm (Fix TS7006)
   useEffect(() => {
     const handler = setTimeout(() => {
-      setFilters((prev) => ({
+      setFilters((prev: UserFilterParams) => ({
         ...prev,
         search: searchQuery.trim() || undefined,
         page: 1, // Reset về trang đầu tiên khi có từ khóa tìm kiếm mới
@@ -36,13 +41,38 @@ export default function UserTrashPage() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // Truyền object filters đồng nhất vào hook
+  // Truyền object filters đồng nhất vào hook lấy danh sách thùng rác
   const { data: pageData, isLoading: isFetchLoading } = useUsersTrash(filters);
+
+  // Mutation khôi phục người dùng
+  const restoreMutation = useRestoreUser();
 
   const trashList = pageData?.data || [];
   const totalPages = pageData?.totalPages || 1;
 
-  const handleRowClick = (user: User): void => {
+  // Xử lý sự kiện khôi phục tài khoản
+  const handleRestoreUser = (e: React.MouseEvent, user: User) => {
+    e.stopPropagation();
+    restoreMutation.mutate(user.id, {
+      onSuccess: () => {
+        toast.success(`Đã khôi phục tài khoản "${user.username}" thành công!`);
+        // Nếu item bị khôi phục là item cuối cùng trên trang hiện tại -> lùi 1 trang
+        if (trashList.length === 1 && (filters.page || 1) > 1) {
+          setFilters((prev) => ({
+            ...prev,
+            page: (prev.page || 1) - 1,
+          }));
+        }
+      },
+      onError: (error: ApiError) => {
+        toast.error(
+          error?.message || `Khôi phục tài khoản "${user.username}" thất bại!`,
+        );
+      },
+    });
+  };
+
+  const handleRowClick = (user: User) => {
     setSelectedUser(user);
     setIsProfileOpen(true);
   };
@@ -53,7 +83,7 @@ export default function UserTrashPage() {
       <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-surface flex flex-col gap-6 h-full">
         {/* TIÊU ĐỀ TRANG VÀ NÚT QUAY LẠI */}
         <PageHeader
-          title="Thùng rác"
+          title="Thùng rác nhân sự"
           description="Danh sách nhân sự đã tạm dừng hoạt động. Bạn có thể khôi phục lại quyền truy cập."
           isTrash={true}
           backLink="/users"
@@ -83,6 +113,12 @@ export default function UserTrashPage() {
             <UserTrashTable
               users={trashList}
               isLoading={isFetchLoading}
+              restoringUserId={
+                restoreMutation.isPending
+                  ? (restoreMutation.variables as string)
+                  : null
+              }
+              onRestoreClick={handleRestoreUser}
               onRowClick={handleRowClick}
             />
           </div>
@@ -96,7 +132,7 @@ export default function UserTrashPage() {
                 totalElements={pageData.totalElements}
                 page={filters.page || 1}
                 onPageChange={(pageOrFn) => {
-                  setFilters((prev) => {
+                  setFilters((prev: UserFilterParams) => {
                     const nextPage =
                       typeof pageOrFn === "function"
                         ? pageOrFn(prev.page || 1)

@@ -6,6 +6,7 @@ import axios, {
 } from 'axios';
 import { tokenStorage } from './storage';
 import { ApiResponse } from '../common/types';
+
 export class ApiError extends Error {
     readonly code: number;
     readonly statusCode: number;
@@ -18,6 +19,10 @@ export class ApiError extends Error {
         Object.setPrototypeOf(this, ApiError.prototype);
     }
 }
+
+export const isApiError = (error: unknown): error is ApiError => {
+    return error instanceof ApiError;
+};
 
 let onTokenExpiredCallback: (() => void) | null = null;
 export const setupHttpInterceptor = (onExpired: () => void) => {
@@ -40,10 +45,9 @@ const createBaseClient = (): AxiosInstance => {
         timeout: 15000,
     });
 };
-// Khởi tạo instance
+
 const instance = createBaseClient();
 
-// Gắn token vào header Authorization
 instance.interceptors.request.use(
     (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
         if (typeof window !== 'undefined') {
@@ -57,30 +61,36 @@ instance.interceptors.request.use(
     (error: unknown) => Promise.reject(error)
 );
 
-// Bóc tách dữ liệu và xử lý lỗi
 instance.interceptors.response.use(
     (response: AxiosResponse<ApiResponse<unknown>>): any => {
+        // Trả về trực tiếp data.result đã qua bóc tách
         return response.data.result;
     },
     (error: AxiosError<ApiResponse<null>>) => {
         if (error.response) {
             const status = error.response.status;
             const apiData = error.response.data;
-            const requestUrl = error.config?.url ?? '';
+            const requestUrl = error.config?.url?.toLowerCase() ?? '';
+
+            // Kiểm tra xem URL có phải là API Auth/Login hay không
+            const isAuthRequest = requestUrl.includes('auth/login') || requestUrl.includes('auth/token');
+
             const isTokenExpired =
-                status === 401 ||
-                apiData?.code === 4102 ||
-                apiData?.message?.includes("TOKEN_EXPIRED");
-            if (isTokenExpired && !requestUrl.includes('/auth/login')) {
-                if (typeof window !== 'undefined') {
-                    if (onTokenExpiredCallback) {
-                        onTokenExpiredCallback();
-                    } else {
-                        window.location.href = '/login';
-                    }
-                    return new Promise(() => { });
+                (status === 401 ||
+                    apiData?.code === 4102 ||
+                    apiData?.message?.includes("TOKEN_EXPIRED")) &&
+                !isAuthRequest;
+
+            if (isTokenExpired) {
+                if (typeof window !== 'undefined' && onTokenExpiredCallback) {
+                    onTokenExpiredCallback();
                 }
+                return Promise.reject(
+                    new ApiError('Phiên đăng nhập đã hết hạn.', 4102, 401)
+                );
             }
+
+            // Nếu là lỗi đăng nhập sai (401/400 từ /auth/login), văng lỗi ApiError bình thường
             return Promise.reject(
                 new ApiError(
                     apiData?.message ?? 'Có lỗi xảy ra phía máy chủ!',
@@ -89,14 +99,24 @@ instance.interceptors.response.use(
                 )
             );
         }
+
+        // 2. Lỗi Request - Không nhận được Response (Timeout hoặc Đứt Mạng)
         if (error.request) {
+            if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+                return Promise.reject(
+                    new ApiError('Yêu cầu quá thời gian phản hồi (Timeout 15s). Vui lòng thử lại!', 1002, 504)
+                );
+            }
             return Promise.reject(
-                new ApiError('Kết nối tới server thất bại hoặc quá thời gian phản hồi!', 1001, 503)
+                new ApiError('Không thể kết nối tới máy chủ. Vui lòng kiểm tra lại kết nối mạng!', 1001, 503)
             );
         }
+
+        // 3. Lỗi Cú pháp / JS Runtime khác
         return Promise.reject(new ApiError(error.message, 1000, 500));
     }
 );
+
 export interface HttpClient {
     get<T = unknown>(url: string, config?: any): Promise<T>;
     post<T = unknown, D = unknown>(url: string, data?: D, config?: any): Promise<T>;

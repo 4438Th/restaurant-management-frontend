@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Icon } from "@/components/ui";
+import { Icon } from "@repo/ui";
 import {
   TableResponse,
   TableCreateRequest,
@@ -13,19 +13,34 @@ import {
   TableArea,
   TableAreaLabel,
 } from "@repo/shared-features/tables";
-import { useCreateTable, useUpdateTable } from "@repo/shared-features/tables";
+
+export interface TableFormSubmitData {
+  isEditMode: boolean;
+  tableId?: string;
+  tableName: string;
+  payload: TableCreateRequest | TableUpdateRequest;
+}
 
 interface TableFormProps {
   isOpen: boolean;
   onClose: () => void;
-  table: TableResponse | null;
+  table?: TableResponse | null;
+  isPending?: boolean;
+  onSubmit: (data: TableFormSubmitData) => void;
+  onErrorValidation?: (message: string) => void;
 }
 
-export function TableForm({ isOpen, onClose, table }: TableFormProps) {
-  const createMutation = useCreateTable();
-  const updateMutation = useUpdateTable();
+export function TableForm({
+  isOpen,
+  onClose,
+  table,
+  isPending = false,
+  onSubmit,
+  onErrorValidation,
+}: TableFormProps) {
+  const isEditMode = !!table;
 
-  // State các trường của Form
+  // Local State
   const [tableName, setTableName] = useState("");
   const [capacity, setCapacity] = useState<number | string>(4);
   const [type, setType] = useState<string>("STANDARD");
@@ -34,13 +49,13 @@ export function TableForm({ isOpen, onClose, table }: TableFormProps) {
 
   // Đồng bộ thông tin dữ liệu khi mở Drawer/Modal
   useEffect(() => {
-    if (table) {
+    if (table && isOpen) {
       setTableName(table.tableName || "");
       setCapacity(table.capacity || 4);
       setType(table.type || "STANDARD");
       setArea(table.area || "MAIN_HALL");
       setStatus(table.status || "AVAILABLE");
-    } else {
+    } else if (!isOpen) {
       setTableName("");
       setCapacity(4);
       setType("STANDARD");
@@ -51,37 +66,38 @@ export function TableForm({ isOpen, onClose, table }: TableFormProps) {
 
   if (!isOpen) return null;
 
-  const isPending = createMutation.isPending || updateMutation.isPending;
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!tableName || !capacity || !area || !type) {
-      alert("Vui lòng điền đầy đủ các thông tin bắt buộc (*)");
+    if (!tableName.trim() || !capacity || !area || !type) {
+      onErrorValidation?.("Vui lòng điền đầy đủ các thông tin bắt buộc (*)");
       return;
     }
 
     const basePayload = {
-      tableName,
+      tableName: tableName.trim(),
       capacity: Number(capacity),
       type: type as TableType,
       area: area as TableArea,
     };
 
-    if (table) {
-      updateMutation.mutate(
-        {
-          id: table.id,
-          payload: {
-            ...basePayload,
-            status: status as TableStatus,
-          } as TableUpdateRequest,
-        },
-        { onSuccess: () => onClose() },
-      );
+    if (isEditMode && table) {
+      const updatePayload: TableUpdateRequest = {
+        ...basePayload,
+        status: status as TableStatus,
+      };
+
+      onSubmit({
+        isEditMode: true,
+        tableId: table.id,
+        tableName: tableName.trim(),
+        payload: updatePayload,
+      });
     } else {
-      createMutation.mutate(basePayload as TableCreateRequest, {
-        onSuccess: () => onClose(),
+      onSubmit({
+        isEditMode: false,
+        tableName: tableName.trim(),
+        payload: basePayload as TableCreateRequest,
       });
     }
   };
@@ -99,14 +115,15 @@ export function TableForm({ isOpen, onClose, table }: TableFormProps) {
         <div className="flex justify-between items-center border-b border-outline-variant pb-4 shrink-0">
           <h2 className="text-xl font-bold text-on-surface flex items-center gap-2">
             <Icon
-              name={table ? "Pencil" : "Plus"}
+              name={isEditMode ? "Pencil" : "Plus"}
               className="w-5 h-5 text-primary"
             />
-            {table ? "Cập nhật bàn ăn" : "Thêm bàn mới"}
+            {isEditMode ? "Cập nhật bàn ăn" : "Thêm bàn mới"}
           </h2>
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 rounded-xl hover:bg-surface-container text-on-surface-variant transition-colors"
+            className="p-1.5 rounded-xl hover:bg-surface-container text-on-surface-variant transition-colors cursor-pointer"
           >
             <Icon name="X" className="w-5 h-5" />
           </button>
@@ -189,7 +206,7 @@ export function TableForm({ isOpen, onClose, table }: TableFormProps) {
             </div>
 
             {/* TRẠNG THÁI (Chỉ hiển thị khi cập nhật) */}
-            {table && (
+            {isEditMode && (
               <div className="flex flex-col gap-1.5">
                 <label className="font-bold text-on-surface-variant">
                   Trạng thái bàn
@@ -217,19 +234,19 @@ export function TableForm({ isOpen, onClose, table }: TableFormProps) {
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="px-4 py-2 bg-surface-variant text-on-surface hover:bg-surface-container rounded-xl text-[13px] font-bold transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-surface-variant text-on-surface hover:bg-surface-container rounded-xl text-[13px] font-bold transition-colors disabled:opacity-50 cursor-pointer"
             >
               Hủy bỏ
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="px-4 py-2 bg-primary text-on-primary hover:bg-primary/90 rounded-xl text-[13px] font-bold shadow-sm transition-colors flex items-center gap-2 disabled:opacity-70"
+              className="px-4 py-2 bg-primary text-on-primary hover:bg-primary/90 rounded-xl text-[13px] font-bold shadow-sm transition-colors flex items-center gap-2 disabled:opacity-70 cursor-pointer"
             >
               {isPending && (
                 <div className="w-4 h-4 border-2 border-on-primary border-t-transparent rounded-full animate-spin" />
               )}
-              <span>{table ? "Lưu thay đổi" : "Tạo bàn mới"}</span>
+              <span>{isEditMode ? "Lưu thay đổi" : "Tạo bàn mới"}</span>
             </button>
           </div>
         </form>

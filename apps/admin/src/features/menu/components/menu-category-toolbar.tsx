@@ -1,6 +1,6 @@
 "use client";
 
-import { Icon } from "@/components/ui";
+import { Icon } from "@repo/ui";
 
 export interface MenuCategoryToolbarProps {
   searchQuery: string;

@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Icon } from "@/components/ui/icon";
+import { Icon } from "@repo/ui";
 
 // Bộ từ điển để dịch URL slug sang tiếng Việt tương ứng với menu của ông giáo
 const routeLabels: Record<string, string> = {

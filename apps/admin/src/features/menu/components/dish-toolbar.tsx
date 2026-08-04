@@ -1,9 +1,11 @@
 "use client";
 
 import React from "react";
-import { Icon } from "@/components/ui";
+import { Icon } from "@repo/ui";
 import {
+  DishStatus,
   DishStatusLabel,
+  DishType,
   DishTypeLabel,
   MenuCategoryResponse,
 } from "@repo/shared-features/menu";
@@ -80,11 +82,13 @@ export function DishToolbar({
             className="w-full text-[13px] bg-surface border border-outline-variant rounded-xl px-3 py-2 outline-none focus:border-primary cursor-pointer font-medium text-on-surface md:w-32"
           >
             <option value="All">Tất cả loại</option>
-            {Object.keys(DishTypeLabel).map((key) => (
-              <option key={key} value={key}>
-                {DishTypeLabel[key]}
-              </option>
-            ))}
+            {(Object.entries(DishTypeLabel) as [DishType, string][]).map(
+              ([typeKey, label]) => (
+                <option key={typeKey} value={typeKey}>
+                  {label}
+                </option>
+              ),
+            )}
           </select>
         </div>
 
@@ -99,11 +103,11 @@ export function DishToolbar({
             className="w-full text-[13px] bg-surface border border-outline-variant rounded-xl px-3 py-2 outline-none focus:border-primary cursor-pointer font-medium text-on-surface md:w-36"
           >
             <option value="All">Tất cả trạng thái</option>
-            {Object.keys(DishStatusLabel)
-              .filter((key) => key !== "DELETED")
-              .map((key) => (
-                <option key={key} value={key}>
-                  {DishStatusLabel[key]}
+            {(Object.entries(DishStatusLabel) as [DishStatus, string][])
+              .filter(([statusKey]) => statusKey !== DishStatus.DELETED)
+              .map(([statusKey, label]) => (
+                <option key={statusKey} value={statusKey}>
+                  {label}
                 </option>
               ))}
           </select>

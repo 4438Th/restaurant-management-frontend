@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Icon } from "@/components/ui/icon";
+import { Icon } from "@repo/ui";
 import { sidebarNavItems, NavItem } from "./nav-items";
 
 export function Sidebar() {
@@ -21,8 +21,12 @@ export function Sidebar() {
       {/* NAVIGATION LINKS */}
       <div className="flex-1 overflow-y-auto py-2">
         <ul className="flex flex-col gap-1 px-2">
-          {sidebarNavItems.map((item, index) => (
-            <SidebarNavItem key={index} item={item} pathname={pathname} />
+          {sidebarNavItems.map((item) => (
+            <SidebarNavItem
+              key={item.href || item.title}
+              item={item}
+              pathname={pathname}
+            />
           ))}
         </ul>
       </div>
@@ -47,16 +51,20 @@ interface SidebarNavItemProps {
 }
 
 function SidebarNavItem({ item, pathname }: SidebarNavItemProps) {
+  // Hàm kiểm tra active đường dẫn chuẩn xác (Xử lý riêng cho trang chủ '/')
+  const checkIsActive = (path?: string) => {
+    if (!path) return false;
+    if (path === "/") return pathname === "/";
+    return pathname.startsWith(path);
+  };
+
   // Kiểm tra nếu route hiện tại khớp với bất kỳ menu con nào
-  const isParentActive = item.children?.some(
-    (child) => child.href && pathname.startsWith(child.href),
+  const isParentActive = item.children?.some((child) =>
+    checkIsActive(child.href),
   );
 
   // Mặc định mở dropdown nếu đang ở trong route con
   const [isOpen, setIsOpen] = useState<boolean>(!!isParentActive);
-
-  const isActive = (path?: string) =>
-    Boolean(path && pathname.startsWith(path));
 
   const activeStyle =
     "text-primary font-bold border-r-4 border-primary bg-primary-container/10";
@@ -68,7 +76,9 @@ function SidebarNavItem({ item, pathname }: SidebarNavItemProps) {
     return (
       <li>
         <button
-          onClick={() => setIsOpen(!isOpen)}
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
+          aria-expanded={isOpen}
           className={`flex items-center justify-between w-full px-4 py-2 rounded-lg transition-colors ${
             isParentActive
               ? "text-primary font-bold"
@@ -89,12 +99,12 @@ function SidebarNavItem({ item, pathname }: SidebarNavItemProps) {
 
         {isOpen && (
           <ul className="mt-1 flex flex-col gap-1 pl-9 pr-2">
-            {item.children.map((subItem, idx) => (
-              <li key={idx}>
+            {item.children.map((subItem) => (
+              <li key={subItem.href || subItem.title}>
                 <Link
                   href={subItem.href || "#"}
                   className={`flex items-center gap-3 px-3 py-1.5 rounded-lg transition-colors ${
-                    isActive(subItem.href) ? activeStyle : inactiveStyle
+                    checkIsActive(subItem.href) ? activeStyle : inactiveStyle
                   }`}
                 >
                   <Icon name={subItem.icon} className="w-4 h-4" />
@@ -116,7 +126,7 @@ function SidebarNavItem({ item, pathname }: SidebarNavItemProps) {
       <Link
         href={item.href || "#"}
         className={`flex items-center gap-4 px-4 py-2 rounded-lg transition-colors ${
-          isActive(item.href) ? activeStyle : inactiveStyle
+          checkIsActive(item.href) ? activeStyle : inactiveStyle
         }`}
       >
         <Icon name={item.icon} className="w-5 h-5" />

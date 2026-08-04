@@ -1,16 +1,25 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { ApiError } from "@repo/core";
 
-import { MenuCategoryToolbar } from "@/features/menu/components";
-import { MenuCategoryTable } from "@/features/menu/components";
-import { MenuCategoryForm } from "@/features/menu/components";
-import { MenuCategoryAnalytics } from "@/features/menu/components";
+import {
+  MenuCategoryToolbar,
+  MenuCategoryTable,
+  MenuCategoryForm,
+  MenuCategoryAnalytics,
+  MenuCategoryFormValues,
+} from "@/features/menu/components";
 import { TablePagination } from "@/components/ui";
 import { PageHeader } from "@/components/layout";
+import { ConfirmModal } from "@repo/ui";
 
-import { useMenuCategory } from "@repo/shared-features/menu";
 import {
+  useMenuCategory,
+  useCreateMenuCategory,
+  useUpdateMenuCategory,
+  useDeleteMenuCategory,
   MenuCategoryResponse,
   MenuCategoryStatus,
   MenuCategoryFilterParams,
@@ -27,6 +36,16 @@ export default function MenuCategoriesPage() {
   const [selectedCategory, setSelectedCategory] =
     useState<MenuCategoryResponse | null>(null);
 
+  // State quản lý danh mục chờ xóa
+  const [categoryToDelete, setCategoryToDelete] =
+    useState<MenuCategoryResponse | null>(null);
+
+  // Custom hooks xử lý API Mutate
+  const createMutation = useCreateMenuCategory();
+  const updateMutation = useUpdateMenuCategory();
+  const deleteMutation = useDeleteMenuCategory();
+
+  // Debounce ô tìm kiếm (400ms)
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -35,7 +54,7 @@ export default function MenuCategoriesPage() {
     return () => clearTimeout(handler);
   }, [searchQuery]);
 
-  // ĐỒNG BỘ: Tạo object filter params theo đúng định nghĩa MenuCategoryFilterParams
+  // Chuẩn bị filter params cho React Query hook
   const filterParams: MenuCategoryFilterParams = {
     page,
     size,
@@ -46,22 +65,100 @@ export default function MenuCategoriesPage() {
         : (selectedStatus as MenuCategoryStatus),
   };
 
-  // ĐỒNG BỘ: Truyền duy nhất một object params vào Hook
   const { data: pageData, isLoading: isFetchLoading } =
     useMenuCategory(filterParams);
 
   const categoriesList = pageData?.data || [];
   const totalPages = pageData?.totalPages || 1;
 
+  // Handler mở drawer tạo mới
   const handleCreateClick = (): void => {
     setSelectedCategory(null);
     setIsDrawerOpen(true);
   };
 
+  // Handler mở drawer cập nhật
   const handleEditClick = (category: MenuCategoryResponse): void => {
     setSelectedCategory(category);
     setIsDrawerOpen(true);
   };
+
+  // Mở modal xác nhận xóa
+  const handleDeleteClick = (category: MenuCategoryResponse): void => {
+    setCategoryToDelete(category);
+  };
+
+  // Thực thi API Xóa danh mục khi người dùng xác nhận trên Modal
+  const handleConfirmDelete = (): void => {
+    if (!categoryToDelete) return;
+
+    deleteMutation.mutate(categoryToDelete.id, {
+      onSuccess: () => {
+        toast.success(
+          `Xóa danh mục "${categoryToDelete.categoryName}" thành công!`,
+        );
+        setCategoryToDelete(null);
+        if (categoriesList.length === 1 && page > 1) {
+          setPage((prev) => prev - 1);
+        }
+      },
+      onError: (error: ApiError) => {
+        toast.error(error?.message || "Có lỗi xảy ra khi xóa danh mục!");
+      },
+    });
+  };
+
+  // Quản lý submit Form (Tạo / Cập nhật) & hiển thị Toast
+  const handleFormSubmit = async (values: MenuCategoryFormValues) => {
+    const cleanCategoryName = values.categoryName.trim();
+    const cleanDescription = values.description.trim();
+
+    if (selectedCategory) {
+      // API Cập nhật
+      updateMutation.mutate(
+        {
+          id: selectedCategory.id,
+          payload: {
+            categoryName: cleanCategoryName,
+            description: cleanDescription,
+            status: values.status,
+          },
+        },
+        {
+          onSuccess: () => {
+            toast.success(
+              `Cập nhật danh mục "${cleanCategoryName}" thành công!`,
+            );
+            setIsDrawerOpen(false);
+          },
+          onError: (error: ApiError) => {
+            toast.error(
+              error?.message || "Có lỗi xảy ra khi cập nhật danh mục!",
+            );
+          },
+        },
+      );
+    } else {
+      // API Tạo mới
+      createMutation.mutate(
+        {
+          categoryName: cleanCategoryName,
+          description: cleanDescription,
+        },
+        {
+          onSuccess: () => {
+            toast.success(`Tạo danh mục "${cleanCategoryName}" thành công!`);
+            setIsDrawerOpen(false);
+          },
+          onError: (error: ApiError) => {
+            toast.error(error?.message || "Có lỗi xảy ra khi tạo danh mục!");
+          },
+        },
+      );
+    }
+  };
+
+  const isFormPending = createMutation.isPending || updateMutation.isPending;
 
   return (
     <>
@@ -74,11 +171,7 @@ export default function MenuCategoriesPage() {
           trashLink="/menu/categories/trash"
         />
 
-        <div
-          className="flex-1 min-h-0 bg-surface-container-lowest
-         border border-outline-variant rounded-2xl flex flex-col
-          shadow-sm overflow-hidden"
-        >
+        <div className="flex-1 min-h-0 bg-surface-container-lowest border border-outline-variant rounded-2xl flex flex-col shadow-sm overflow-hidden">
           <MenuCategoryToolbar
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
@@ -94,6 +187,12 @@ export default function MenuCategoriesPage() {
               categories={categoriesList}
               isLoading={isFetchLoading}
               onEditClick={handleEditClick}
+              onDeleteClick={handleDeleteClick}
+              deletingCategoryId={
+                deleteMutation.isPending
+                  ? (deleteMutation.variables as string)
+                  : null
+              }
             />
           </div>
 
@@ -110,13 +209,30 @@ export default function MenuCategoriesPage() {
             </div>
           )}
         </div>
+
         <MenuCategoryAnalytics />
       </main>
 
+      {/* FORM DRAWER */}
       <MenuCategoryForm
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         category={selectedCategory}
+        onSubmit={handleFormSubmit}
+        isPending={isFormPending}
+      />
+
+      {/* MODAL XÁC NHẬN XÓA DANH MỤC */}
+      <ConfirmModal
+        isOpen={!!categoryToDelete}
+        onClose={() => setCategoryToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title="Xác nhận xóa danh mục"
+        description="Danh mục này sẽ bị chuyển vào thùng rác."
+        message={<>Bạn có chắc chắn muốn xóa danh mục này không?</>}
+        confirmText="Xóa danh mục"
+        variant="danger"
+        isLoading={deleteMutation.isPending}
       />
     </>
   );

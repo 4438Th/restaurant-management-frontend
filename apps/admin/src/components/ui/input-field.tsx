@@ -1,10 +1,9 @@
 import React from "react";
-import * as Icons from "lucide-react";
-import { Icon } from "./icon";
+import { Icon, type IconName } from "@repo/ui";
 
 interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
-  iconName: keyof typeof Icons;
+  iconName: IconName;
   isError?: boolean;
 }
 

@@ -1,15 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { toast } from "sonner";
 import DatePicker from "react-datepicker";
 import { vi } from "date-fns/locale/vi";
 import { parse, format, isValid } from "date-fns";
 import "react-datepicker/dist/react-datepicker.css";
 
-import { Icon } from "@/components/ui";
-import { ApiError } from "@repo/core";
-import { useCreateUser, useUpdateUser } from "@repo/shared-features/users";
+import { Icon } from "@repo/ui";
 import {
   User,
   UserUpdateRequest,
@@ -19,25 +16,36 @@ import {
   UserRolesLabel,
 } from "@repo/shared-features/users";
 
+export interface UserFormSubmitData {
+  isEditMode: boolean;
+  userId?: string;
+  payload: UserCreateRequest | UserUpdateRequest;
+}
+
 interface UserFormProps {
   isOpen: boolean;
   onClose: () => void;
   user?: User | null;
+  isPending?: boolean;
+  onSubmit: (data: UserFormSubmitData) => void;
+  onErrorValidation?: (message: string) => void;
 }
 
-export function UserForm({ isOpen, onClose, user }: UserFormProps) {
-  const createUserMutation = useCreateUser();
-  const updateUserMutation = useUpdateUser();
-
+export function UserForm({
+  isOpen,
+  onClose,
+  user,
+  isPending = false,
+  onSubmit,
+  onErrorValidation,
+}: UserFormProps) {
   const isEditMode = !!user;
   const isEditingAdmin = user?.roles?.includes("ADMIN");
 
-  // State quản lý thông tin form
+  // Local State
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-
-  // SỬA: State status nên lưu KEY (string như 'PENDING', 'ACTIVE') thay vì lưu VALUE tiếng Việt
   const [status, setStatus] = useState<keyof typeof UserStatus>("PENDING");
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [email, setEmail] = useState("");
@@ -74,11 +82,7 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
           setDob(format(parsedDate, "yyyy-MM-dd"));
         } else {
           const backupParse = parse(user.dob, "dd/MM/yyyy", new Date());
-          if (isValid(backupParse)) {
-            setDob(format(backupParse, "yyyy-MM-dd"));
-          } else {
-            setDob("");
-          }
+          setDob(isValid(backupParse) ? format(backupParse, "yyyy-MM-dd") : "");
         }
       } else {
         setDob("");
@@ -93,7 +97,6 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
       setStatus("PENDING");
       setSelectedRoles([]);
     }
-    // 2. SỬA TẠI ĐÂY: Xóa bỏ chữ 'lod' gây lỗi cú pháp
   }, [user, isOpen]);
 
   const dateValue = useMemo(() => {
@@ -107,19 +110,13 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
   }, []);
 
   const handleDateChange = (date: Date | null) => {
-    if (!date) {
-      setDob("");
-      return;
-    }
-    setDob(format(date, "yyyy-MM-dd"));
+    setDob(date ? format(date, "yyyy-MM-dd") : "");
   };
 
   const handleToggleRole = (role: string) => {
-    if (selectedRoles.includes(role)) {
-      setSelectedRoles(selectedRoles.filter((r) => r !== role));
-    } else {
-      setSelectedRoles([...selectedRoles, role]);
-    }
+    setSelectedRoles((prev) =>
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role],
+    );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -127,19 +124,16 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
     if (!username && !isEditMode) return;
 
     if (!fullName || !email || !phoneNumber || !dob) {
-      toast.error("Vui lòng điền đầy đủ các thông tin bắt buộc!");
+      onErrorValidation?.("Vui lòng điền đầy đủ các thông tin bắt buộc!");
       return;
     }
 
     if (!isEditMode && selectedRoles.length === 0) {
-      toast.error("Vui lòng gán ít nhất một vai trò cho nhân sự!");
+      onErrorValidation?.("Vui lòng gán ít nhất một vai trò cho nhân sự!");
       return;
     }
 
-    let formattedDob = dob;
-    if (dateValue) {
-      formattedDob = dateValue.toISOString();
-    }
+    const formattedDob = dateValue ? dateValue.toISOString() : dob;
 
     if (isEditMode && user) {
       const finalStatus = (isEditingAdmin ? user.status : status) as UserStatus;
@@ -155,21 +149,11 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
         password: finalPassword,
       };
 
-      updateUserMutation.mutate(
-        {
-          id: user.id,
-          payload: updatePayload,
-        },
-        {
-          onSuccess: () => {
-            toast.success("Cập nhật tài khoản thành công!");
-            onClose();
-          },
-          onError: (error: ApiError) => {
-            toast.error(error.message || "Không thể cập nhật tài khoản!");
-          },
-        },
-      );
+      onSubmit({
+        isEditMode: true,
+        userId: user.id,
+        payload: updatePayload,
+      });
     } else {
       if (!password) return;
 
@@ -183,22 +167,14 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
         roles: selectedRoles,
       };
 
-      createUserMutation.mutate(createPayload, {
-        onSuccess: () => {
-          toast.success("Tạo tài khoản mới thành công!");
-          onClose();
-        },
-        onError: (error: ApiError) => {
-          toast.error(error.message || "Không thể tạo tài khoản mới!");
-        },
+      onSubmit({
+        isEditMode: false,
+        payload: createPayload,
       });
     }
   };
 
   if (!isOpen) return null;
-
-  const isPending =
-    createUserMutation.isPending || updateUserMutation.isPending;
 
   return (
     <>
@@ -345,7 +321,6 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
                 Trạng thái tài khoản
               </label>
               <div className="flex gap-2 mt-2">
-                {/* SỬA: So sánh trực tiếp với chuỗi KEY viết hoa */}
                 <button
                   type="button"
                   onClick={() => setStatus("PENDING")}
@@ -420,13 +395,12 @@ export function UserForm({ isOpen, onClose, user }: UserFormProps) {
                 })}
               </div>
               <p className="text-[11px] text-on-surface-variant mt-2">
-                * Hệ thống tự động ánh xạ quyền (Permissions) dựa trên vai trò
-                (Roles) được chọn.
+                * Hệ thống tự động ánh xạ quyền dựa trên vai trò được chọn.
               </p>
             </div>
           )}
 
-          {/* Nút hành động */}
+          {/* Actions */}
           <div className="mt-auto pt-6 border-t border-outline-variant flex gap-3">
             <button
               type="button"

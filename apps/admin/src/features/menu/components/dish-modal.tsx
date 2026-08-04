@@ -1,9 +1,10 @@
 "use client";
 
 import React from "react";
-import { Icon } from "@/components/ui";
+import { Icon } from "@repo/ui";
 import {
   DishResponse,
+  DishStatus,
   DishStatusLabel,
   DishTypeLabel,
 } from "@repo/shared-features/menu";
@@ -47,7 +48,7 @@ export function DishModal({ isOpen, onClose, dish }: DishModalProps) {
   };
 
   // Hàm helper render badge trạng thái ĐỒNG BỘ 100% màu sắc đậm rõ nét với Table
-  const renderStatusBadge = (status: string) => {
+  const renderStatusBadge = (status: DishStatus) => {
     const label = DishStatusLabel[status] || status;
 
     switch (status) {

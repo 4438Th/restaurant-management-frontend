@@ -6,22 +6,22 @@ export enum DishStatus {
     DISCONTINUED = 'DISCONTINUED',
     DELETED = 'DELETED',
 }
-export const DishStatusLabel: Record<string, string> = {
-    'Đang bán': DishStatus.AVAILABLE,
-    'Lưu trữ': DishStatus.ARCHIVED,
-    'Tạm hết món': DishStatus.OUT_OF_STOCK,
-    'Ngừng bán': DishStatus.DISCONTINUED,
-    'Đã xóa': DishStatus.DELETED,
+export const DishStatusLabel: Record<DishStatus, string> = {
+    [DishStatus.AVAILABLE]: 'Đang bán',
+    [DishStatus.ARCHIVED]: 'Lưu trữ',
+    [DishStatus.OUT_OF_STOCK]: 'Tạm hết món',
+    [DishStatus.DISCONTINUED]: 'Ngừng bán',
+    [DishStatus.DELETED]: 'Đã xóa',
 };
 export enum DishType {
     FOOD = 'FOOD',
     BEVERAGE = 'BEVERAGE',
     OTHER = 'OTHER'
 }
-export const DishTypeLabel: Record<string, string> = {
-    'Đồ ăn': DishType.FOOD,
-    'Đồ uống': DishType.BEVERAGE,
-    'Khác': DishType.OTHER,
+export const DishTypeLabel: Record<DishType, string> = {
+    [DishType.FOOD]: 'Đồ ăn',
+    [DishType.BEVERAGE]: 'Đồ uống',
+    [DishType.OTHER]: 'Khác',
 };
 export interface DishCreateRequest {
     dishName: string;

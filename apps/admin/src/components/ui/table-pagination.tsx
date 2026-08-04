@@ -1,4 +1,3 @@
-// apps/admin/src/components/ui/table-pagination.tsx
 "use client";
 
 import React from "react";

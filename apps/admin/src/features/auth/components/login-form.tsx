@@ -1,14 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useLogin } from "@repo/shared-features";
-import { tokenStorage } from "@repo/core";
+import { toast } from "sonner";
 
 export function LoginForm() {
-  useEffect(() => {
-    tokenStorage.clearToken();
-  }, []);
-
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
@@ -19,7 +15,24 @@ export function LoginForm() {
     e.preventDefault();
     if (!username || !password) return;
 
-    loginMutation.mutate({ username, password });
+    loginMutation.mutate(
+      { username, password },
+      {
+        onSuccess: (data) => {
+          if (data?.token) {
+            toast.success("Đăng nhập hệ thống thành công!");
+          } else {
+            toast.error("Dữ liệu phản hồi từ máy chủ không hợp lệ!");
+          }
+        },
+        onError: (error) => {
+          toast.error(
+            error.message ||
+              "Đăng nhập thất bại, vui lòng kiểm tra lại thông tin!",
+          );
+        },
+      },
+    );
   };
 
   return (

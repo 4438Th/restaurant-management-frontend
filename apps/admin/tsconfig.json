@@ -8,17 +8,14 @@
     ],
     "strictNullChecks": true,
     "paths": {
-      "@/*": ["./src/*"] 
+      "@/*": ["./src/*"]
     }
   },
   "include": [
-    "src/**/*",        
+    "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "next-env.d.ts",
-    "next.config.js",
-    ".next/types/**/*.ts",
-    "../../packages/core/src/types/axios.d.ts"
-, "../../packages/shared-features/src/users/users.hooks.ts", "../../packages/shared-features/src/users/users.service.ts", "../../packages/shared-features/src/users/users.types.ts", "../../packages/shared-features/src/tables/tables.hooks.ts", "../../packages/shared-features/src/tables/tables.service.ts", "../../packages/shared-features/src/tables/tables.types.ts", "../../packages/shared-features/src/menu/categories", "../../packages/shared-features/src/menu/dishes"  ],
+    ".next/types/**/*.ts"
+  ],
   "exclude": ["node_modules", ".next"]
 }
