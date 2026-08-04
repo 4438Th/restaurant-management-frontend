@@ -1,7 +1,6 @@
 import React from "react";
 import * as Icons from "lucide-react";
 
-// Export TypeIconName dùng chung cho toàn bộ Monorepo
 export type IconName = keyof typeof Icons;
 
 export interface IconProps extends React.SVGProps<SVGSVGElement> {
@@ -10,11 +9,17 @@ export interface IconProps extends React.SVGProps<SVGSVGElement> {
 }
 
 export function Icon({ name, className, ...props }: IconProps) {
-  const LucideIcon = Icons[name] as React.ComponentType<{ className?: string }>;
+  // Lấy icon từ gói lucide-react
+  const LucideIcon = Icons[name] as React.ElementType;
 
-  // Kiểm tra tồn tại và đảm bảo nó thực sự là một Component React
-  if (!LucideIcon || typeof LucideIcon !== "function") {
-    return <Icons.HelpCircle className={className} {...props} />;
+  // Kiểm tra nếu icon tồn tại
+  if (!LucideIcon) {
+    // Lưu ý: Dùng CircleHelp (Lucide mới) hoặc HelpCircle (Lucide cũ)
+    const FallbackIcon = (Icons.CircleHelp ||
+      Icons.HelpCircle) as React.ElementType;
+    return FallbackIcon ? (
+      <FallbackIcon className={className} {...props} />
+    ) : null;
   }
 
   return <LucideIcon className={className} {...props} />;
