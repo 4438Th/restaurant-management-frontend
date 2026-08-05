@@ -1,6 +1,9 @@
 import React, { useState } from "react";
-import { Sidebar } from "./side-bar";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Sidebar, Icon } from "@repo/ui";
+import { useLogout } from "@repo/shared-features/auth";
 import { PageHeader } from "./page-header";
+import { posNavItems } from "./nav-items"; // Đường dẫn file chứa danh sách menu của POS
 
 export interface AppLayoutProps {
   children: React.ReactNode;
@@ -9,8 +12,20 @@ export interface AppLayoutProps {
 }
 
 export function AppLayout({ children, title, actionButton }: AppLayoutProps) {
-  // isSidebarOpen quản lý trạng thái đóng/mở Sidebar
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { mutate: executeLogout, isPending: isPendingLogout } = useLogout();
+
+  const handleLogout = () => {
+    executeLogout(undefined, {
+      onSettled: () => {
+        // Điều hướng về trang đăng nhập của POS
+        navigate("/login", { replace: true });
+      },
+    });
+  };
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-surface text-on-surface font-sans">
@@ -30,7 +45,18 @@ export function AppLayout({ children, title, actionButton }: AppLayoutProps) {
           ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
-        <Sidebar isCollapsed={false} onToggle={() => setIsSidebarOpen(false)} />
+        <Sidebar
+          brandTitle="HTH POS"
+          items={posNavItems}
+          pathname={location.pathname}
+          onLogout={handleLogout}
+          isPendingLogout={isPendingLogout}
+          renderLink={(href, className, linkChildren) => (
+            <Link to={href} className={className}>
+              {linkChildren}
+            </Link>
+          )}
+        />
       </aside>
 
       {/* 3. PHẦN KHÔNG GIAN NỘI DUNG BÊN PHẢI */}
@@ -45,19 +71,7 @@ export function AppLayout({ children, title, actionButton }: AppLayoutProps) {
             aria-label="Toggle Sidebar"
             aria-expanded={isSidebarOpen}
           >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
+            <Icon name="Menu" className="w-6 h-6" />
           </button>
 
           {/* PageHeader Component */}
