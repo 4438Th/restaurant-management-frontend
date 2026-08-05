@@ -19,6 +19,11 @@ export const posNavItems: NavItem[] = [
         icon: "LayoutGrid",
     },
     {
+        title: "Lịch đặt bàn",
+        href: "/reservations",
+        icon: "CalendarCheck",
+    },
+    {
         title: "Quản lý gọi món",
         icon: "ClipboardList",
         children: [
