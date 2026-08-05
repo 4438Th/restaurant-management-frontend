@@ -70,7 +70,7 @@ export function TopBar() {
         })}
       </nav>
 
-      {/* BÊN PHẢI: Các nút tiện ích & Profile (Giữ nguyên giao diện của ông giáo) */}
+      {/* BÊN PHẢI: Các nút tiện ích & Profile */}
       <div className="flex items-center gap-4">
         <button className="p-2 hover:bg-surface-container rounded-full text-on-surface-variant transition-colors relative">
           <Icon name="Bell" className="w-5 h-5" />

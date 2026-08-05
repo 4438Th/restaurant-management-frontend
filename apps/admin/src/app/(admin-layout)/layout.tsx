@@ -1,9 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { Sidebar } from "@/components/layout";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Sidebar, Icon } from "@repo/ui";
+import { useLogout } from "@repo/shared-features/auth";
 import { TopBar } from "@/components/layout";
-import { Icon } from "@repo/ui";
+import { sidebarNavItems } from "@/components/layout/nav-items";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -11,6 +14,16 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const pathname = usePathname();
+  const { mutate: executeLogout, isPending: isPendingLogout } = useLogout();
+
+  const handleLogout = () => {
+    executeLogout(undefined, {
+      onSettled: () => {
+        window.location.href = "/login";
+      },
+    });
+  };
 
   return (
     <div className="bg-surface text-on-surface h-screen w-full flex overflow-hidden font-sans">
@@ -25,12 +38,23 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* 2. THANH ĐIỀU HƯỚNG BÊN TRÁI */}
       <aside
         className={`
-          fixed inset-y-0 left-0 z-40 h-full w-65 shrink-0 bg-surface shadow-lg border-r border-outline-variant transition-transform duration-300 ease-in-out
+          fixed inset-y-0 left-0 z-40 h-full w-64 shrink-0 bg-surface shadow-lg border-r border-outline-variant transition-transform duration-300 ease-in-out
           md:static md:translate-x-0 md:shadow-sm md:w-auto
           ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
-        <Sidebar />
+        <Sidebar
+          brandTitle="HTH RMS"
+          items={sidebarNavItems}
+          pathname={pathname}
+          onLogout={handleLogout}
+          isPendingLogout={isPendingLogout}
+          renderLink={(href, className, linkChildren) => (
+            <Link href={href} className={className}>
+              {linkChildren}
+            </Link>
+          )}
+        />
       </aside>
 
       {/* 3. PHẦN KHÔNG GIAN NỘI DUNG BÊN PHẢI */}
