@@ -3,17 +3,19 @@
   "version": "0.0.0",
   "private": true,
   "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "sideEffects": [
     "**/*.css"
   ],
   "exports": {
     ".": {
-      "types": "./src/index.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
-    "./styles.css": "./dist/styles/globals.css"
+    "./styles/*": "./src/styles/*",
+    "./components/*": "./src/components/*"
   },
   "scripts": {
     "build": "tsup",
