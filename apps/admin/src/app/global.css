@@ -1,9 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 @import "tailwindcss";
 
-@source "./src/**/*.{js,ts,jsx,tsx}";
+/* Định vị đường dẫn source quét file JS/TSX trong Monorepo (3 cấp lùi ../../../) */
+@source "../**/*.{js,ts,jsx,tsx}";
 @source "./src/app/**/*.{js,ts,jsx,tsx}";
 @source "./src/components/**/*.{js,ts,jsx,tsx}";
+@source "../../../packages/shared-features/src/**/*.{js,ts,jsx,tsx}";
+@source "../../../packages/ui/src/**/*.{js,ts,jsx,tsx}";
 
 @theme {
   /* --- 1. System Colors --- */
@@ -117,14 +120,14 @@
 }
 
 body {
-  font-family: var(--font-sans); /* Đồng bộ sử dụng biến hệ thống token v4 */
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
 /* Các lớp tiện ích bổ trợ cho Form */
 .input-glow:focus {
   outline: none;
-  border-color: #2563EB;
+  border-color: #2563eb;
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
@@ -150,53 +153,47 @@ body {
   display: block;
 }
 
-/* Định cấu hình bộ định vị Popover (Quan trọng chống chìm ẩn giao diện) */
+/* Định cấu hình bộ định vị Popover */
 .react-datepicker-popper {
-  z-index: 9999 !important; /* Đẩy lịch nổi hoàn toàn lên trên Form Drawer */
+  z-index: 9999 !important;
 }
 
 /* Khung bọc bảng lịch Popover */
 .react-datepicker {
   border: 1px solid var(--color-outline-variant) !important;
-  border-radius: 1rem !important; /* ứng với rounded-2xl */
+  border-radius: 1rem !important;
   font-family: var(--font-sans) !important;
   box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   overflow: hidden;
   background-color: var(--color-surface-bright) !important;
 }
 
-/* Phần Header chứa Tháng/Năm và nút Next/Prev */
 .react-datepicker__header {
   background-color: var(--color-surface-container-low) !important;
   border-bottom: 1px solid var(--color-outline-variant) !important;
   padding-top: 12px !important;
 }
 
-/* Chữ hiển thị Tháng/Năm hiện tại */
 .react-datepicker__current-month {
   color: var(--color-on-surface) !important;
   font-size: 14px !important;
   font-weight: 700 !important;
 }
 
-/* Tên các ngày trong tuần (T2, T3, T4...) */
 .react-datepicker__day-name {
   color: var(--color-on-surface-variant) !important;
   font-weight: 600 !important;
 }
 
-/* Ô ngày thông thường */
 .react-datepicker__day {
   color: var(--color-on-surface) !important;
-  border-radius: 0.5rem !important; /* rounded-lg */
+  border-radius: 0.5rem !important;
 }
 
-/* Hiệu ứng hover qua các ngày */
 .react-datepicker__day:hover {
   background-color: var(--color-surface-variant) !important;
 }
 
-/* Ngày được chọn HOẶC ngày đang được focus từ bàn phím */
 .react-datepicker__day--selected, 
 .react-datepicker__day--keyboard-selected {
   background-color: var(--color-primary) !important;
@@ -204,13 +201,11 @@ body {
   font-weight: 700 !important;
 }
 
-/* Các ngày bị vô hiệu hóa (ví dụ ngày tương lai) */
 .react-datepicker__day--disabled {
   color: var(--color-outline) !important;
   opacity: 0.4;
 }
 
-/* Bộ dropdown chọn nhanh Tháng/Năm */
 .react-datepicker__year-select,
 .react-datepicker__month-select {
   padding: 4px 8px;
@@ -220,4 +215,36 @@ body {
   background-color: var(--color-surface-container-lowest);
   color: var(--color-on-surface);
   cursor: pointer;
+}
+
+/* ==========================================
+   STATIC UTILITIES FOR TABLE STATUS CARDS
+   (Chống việc Tailwind v4 purge class trong package monorepo)
+   ========================================== */
+
+/* 1. SẴN SÀNG (AVAILABLE) - Xanh lục tươi, viền 2px */
+.status-available {
+  background-color: rgba(16, 185, 129, 0.2) !important;
+  color: #047857 !important;
+  border-color: #10b981 !important;
+  border-width: 2px !important;
+  border-style: solid !important;
+}
+
+/* 2. ĐANG CÓ KHÁCH (OCCUPIED) - Đỏ / Hồng, viền 2px */
+.status-occupied {
+  background-color: rgba(244, 63, 94, 0.2) !important;
+  color: #be123c !important;
+  border-color: #f43f5e !important;
+  border-width: 2px !important;
+  border-style: solid !important;
+}
+
+/* 3. ĐẶT TRƯỚC (RESERVED) - Cam, viền 2px */
+.status-reserved {
+  background-color: rgba(245, 158, 11, 0.2) !important;
+  color: #b45309 !important;
+  border-color: #f59e0b !important;
+  border-width: 2px !important;
+  border-style: solid !important;
 }

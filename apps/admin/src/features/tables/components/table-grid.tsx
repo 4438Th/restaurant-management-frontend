@@ -1,9 +1,8 @@
 "use client";
 
 import React from "react";
-import { Icon } from "@repo/ui";
+import { Icon, TableCard } from "@repo/ui";
 import { TableResponse } from "@repo/shared-features/tables";
-import { TableCard } from "./table-card";
 
 interface TableGridProps {
   tables: TableResponse[];
@@ -74,10 +73,37 @@ export function TableGrid({
       {tables.map((table) => (
         <TableCard
           key={table.id}
-          table={table}
-          onEditClick={onEditClick}
-          onDeleteClick={onDeleteClick}
-          onCardClick={onCardClick}
+          id={table.id}
+          tableName={table.tableName} // Đã đổi name -> tableName cho khớp với TableCardProps và TableResponse
+          capacity={table.capacity}
+          status={table.status}
+          onClick={() => onCardClick(table)}
+          actionSlot={
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation(); // Ngăn sự kiện click lan ra ngoài card
+                  onEditClick(table);
+                }}
+                className="p-1.5 hover:bg-slate-200/60 text-slate-600 rounded-lg transition-colors"
+                title="Chỉnh sửa bàn"
+              >
+                <Icon name="Pencil" className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteClick(table);
+                }}
+                className="p-1.5 hover:bg-rose-100 text-rose-600 rounded-lg transition-colors"
+                title="Xóa bàn"
+              >
+                <Icon name="Trash2" className="w-4 h-4" />
+              </button>
+            </div>
+          }
         />
       ))}
     </div>

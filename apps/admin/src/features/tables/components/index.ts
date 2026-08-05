@@ -1,4 +1,3 @@
-export * from './table-card';
 export * from './table-detail-modal';
 export * from './table-form';
 export * from './table-grid';
