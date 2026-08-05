@@ -7,21 +7,40 @@ import {
     DishFilterParams
 } from './dishes.types';
 
-// ĐỒNG BỘ: Chuyển các tham số rời rạc thành object `params`
-export const useDish = (params: DishFilterParams) => {
+// ==========================================
+// QUERY KEY FACTORY
+// ==========================================
+export const dishKeys = {
+    all: ['menu', 'dishes'] as const,
+    lists: () => [...dishKeys.all, 'list'] as const,
+    list: (params?: DishFilterParams) => [...dishKeys.lists(), params] as const,
+    trash: () => [...dishKeys.all, 'trash'] as const,
+    trashList: (params?: DishFilterParams) => [...dishKeys.trash(), params] as const,
+    details: () => [...dishKeys.all, 'detail'] as const,
+    detail: (id: string) => [...dishKeys.details(), id] as const,
+    analytics: () => [...dishKeys.all, 'analytics'] as const,
+};
+
+// Hằng số hỗ trợ tương thích ngược (Backward Compatibility)
+export const DISHES_QUERY_KEY = dishKeys.all;
+
+// ==========================================
+// HOOKS
+// ==========================================
+
+export const useDish = (params?: DishFilterParams) => {
     return useQuery({
-        queryKey: ['menu/dishes', params],
-        queryFn: () => dishesService.getAll(params),
+        queryKey: dishKeys.list(params),
+        queryFn: () => dishesService.getAll(params!),
         placeholderData: (previousData) => previousData,
         staleTime: 30 * 1000,
     });
 };
 
-// ĐỒNG BỘ: Đồng nhất cấu trúc tham số cho phần dữ liệu thùng rác
-export const useDishTrash = (params: DishFilterParams) => {
+export const useDishTrash = (params?: DishFilterParams) => {
     return useQuery({
-        queryKey: ['menu/dishes/trash', params],
-        queryFn: () => dishesService.getTrash(params),
+        queryKey: dishKeys.trashList(params),
+        queryFn: () => dishesService.getTrash(params!),
         placeholderData: (previousData) => previousData,
         staleTime: 30 * 1000,
     });
@@ -32,7 +51,8 @@ export const useCreateDish = () => {
     return useMutation<unknown, ApiError, DishCreateRequest>({
         mutationFn: (payload: DishCreateRequest) => dishesService.create(payload),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['menu/dishes'] });
+            queryClient.invalidateQueries({ queryKey: dishKeys.lists() });
+            queryClient.invalidateQueries({ queryKey: dishKeys.analytics() });
         },
     });
 };
@@ -41,8 +61,10 @@ export const useUpdateDish = () => {
     const queryClient = useQueryClient();
     return useMutation<unknown, ApiError, { id: string; payload: DishUpdateRequest }>({
         mutationFn: ({ id, payload }) => dishesService.update(id, payload),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['menu/dishes'] });
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: dishKeys.lists() });
+            queryClient.invalidateQueries({ queryKey: dishKeys.detail(variables.id) });
+            queryClient.invalidateQueries({ queryKey: dishKeys.analytics() });
         },
     });
 };
@@ -52,8 +74,7 @@ export const useDeleteDish = () => {
     return useMutation<unknown, ApiError, string>({
         mutationFn: (id: string) => dishesService.delete(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['menu/dishes'] });
-            queryClient.invalidateQueries({ queryKey: ['menu/dishes/trash'] });
+            queryClient.invalidateQueries({ queryKey: dishKeys.all });
         },
     });
 };
@@ -63,15 +84,14 @@ export const useRestoreDish = () => {
     return useMutation<unknown, ApiError, string>({
         mutationFn: (id: string) => dishesService.restore(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['menu/dishes/trash'] });
-            queryClient.invalidateQueries({ queryKey: ['menu/dishes'] });
+            queryClient.invalidateQueries({ queryKey: dishKeys.all });
         },
     });
 };
 
 export const useDishAnalytics = () => {
     return useQuery({
-        queryKey: ['menu/dishes/analytics'],
+        queryKey: dishKeys.analytics(),
         queryFn: () => dishesService.getAnalytics(),
         staleTime: 30 * 1000,
     });
