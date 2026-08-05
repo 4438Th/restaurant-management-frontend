@@ -5,15 +5,12 @@ export interface PageHeaderProps {
   actionButton?: React.ReactNode;
 }
 
-export function PageHeader({
-  title = "Tổng quan",
-  actionButton,
-}: PageHeaderProps) {
+export function PageHeader({ title = "Tổng quan" }: PageHeaderProps) {
   return (
     <header className="flex h-16 items-center justify-between border-b border-outline-variant bg-surface px-(--spacing-custom-lg)">
       <h1 className="text-xl font-semibold text-on-surface">{title}</h1>
 
-      <div className="flex items-center gap-3">
+      {/* <div className="flex items-center gap-3">
         {actionButton || (
           <button
             type="button"
@@ -22,7 +19,7 @@ export function PageHeader({
             + Tạo mới
           </button>
         )}
-      </div>
+      </div> */}
     </header>
   );
 }

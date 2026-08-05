@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import { PosPage, DashboardPage, PosLoginPage, PosLogoutPage } from "@/pages";
+import { PosPage, DashboardPage, PosLoginPage, TablePage } from "@/pages";
 
 export const AppRoutes = () => {
   return (
@@ -9,9 +9,9 @@ export const AppRoutes = () => {
 
       {/* Các trang chức năng */}
       <Route path="/login" element={<PosLoginPage />} />
-      <Route path="/logout" element={<PosLogoutPage />} />
 
       <Route path="/pos" element={<PosPage />} />
+      <Route path="/tables" element={<TablePage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
 
       {/* Fallback cho các đường dẫn không tồn tại */}

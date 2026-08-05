@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Sidebar, Icon } from "@repo/ui";
 import { useLogout } from "@repo/shared-features/auth";
 import { PageHeader } from "./page-header";
-import { posNavItems } from "./nav-items"; // Đường dẫn file chứa danh sách menu của POS
+import { posNavItems } from "./nav-items";
 
 export interface AppLayoutProps {
   children: React.ReactNode;

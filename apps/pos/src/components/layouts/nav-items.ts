@@ -9,18 +9,18 @@ export interface NavItem {
 
 export const posNavItems: NavItem[] = [
     {
-        title: "Trang chủ",
-        href: "/",
-        icon: "Home",
+        title: "Bán hàng",
+        href: "/pos",
+        icon: "ShoppingCart",
     },
     {
         title: "Sơ đồ bàn ăn",
         href: "/tables",
-        icon: "Grid",
+        icon: "LayoutGrid",
     },
     {
         title: "Quản lý gọi món",
-        icon: "Utensils",
+        icon: "ClipboardList",
         children: [
             {
                 title: "Tạo đơn mới",
@@ -37,7 +37,7 @@ export const posNavItems: NavItem[] = [
     {
         title: "Báo cáo doanh thu",
         href: "/reports",
-        icon: "BarChart2",
+        icon: "BarChart3",
     },
     {
         title: "Cài đặt thiết bị",

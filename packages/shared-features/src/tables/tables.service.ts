@@ -8,11 +8,11 @@ import {
 } from './tables.types';
 
 export const tablesService = {
-    getAll: (params: TableFilterParams) => {
+    getAll: (params?: TableFilterParams) => {
         return apiClient.get<OffsetPageResponse<TableResponse>>('/tables', { params });
     },
 
-    getTrash: (params: TableFilterParams) => {
+    getTrash: (params?: TableFilterParams) => {
         return apiClient.get<OffsetPageResponse<TableResponse>>('/tables/trash', { params });
     },
 

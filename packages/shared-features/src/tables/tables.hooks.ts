@@ -29,7 +29,8 @@ export const TABLES_QUERY_KEY = tableKeys.all;
 export const useTable = (params?: TableFilterParams) => {
     return useQuery({
         queryKey: tableKeys.list(params),
-        queryFn: () => tablesService.getAll(params!),
+        // Xử lý an toàn: Truyền params trực tiếp (kể cả undefined)
+        queryFn: () => tablesService.getAll(params),
         placeholderData: (previousData) => previousData,
         staleTime: 30 * 1000,
     });
@@ -38,7 +39,7 @@ export const useTable = (params?: TableFilterParams) => {
 export const useTableTrash = (params?: TableFilterParams) => {
     return useQuery({
         queryKey: tableKeys.trashList(params),
-        queryFn: () => tablesService.getTrash(params!),
+        queryFn: () => tablesService.getTrash(params),
         placeholderData: (previousData) => previousData,
         staleTime: 30 * 1000,
     });

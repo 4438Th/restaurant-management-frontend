@@ -84,7 +84,7 @@ export const TableCard: React.FC<TableCardProps> = ({
       </div>
 
       {/* Footer card: Trạng thái & Sức chứa */}
-      <div className="flex items-center justify-between text-xs mt-3 pt-3 border-t border-outline-variant/40">
+      <div className="flex flex-col items-start gap-2 text-xs mt-3 pt-3 border-t border-outline-variant/40 md:flex-row md:items-center md:justify-between md:gap-0 text-nowrap">
         <span
           className={`font-bold text-[11px] uppercase tracking-wide ${theme.textClass}`}
         >
@@ -93,7 +93,7 @@ export const TableCard: React.FC<TableCardProps> = ({
 
         {capacity !== undefined && (
           <div className="flex items-center gap-1.5 text-on-surface-variant font-semibold text-[11px]">
-            <Icon name="Users" className="w-3.5 h-3.5 shrink-0" />
+            <Icon name="Users" className="w-3.5 h-3.5 shrink-0 " />
             <span>{capacity} người</span>
           </div>
         )}
