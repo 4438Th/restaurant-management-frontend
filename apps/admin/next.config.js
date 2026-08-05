@@ -34,6 +34,15 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: "/logout",
+        destination: "/login",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

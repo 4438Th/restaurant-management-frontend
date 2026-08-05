@@ -1,13 +1,23 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
+import React from "react";
 import { usePathname } from "next/navigation";
 import { Icon } from "@repo/ui";
-import { sidebarNavItems, NavItem } from "./nav-items";
+import { useLogout } from "@repo/shared-features/auth";
+import { sidebarNavItems } from "./nav-items";
+import { SidebarNavItem } from "./sidebar-nav-item";
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { mutate: executeLogout, isPending } = useLogout();
+
+  const handleLogout = () => {
+    executeLogout(undefined, {
+      onSettled: () => {
+        window.location.href = "/login";
+      },
+    });
+  };
 
   return (
     <nav className="flex w-full flex-col h-full bg-surface-container-lowest">
@@ -33,105 +43,21 @@ export function Sidebar() {
 
       {/* FOOTER LOGOUT */}
       <div className="p-2 border-t border-outline-variant">
-        <Link
-          href="/logout"
-          className="flex items-center gap-4 px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors"
-        >
-          <Icon name="LogOut" className="w-5 h-5" />
-          <span className="text-[12px] font-semibold">Logout</span>
-        </Link>
-      </div>
-    </nav>
-  );
-}
-
-interface SidebarNavItemProps {
-  item: NavItem;
-  pathname: string;
-}
-
-function SidebarNavItem({ item, pathname }: SidebarNavItemProps) {
-  // Hàm kiểm tra active đường dẫn chuẩn xác (Xử lý riêng cho trang chủ '/')
-  const checkIsActive = (path?: string) => {
-    if (!path) return false;
-    if (path === "/") return pathname === "/";
-    return pathname.startsWith(path);
-  };
-
-  // Kiểm tra nếu route hiện tại khớp với bất kỳ menu con nào
-  const isParentActive = item.children?.some((child) =>
-    checkIsActive(child.href),
-  );
-
-  // Mặc định mở dropdown nếu đang ở trong route con
-  const [isOpen, setIsOpen] = useState<boolean>(!!isParentActive);
-
-  const activeStyle =
-    "text-primary font-bold border-r-4 border-primary bg-primary-container/10";
-  const inactiveStyle =
-    "text-on-surface-variant hover:bg-surface-container hover:text-on-surface";
-
-  // Nhóm Menu có danh sách con (Dropdown)
-  if (item.children && item.children.length > 0) {
-    return (
-      <li>
         <button
           type="button"
-          onClick={() => setIsOpen((prev) => !prev)}
-          aria-expanded={isOpen}
-          className={`flex items-center justify-between w-full px-4 py-2 rounded-lg transition-colors ${
-            isParentActive
-              ? "text-primary font-bold"
-              : "text-on-surface-variant hover:bg-surface-container"
-          }`}
+          onClick={handleLogout}
+          disabled={isPending}
+          className="w-full flex items-center gap-4 px-4 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <div className="flex items-center gap-4">
-            <Icon name={item.icon} className="w-5 h-5" />
-            <span className="text-[12px] font-semibold">{item.title}</span>
-          </div>
           <Icon
-            name="ChevronDown"
-            className={`w-4 h-4 transition-transform duration-200 ${
-              isOpen ? "rotate-180" : ""
-            }`}
+            name={isPending ? "Loader2" : "LogOut"}
+            className={`w-5 h-5 ${isPending ? "animate-spin text-primary" : ""}`}
           />
+          <span className="text-[12px] font-semibold">
+            {isPending ? "Đang đăng xuất..." : "Logout"}
+          </span>
         </button>
-
-        {isOpen && (
-          <ul className="mt-1 flex flex-col gap-1 pl-9 pr-2">
-            {item.children.map((subItem) => (
-              <li key={subItem.href || subItem.title}>
-                <Link
-                  href={subItem.href || "#"}
-                  className={`flex items-center gap-3 px-3 py-1.5 rounded-lg transition-colors ${
-                    checkIsActive(subItem.href) ? activeStyle : inactiveStyle
-                  }`}
-                >
-                  <Icon name={subItem.icon} className="w-4 h-4" />
-                  <span className="text-[12px] font-medium">
-                    {subItem.title}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </li>
-    );
-  }
-
-  // Menu đơn lẻ
-  return (
-    <li>
-      <Link
-        href={item.href || "#"}
-        className={`flex items-center gap-4 px-4 py-2 rounded-lg transition-colors ${
-          checkIsActive(item.href) ? activeStyle : inactiveStyle
-        }`}
-      >
-        <Icon name={item.icon} className="w-5 h-5" />
-        <span className="text-[12px] font-semibold">{item.title}</span>
-      </Link>
-    </li>
+      </div>
+    </nav>
   );
 }
