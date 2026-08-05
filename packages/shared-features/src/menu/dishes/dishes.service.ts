@@ -8,11 +8,11 @@ import {
 } from './dishes.types';
 
 export const dishesService = {
-    getAll: (params: DishFilterParams) => {
+    getAll: (params?: DishFilterParams) => {
         return apiClient.get<OffsetPageResponse<DishResponse>>('/menu/dishes', { params });
     },
 
-    getTrash: (params: DishFilterParams) => {
+    getTrash: (params?: DishFilterParams) => {
         return apiClient.get<OffsetPageResponse<DishResponse>>('/menu/dishes/trash', { params });
     },
 

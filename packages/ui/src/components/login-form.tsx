@@ -1,38 +1,30 @@
 "use client";
 
-import React, { useState } from "react";
-import { useLogin } from "@repo/shared-features";
-import { toast } from "sonner";
+import React from "react";
 
-export function LoginForm() {
-  const [username, setUsername] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+export interface LoginFormValues {
+  username?: string;
+  password?: string;
+}
 
-  const loginMutation = useLogin();
-  const isSubmitting = loginMutation.isPending;
+export interface LoginFormProps {
+  onSubmit: (values: LoginFormValues) => void;
+  isSubmitting?: boolean;
+  submitText?: string;
+}
+
+export function LoginForm({
+  onSubmit,
+  isSubmitting = false,
+  submitText = "Đăng nhập",
+}: LoginFormProps) {
+  const [username, setUsername] = React.useState<string>("");
+  const [password, setPassword] = React.useState<string>("");
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     if (!username || !password) return;
-
-    loginMutation.mutate(
-      { username, password },
-      {
-        onSuccess: (data) => {
-          if (data?.token) {
-            toast.success("Đăng nhập hệ thống thành công!");
-          } else {
-            toast.error("Dữ liệu phản hồi từ máy chủ không hợp lệ!");
-          }
-        },
-        onError: (error) => {
-          toast.error(
-            error.message ||
-              "Đăng nhập thất bại, vui lòng kiểm tra lại thông tin!",
-          );
-        },
-      },
-    );
+    onSubmit({ username, password });
   };
 
   return (
@@ -70,9 +62,9 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-primary text-white py-3 rounded-xl font-semibold text-[14px] transition-colors shadow-sm disabled:opacity-50 mt-2 flex items-center justify-center"
+        className="w-full bg-primary text-white py-3 rounded-xl font-semibold text-[14px] transition-colors shadow-sm disabled:opacity-50 mt-2 flex items-center justify-center cursor-pointer disabled:cursor-not-allowed"
       >
-        {isSubmitting ? "Đang xác thực hệ thống..." : "Đăng nhập hệ thống"}
+        {isSubmitting ? "Đang xác thực hệ thống..." : submitText}
       </button>
     </form>
   );

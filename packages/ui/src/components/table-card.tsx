@@ -66,7 +66,7 @@ export const TableCard: React.FC<TableCardProps> = ({
       onClick={() => onClick?.(id)}
       className={`
         relative p-4 rounded-2xl border transition-all duration-200 cursor-pointer select-none
-        flex flex-col justify-between min-h-[110px] hover:shadow-md hover:-translate-y-0.5
+        flex flex-col justify-between min-h-27.5 hover:shadow-md hover:-translate-y-0.5
         ${theme.cardClass}
         ${className}
       `}

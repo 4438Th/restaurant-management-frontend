@@ -21,7 +21,6 @@ export const dishKeys = {
     analytics: () => [...dishKeys.all, 'analytics'] as const,
 };
 
-// Hằng số hỗ trợ tương thích ngược (Backward Compatibility)
 export const DISHES_QUERY_KEY = dishKeys.all;
 
 // ==========================================
@@ -31,7 +30,7 @@ export const DISHES_QUERY_KEY = dishKeys.all;
 export const useDish = (params?: DishFilterParams) => {
     return useQuery({
         queryKey: dishKeys.list(params),
-        queryFn: () => dishesService.getAll(params!),
+        queryFn: () => dishesService.getAll(params ?? {}), // Sửa params! thành params ?? {}
         placeholderData: (previousData) => previousData,
         staleTime: 30 * 1000,
     });
@@ -40,7 +39,7 @@ export const useDish = (params?: DishFilterParams) => {
 export const useDishTrash = (params?: DishFilterParams) => {
     return useQuery({
         queryKey: dishKeys.trashList(params),
-        queryFn: () => dishesService.getTrash(params!),
+        queryFn: () => dishesService.getTrash(params ?? {}), // Sửa params! thành params ?? {}
         placeholderData: (previousData) => previousData,
         staleTime: 30 * 1000,
     });

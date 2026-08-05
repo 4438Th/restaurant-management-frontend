@@ -29,12 +29,38 @@ export const setupHttpInterceptor = (onExpired: () => void) => {
     onTokenExpiredCallback = onExpired;
 };
 
+// Hàm helper đọc biến môi trường an toàn trên cả Vite, Next.js và Node.js
+const getEnvVariable = (key: string): string | undefined => {
+    // 1. Kiểm tra môi trường Vite (Sử dụng safe-evaluation để tránh lỗi CommonJS/TS compile)
+    try {
+        const meta = new Function('return import.meta')();
+        if (meta && meta.env) {
+            const viteVal = meta.env[key] || meta.env[`VITE_${key}`];
+            if (viteVal) return viteVal;
+        }
+    } catch {
+        // Bỏ qua nếu môi trường không hỗ trợ import.meta
+    }
+
+    // 2. Kiểm tra window.env (Injection runtime)
+    if (typeof window !== 'undefined' && (window as any).env) {
+        const windowVal = (window as any).env[key];
+        if (windowVal) return windowVal;
+    }
+
+    // 3. Kiểm tra process.env (Node.js / Next.js)
+    if (typeof process !== 'undefined' && process.env) {
+        const processVal = process.env[key] || process.env[`NEXT_PUBLIC_${key}`];
+        if (processVal) return processVal;
+    }
+
+    return undefined;
+};
+
 const createBaseClient = (): AxiosInstance => {
     const getBaseURL = (): string => {
-        if (typeof window !== 'undefined') {
-            return (window as any).env?.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
-        }
-        return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+        const apiUrl = getEnvVariable('API_URL') || getEnvVariable('NEXT_PUBLIC_API_URL');
+        return apiUrl || 'http://localhost:8080/api/v1';
     };
 
     return axios.create({
@@ -100,7 +126,7 @@ instance.interceptors.response.use(
             );
         }
 
-        // 2. Lỗi Request - Không nhận được Response (Timeout hoặc Đứt Mạng)
+        // Lỗi Request - Không nhận được Response (Timeout hoặc Đứt Mạng)
         if (error.request) {
             if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
                 return Promise.reject(
@@ -112,7 +138,7 @@ instance.interceptors.response.use(
             );
         }
 
-        // 3. Lỗi Cú pháp / JS Runtime khác
+        // Lỗi Cú pháp / JS Runtime khác
         return Promise.reject(new ApiError(error.message, 1000, 500));
     }
 );
