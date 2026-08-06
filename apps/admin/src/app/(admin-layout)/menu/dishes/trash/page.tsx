@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Icon } from "@repo/ui";
+import { Icon, TablePagination } from "@repo/ui";
 import { ApiError } from "@repo/core";
 import {
   useDishTrash,
@@ -10,7 +10,6 @@ import {
   DishResponse,
 } from "@repo/shared-features/menu";
 import { DishTrashTable } from "@/features/menu/components";
-import { TablePagination } from "@/components/ui";
 import { PageHeader } from "@/components/layout";
 import { toast } from "sonner";
 

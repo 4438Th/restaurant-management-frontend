@@ -3,24 +3,20 @@ import { ApiError, tokenStorage } from '@repo/core';
 import { authService } from './auth.service';
 import { LoginRequest, AuthenticationResponse } from './auth.types';
 
-// ==========================================
-// QUERY KEY FACTORY
-// ==========================================
 export const authKeys = {
     all: ['auth'] as const,
     user: () => [...authKeys.all, 'user'] as const,
     profile: () => [...authKeys.all, 'profile'] as const,
 };
 
-// ==========================================
-// HOOKS
-// ==========================================
-
 export const useLogin = () => {
     const queryClient = useQueryClient();
 
     return useMutation<AuthenticationResponse, ApiError, LoginRequest>({
-        mutationFn: (payload: LoginRequest) => authService.login(payload),
+        mutationFn: async (payload: LoginRequest) => {
+            tokenStorage.clearToken();
+            return authService.login(payload);
+        },
         onSuccess: (authData) => {
             const token = authData?.token;
             if (token) {

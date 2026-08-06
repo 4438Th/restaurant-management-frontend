@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { ConfirmModal } from "@repo/ui";
+import { ConfirmModal, TablePagination } from "@repo/ui";
 import { ApiError } from "@repo/core";
-import { TablePagination } from "@/components/ui";
 import { PageHeader } from "@/components/layout";
 import {
   TableGrid,

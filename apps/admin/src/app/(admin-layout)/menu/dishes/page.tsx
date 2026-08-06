@@ -11,9 +11,8 @@ import {
   DishAnalytics,
   DishFormSubmitData,
 } from "@/features/menu/components";
-import { TablePagination } from "@/components/ui";
 import { PageHeader } from "@/components/layout";
-import { ConfirmModal } from "@repo/ui";
+import { ConfirmModal, TablePagination } from "@repo/ui";
 
 import {
   useDish,

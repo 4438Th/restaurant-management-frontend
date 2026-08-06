@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { ApiError } from "@repo/core";
-import { TablePagination } from "@/components/ui";
-import { Icon } from "@repo/ui";
+import { Icon, TablePagination } from "@repo/ui";
 import { PageHeader } from "@/components/layout";
 import { UserTrashTable, UserProfileModal } from "@/features/users/components";
 

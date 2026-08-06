@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { ConfirmModal } from "@repo/ui";
 import { ApiError } from "@repo/core";
-import { TablePagination } from "@/components/ui";
+import { TablePagination } from "@repo/ui";
 import { PageHeader } from "@/components/layout";
 import {
   UserTable,

@@ -97,10 +97,19 @@ const processQueue = (error: unknown, token: string | null = null) => {
     failedQueue = [];
 };
 
-// 1. REQUEST INTERCEPTOR
+// 1. REQUEST INTERCEPTOR (ĐÃ ĐIỀU CHỈNH)
 instance.interceptors.request.use(
     (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
-        if (typeof window !== 'undefined') {
+        const requestUrl = config.url?.toLowerCase() ?? '';
+
+        // Bỏ qua Authorization Header cho các endpoint public/auth
+        const isPublicApi =
+            requestUrl.includes('auth/login') ||
+            requestUrl.includes('auth/refresh-token') ||
+            requestUrl.includes('auth/register') ||
+            requestUrl.includes('auth/token');
+
+        if (typeof window !== 'undefined' && !isPublicApi) {
             const token = tokenStorage.getToken();
             if (token && config.headers) {
                 config.headers.Authorization = `Bearer ${token}`;
@@ -196,11 +205,10 @@ instance.interceptors.response.use(
                     processQueue(null, newToken);
                     return instance(originalRequest);
                 } catch (refreshErr: any) {
-                    // Xử lý khi Refresh Token THẤT BẠI (Do Refresh Token cũng hết hạn - ErrorCode 4103)
+                    // Xử lý khi Refresh Token THẤT BẠI
                     processQueue(refreshErr, null);
                     tokenStorage.clearToken();
 
-                    // CHỈ BẬT MODAL ĐĂNG NHẬP KHI THỰC SỰ REFRESH THẤT BẠI
                     if (typeof window !== 'undefined' && onTokenExpiredCallback) {
                         onTokenExpiredCallback();
                     }
@@ -217,7 +225,7 @@ instance.interceptors.response.use(
                 }
             }
 
-            // Trả về ApiError chuẩn hóa với đúng ErrorCode và Message từ Backend
+            // Trả về ApiError chuẩn hóa
             return Promise.reject(
                 new ApiError(
                     apiData?.message ?? 'Có lỗi xảy ra phía máy chủ!',
