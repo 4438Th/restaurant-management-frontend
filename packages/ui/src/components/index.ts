@@ -5,3 +5,4 @@ export * from './confirm-modal';
 export * from './login-form';
 
 export * from './table-card';
+export * from './table-pagination';

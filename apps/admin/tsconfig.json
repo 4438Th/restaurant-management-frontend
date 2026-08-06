@@ -16,6 +16,6 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-  ],
+, "../../packages/ui/src/components/table-pagination.tsx"  ],
   "exclude": ["node_modules", ".next"]
 }

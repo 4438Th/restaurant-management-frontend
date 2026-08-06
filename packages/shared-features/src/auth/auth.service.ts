@@ -7,10 +7,10 @@ export const authService = {
     },
 
     refreshToken: (token: string): Promise<AuthenticationResponse> => {
-        return apiClient.post<AuthenticationResponse>('/auth/refreshToken', { token });
+        return apiClient.post<AuthenticationResponse>('/auth/refresh-token', { token });
     },
 
-    logout: (token: string, config?: Record<string, unknown>): Promise<void> => {
-        return apiClient.post<void>('/auth/logout', { token }, config);
+    logout: (token: string): Promise<void> => {
+        return apiClient.post<void>('/auth/logout', { token });
     }
 };

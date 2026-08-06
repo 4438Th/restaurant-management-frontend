@@ -2,20 +2,27 @@
   "name": "@repo/ui",
   "version": "0.0.0",
   "private": true,
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "type": "module",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
   "sideEffects": [
     "**/*.css"
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./src/index.ts",
+      "development": "./src/index.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "require": "./dist/index.js",
+      "default": "./src/index.ts"
     },
     "./styles/*": "./src/styles/*",
-    "./components/*": "./src/components/*"
+    "./components/*": {
+      "types": "./src/components/*/index.ts",
+      "development": "./src/components/*",
+      "default": "./src/components/*"
+    }
   },
   "scripts": {
     "build": "tsup",

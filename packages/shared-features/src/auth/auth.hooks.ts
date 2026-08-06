@@ -38,7 +38,7 @@ export const useLogout = () => {
         mutationFn: async () => {
             const currentToken = tokenStorage.getToken();
             if (!currentToken) return;
-            return authService.logout(currentToken, { timeout: 2000 });
+            return authService.logout(currentToken);
         },
         retry: false,
         onSettled: () => {
