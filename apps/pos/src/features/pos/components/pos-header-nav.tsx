@@ -12,6 +12,7 @@ export interface PosHeaderNavProps {
   activeOrderId?: string;
   /** Callbacks thao tác với Order Tabs */
   onSelectOrder?: (orderId: string) => void;
+  /** Callback kích hoạt mở Modal chọn bàn & tạo đơn mới */
   onNewOrder?: () => void;
   onCloseOrder?: (orderId: string) => void;
 
@@ -31,7 +32,7 @@ export function PosHeaderNav({
 }: PosHeaderNavProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 bg-surface-container-lowest p-2 rounded-2xl border border-outline-variant/50 shrink-0">
-      {/* 1. DANH SÁCH TAB ĐƠN HÀNG ĐANG MỞ (Nếu không có đơn nào thì hiện Đơn mới) */}
+      {/* 1. DANH SÁCH TAB ĐƠN HÀNG ĐANG MỞ */}
       <div className="flex items-center gap-2 overflow-x-auto py-0.5 max-w-2xl">
         {openOrders.map((order) => {
           const isActive = order.id === activeOrderId;
@@ -47,7 +48,13 @@ export function PosHeaderNav({
             >
               <span>{order.tableName || order.orderCode || "Đơn hàng"}</span>
               {order.itemCount > 0 && (
-                <span className="px-1.5 py-0.5 text-[10px] bg-surface-container-highest/50 rounded-md">
+                <span
+                  className={`px-1.5 py-0.5 text-[10px] rounded-md ${
+                    isActive
+                      ? "bg-on-primary/20 text-on-primary"
+                      : "bg-surface-container-highest text-on-surface-variant"
+                  }`}
+                >
                   {order.itemCount} món
                 </span>
               )}
@@ -58,7 +65,7 @@ export function PosHeaderNav({
                     e.stopPropagation();
                     onCloseOrder?.(order.id);
                   }}
-                  className="p-0.5 rounded-full hover:bg-black/10"
+                  className="p-0.5 rounded-full hover:bg-black/10 transition"
                 >
                   ✕
                 </button>
@@ -67,11 +74,11 @@ export function PosHeaderNav({
           );
         })}
 
-        {/* Nút Tạo đơn mới */}
+        {/* Nút Tạo đơn mới (Kích hoạt Modal) */}
         <button
           type="button"
           onClick={onNewOrder}
-          className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-dashed border-outline-variant text-primary hover:bg-primary/5 text-xs font-bold transition shrink-0"
+          className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-dashed border-primary text-primary hover:bg-primary/10 text-xs font-bold transition shrink-0"
         >
           <span>+ Tạo đơn</span>
         </button>
