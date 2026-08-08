@@ -5,21 +5,21 @@ import { AuditEntity, WithCursorPagination, WithOffsetPagination } from "@repo/c
 // ==========================================
 
 export enum OrderItemStatus {
-    PENDING = 'PENDING',
-    PREPARING = 'PREPARING',
-    READY = 'READY',
-    SERVED = 'SERVED',
-    CANCELLED = 'CANCELLED',
-    REFUNDED = 'REFUNDED',
+    PENDING = "PENDING",
+    PREPARING = "PREPARING",
+    READY = "READY",
+    SERVED = "SERVED",
+    CANCELLED = "CANCELLED",
+    REFUNDED = "REFUNDED",
 }
 
 export const OrderItemStatusLabel: Record<OrderItemStatus, string> = {
-    [OrderItemStatus.PENDING]: 'Chờ xử lý',
-    [OrderItemStatus.PREPARING]: 'Đang chế biến',
-    [OrderItemStatus.READY]: 'Chờ cung ứng',
-    [OrderItemStatus.SERVED]: 'Đã cung ứng',
-    [OrderItemStatus.CANCELLED]: 'Đã hủy',
-    [OrderItemStatus.REFUNDED]: 'Đã hoàn tiền',
+    [OrderItemStatus.PENDING]: "Chờ xử lý",
+    [OrderItemStatus.PREPARING]: "Đang chế biến",
+    [OrderItemStatus.READY]: "Chờ cung ứng",
+    [OrderItemStatus.SERVED]: "Đã cung ứng",
+    [OrderItemStatus.CANCELLED]: "Đã hủy",
+    [OrderItemStatus.REFUNDED]: "Đã hoàn tiền",
 };
 
 // ==========================================
@@ -45,15 +45,23 @@ export interface OrderItemStatusUpdateRequest {
 // 3. RESPONSE INTERFACES
 // ==========================================
 
+/**
+ * Khớp 100% với OrderItemResponse.java từ Spring Boot Backend
+ * Kế thừa AuditEntity (id, createdAt, createdBy, updatedAt, updatedBy)
+ */
 export interface OrderItemResponse extends AuditEntity {
     id: string;
     orderId: string;
+
     dishId: string;
     dishName: string;
     dishImage?: string;
+
     quantity: number;
-    price: string;
-    totalPrice: string;
+    /** BigDecimal từ BE có thể serialize thành number hoặc string */
+    price: number | string;
+    totalPrice?: number | string;
+
     note?: string;
     cancelReason?: string;
     status: OrderItemStatus;
@@ -63,7 +71,7 @@ export interface OrderItemResponse extends AuditEntity {
 // 4. FILTER INTERFACES
 // ==========================================
 
-// Filter theo phân trang Offset (Dùng cho màn hình Bếp / KDS)
+/** Khớp 100% với KitchenItemFilterRequest.java (Phân trang Offset) */
 export interface KitchenItemFilter {
     search?: string;
     status?: OrderItemStatus;
@@ -75,7 +83,7 @@ export interface KitchenItemFilter {
 
 export type KitchenItemFilterParams = WithOffsetPagination<KitchenItemFilter>;
 
-// Filter theo phân trang Cursor (Dùng cho danh sách chi tiết món)
+/** Khớp 100% với OrderItemFilterRequest.java (Phân trang Cursor) */
 export interface OrderItemFilter {
     search?: string;
     status?: string;

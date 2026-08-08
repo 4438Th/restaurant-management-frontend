@@ -1,4 +1,3 @@
-// apps/pos/src/features/pos/components/create-order-modal.tsx
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -14,7 +13,7 @@ export interface CreateOrderFormData {
   customerPhone?: string;
 }
 
-interface CreateOrderModalProps {
+export interface CreateOrderModalProps {
   isOpen: boolean;
   tables: TableResponse[];
   isTablesLoading?: boolean;

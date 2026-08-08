@@ -1,11 +1,13 @@
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import { useCheckoutOrder } from "@repo/shared-features/order";
+import {
+  useCheckoutOrder,
+  type OrderItemResponse,
+} from "@repo/shared-features/order";
 import { usePosStore } from "@/stores";
-import type { OrderItemResponse } from "./order-cart";
 import type { CartItem } from "../types";
 
-interface PaymentModalProps {
+export interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   orderDetail?: {
@@ -36,11 +38,11 @@ export function PaymentModal({
   const totalAmount = useMemo(() => {
     const existingTotal =
       orderDetail?.orderDetails?.reduce((sum, item) => {
-        return sum + (parseFloat(item.price) || 0) * item.quantity;
+        return sum + (Number(item.price) || 0) * item.quantity;
       }, 0) || 0;
 
     const draftTotal = cart.reduce((sum, item) => {
-      return sum + (parseFloat(item.dish.price) || 0) * item.quantity;
+      return sum + (Number(item.dish.price) || 0) * item.quantity;
     }, 0);
 
     return existingTotal + draftTotal;

@@ -1,16 +1,9 @@
+import type { OrderItemResponse } from "@repo/shared-features/order";
 import { type CartItem } from "../types";
 
-export interface OrderItemResponse {
-  id: string;
-  dishId: string;
-  dishName: string;
-  quantity: number;
-  price: string;
-  note?: string;
-  status?: string;
-}
+export type { OrderItemResponse };
 
-interface OrderCartProps {
+export interface OrderCartProps {
   /** Danh sách món mới chọn (Chưa gửi bếp) */
   cart: CartItem[];
   /** Danh sách món đã được lưu trên Server/Bếp của Order hiện tại */
@@ -34,13 +27,13 @@ export function OrderCart({
 }: OrderCartProps) {
   // Tính tổng tiền món nháp
   const draftTotal = cart.reduce((sum, item) => {
-    const priceNum = parseFloat(item.dish.price) || 0;
+    const priceNum = Number(item.dish.price) || 0;
     return sum + priceNum * item.quantity;
   }, 0);
 
   // Tính tổng tiền món đã gọi
   const existingTotal = existingItems.reduce((sum, item) => {
-    const priceNum = parseFloat(item.price) || 0;
+    const priceNum = Number(item.price) || 0;
     return sum + priceNum * item.quantity;
   }, 0);
 
@@ -77,7 +70,7 @@ export function OrderCart({
                 </div>
 
                 {cart.map((item) => {
-                  const priceNum = parseFloat(item.dish.price) || 0;
+                  const priceNum = Number(item.dish.price) || 0;
                   return (
                     <div
                       key={item.dish.id}
@@ -137,7 +130,7 @@ export function OrderCart({
                 </div>
 
                 {existingItems.map((item) => {
-                  const priceNum = parseFloat(item.price) || 0;
+                  const priceNum = Number(item.price) || 0;
                   return (
                     <div
                       key={item.id}

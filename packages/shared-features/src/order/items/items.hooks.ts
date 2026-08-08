@@ -6,6 +6,7 @@ import {
     OrderItemCreateRequest,
     OrderItemUpdateRequest,
     OrderItemStatusUpdateRequest,
+    OrderItemResponse,
     KitchenItemFilterParams,
 } from './items.types';
 
@@ -27,9 +28,9 @@ export const ORDER_ITEMS_QUERY_KEY = orderItemKeys.all;
 export const useKitchenItems = (params?: KitchenItemFilterParams) => {
     return useQuery({
         queryKey: orderItemKeys.kitchenList(params),
-        queryFn: () => orderItemsService.getKitchenItems(params ?? {}),
+        queryFn: () => orderItemsService.getKitchenItems(params),
         placeholderData: (previousData) => previousData,
-        staleTime: 10 * 1000, // Đặt 10s cho màn hình Bếp để cập nhật dữ liệu nhanh hơn
+        staleTime: 10 * 1000,
     });
 };
 
@@ -37,29 +38,29 @@ export const useKitchenItems = (params?: KitchenItemFilterParams) => {
 // MUTATION HOOKS
 // ==========================================
 
+/** Gửi món / Gọi thêm món vào đơn */
 export const useAddItemsToOrder = () => {
     const queryClient = useQueryClient();
     return useMutation<
-        unknown,
+        OrderItemResponse[],
         ApiError,
         { orderId: string; payload: OrderItemCreateRequest[] }
     >({
         mutationFn: ({ orderId, payload }) =>
             orderItemsService.addItemsToOrder(orderId, payload),
         onSuccess: (_, variables) => {
-            // Refresh danh sách bếp
             queryClient.invalidateQueries({ queryKey: orderItemKeys.kitchen() });
-            // Refresh chi tiết đơn hàng tương ứng
             queryClient.invalidateQueries({ queryKey: orderKeys.detail(variables.orderId) });
             queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
         },
     });
 };
 
+/** Cập nhật số lượng / ghi chú món */
 export const useUpdateOrderItem = () => {
     const queryClient = useQueryClient();
     return useMutation<
-        unknown,
+        OrderItemResponse,
         ApiError,
         { itemId: string; orderId?: string; payload: OrderItemUpdateRequest }
     >({
@@ -75,10 +76,11 @@ export const useUpdateOrderItem = () => {
     });
 };
 
+/** Bếp cập nhật trạng thái chế biến (PENDING -> PREPARING -> READY -> SERVED -> CANCELLED) */
 export const useUpdateOrderItemStatus = () => {
     const queryClient = useQueryClient();
     return useMutation<
-        unknown,
+        OrderItemResponse,
         ApiError,
         { itemId: string; orderId?: string; payload: OrderItemStatusUpdateRequest }
     >({
@@ -89,14 +91,16 @@ export const useUpdateOrderItemStatus = () => {
             if (variables.orderId) {
                 queryClient.invalidateQueries({ queryKey: orderKeys.detail(variables.orderId) });
             }
+            queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
         },
     });
 };
 
+/** Xóa món khỏi đơn */
 export const useRemoveOrderItem = () => {
     const queryClient = useQueryClient();
     return useMutation<
-        unknown,
+        void,
         ApiError,
         { itemId: string; orderId?: string }
     >({
