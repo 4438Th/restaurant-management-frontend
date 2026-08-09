@@ -37,6 +37,8 @@ export interface DraftFormData {
 export interface DraftSlice {
     draftOrders: LocalDraftOrder[];
     activeDraftId: string | null;
+    isCreateModalOpen: boolean;
+    openCreateModal: () => void; closeCreateModal: () => void;
     createNewDraft: (formData?: DraftFormData) => string;
     createDraftOrder: (formData?: DraftFormData) => string;
     updateDraftTableInfo: (draftId: string, formData: DraftFormData) => void;

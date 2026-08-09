@@ -16,17 +16,17 @@ export interface CreateOrderFormData {
 }
 
 export interface CreateOrderModalProps {
-  isOpen: boolean;
-  tables: TableResponse[];
+  isOpen?: boolean;
+  tables?: TableResponse[];
   isTablesLoading?: boolean;
   isLoading?: boolean;
   submitLabel?: string;
-  onClose: () => void;
-  onSubmit: (data: CreateOrderFormData) => void;
+  onClose?: () => void;
+  onSubmit?: (data: CreateOrderFormData) => void;
 }
 
 export function CreateOrderModal({
-  isOpen,
+  isOpen = false,
   tables = [],
   isTablesLoading = false,
   isLoading = false,
@@ -34,16 +34,14 @@ export function CreateOrderModal({
   onClose,
   onSubmit,
 }: CreateOrderModalProps) {
-  // Trạng thái Form khởi tạo trực tiếp, không cần useEffect để reset
   const [tableId, setTableId] = useState<string>("");
   const [customerName, setCustomerName] = useState<string>("");
   const [customerPhone, setCustomerPhone] = useState<string>("");
 
   if (!isOpen) return null;
 
-  // Lọc lấy các bàn khả dụng (bỏ bàn đã bị xóa hoặc đang bảo trì)
   const availableTables = tables.filter(
-    (tbl) =>
+    (tbl: TableResponse) =>
       tbl.status !== TableStatus.DELETED &&
       tbl.status !== TableStatus.MAINTENANCE,
   );
@@ -55,7 +53,7 @@ export function CreateOrderModal({
       return;
     }
 
-    onSubmit({
+    onSubmit?.({
       tableId,
       customerName: customerName.trim() || undefined,
       customerPhone: customerPhone.trim() || undefined,
@@ -70,7 +68,6 @@ export function CreateOrderModal({
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Select Chọn Bàn */}
           <div>
             <label className="block text-xs font-semibold text-on-surface-variant mb-1.5">
               Chọn bàn phục vụ <span className="text-error">*</span>
@@ -82,7 +79,7 @@ export function CreateOrderModal({
               className="w-full px-3 py-2.5 bg-surface-container-high border border-outline-variant rounded-xl text-sm font-medium focus:outline-none focus:border-primary text-on-surface disabled:opacity-50"
             >
               <option value="">-- Chọn bàn --</option>
-              {availableTables.map((tbl) => {
+              {availableTables.map((tbl: TableResponse) => {
                 const areaName = TableAreaLabel[tbl.area] || tbl.area;
                 const statusName = TableStatusLabel[tbl.status] || tbl.status;
                 const isOccupied = tbl.status === TableStatus.OCCUPIED;
@@ -101,7 +98,6 @@ export function CreateOrderModal({
             </select>
           </div>
 
-          {/* Tên Khách Hàng */}
           <div>
             <label className="block text-xs font-semibold text-on-surface-variant mb-1.5">
               Tên khách hàng (Tùy chọn)
@@ -116,7 +112,6 @@ export function CreateOrderModal({
             />
           </div>
 
-          {/* Số Điện Thoại */}
           <div>
             <label className="block text-xs font-semibold text-on-surface-variant mb-1.5">
               Số điện thoại (Tùy chọn)
@@ -131,20 +126,19 @@ export function CreateOrderModal({
             />
           </div>
 
-          {/* Nút Thao Tác */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-outline-variant">
             <button
               type="button"
               onClick={onClose}
               disabled={isLoading}
-              className="px-4 py-2 text-xs font-bold text-on-surface-variant hover:bg-surface-variant rounded-xl transition"
+              className="px-4 py-2 text-xs font-bold text-on-surface-variant hover:bg-surface-variant rounded-xl transition cursor-pointer"
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={isLoading || !tableId}
-              className="px-5 py-2 text-xs font-bold bg-primary text-on-primary rounded-xl hover:bg-primary/90 transition disabled:opacity-40"
+              className="px-5 py-2 text-xs font-bold bg-primary text-on-primary rounded-xl hover:bg-primary/90 transition disabled:opacity-40 cursor-pointer"
             >
               {isLoading ? "Đang xử lý..." : submitLabel}
             </button>

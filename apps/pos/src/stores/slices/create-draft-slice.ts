@@ -3,12 +3,29 @@ import type { PosState, DraftSlice, LocalDraftOrder } from '../types';
 import type { CartItem } from '@/features/pos';
 
 export const createDraftSlice: StateCreator<PosState, [], [], DraftSlice> = (set, get) => ({
-    draftOrders: [{ id: 'draft-1', label: 'Đơn #1', cart: [] }],
-    activeDraftId: 'draft-1',
+    draftOrders: [],
+    activeDraftId: null,
+    isCreateModalOpen: false,
+
+    openCreateModal: () => set({ isCreateModalOpen: true }),
+    closeCreateModal: () => set({ isCreateModalOpen: false }),
 
     createNewDraft: (formData) => {
         const { draftOrders } = get();
-        const nextNumber = draftOrders.length + 1;
+
+        // 🛠️ TÍNH SỐ THỨ TỰ ĐƠN MỚI TRÁNH TRÙNG LẶP:
+        // Lấy tất cả các con số từ label "Đơn #X" hiện có
+        const existingNumbers = draftOrders
+            .map((d) => {
+                const match = d.label?.match(/\d+/);
+                return match ? parseInt(match[0], 10) : 0;
+            })
+            .filter((num) => !isNaN(num) && num > 0);
+
+        // Tìm số lớn nhất hiện tại, nếu chưa có đơn nào thì bắt đầu từ 0
+        const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 0;
+        const nextNumber = maxNumber + 1;
+
         const newDraft: LocalDraftOrder = {
             id: `draft-${Date.now()}`,
             label: `Đơn #${nextNumber}`,
@@ -28,6 +45,7 @@ export const createDraftSlice: StateCreator<PosState, [], [], DraftSlice> = (set
             cart: [],
             selectedTableId: formData?.tableId || null,
             customerInfo: newDraft.customerInfo || {},
+            isCreateModalOpen: false,
         });
 
         return newDraft.id;
@@ -80,23 +98,23 @@ export const createDraftSlice: StateCreator<PosState, [], [], DraftSlice> = (set
         const { draftOrders, activeDraftId } = get();
         const updatedDrafts = draftOrders.filter((d) => d.id !== draftId);
 
-        let nextActiveId = activeDraftId;
+        let nextActiveId: string | null = activeDraftId;
         let nextCart: CartItem[] = [];
+        let nextTableId: string | null = null;
+        let nextCustomerInfo = {};
 
         if (activeDraftId === draftId) {
             if (updatedDrafts.length > 0) {
                 const lastDraft = updatedDrafts[updatedDrafts.length - 1]!;
                 nextActiveId = lastDraft.id;
                 nextCart = lastDraft.cart;
+                nextTableId = lastDraft.tableId || null;
+                nextCustomerInfo = lastDraft.customerInfo || {};
             } else {
-                const defaultDraft = {
-                    id: `draft-${Date.now()}`,
-                    label: 'Đơn #1',
-                    cart: [],
-                };
-                updatedDrafts.push(defaultDraft);
-                nextActiveId = defaultDraft.id;
+                nextActiveId = null;
                 nextCart = [];
+                nextTableId = null;
+                nextCustomerInfo = {};
             }
         }
 
@@ -104,6 +122,8 @@ export const createDraftSlice: StateCreator<PosState, [], [], DraftSlice> = (set
             draftOrders: updatedDrafts,
             activeDraftId: nextActiveId,
             cart: nextCart,
+            selectedTableId: nextTableId,
+            customerInfo: nextCustomerInfo,
         });
     },
 });

@@ -1,33 +1,34 @@
-// apps/pos/src/features/pos/components/order-cart.tsx
-
 import { Icon } from "@repo/ui";
-import { type OrderItemResponse } from "@repo/shared-features/order";
-import { type CartItem } from "../types";
 import { ExistingOrderItemRow } from "./existing-order-item-row";
 import { DraftOrderItemRow } from "./draft-order-item-row";
-import { useOrderCart } from "../hooks/use-order-cart";
+import { PaymentModal } from "./payment-modal";
+import { useOrder, useCheckout } from "../hooks";
 
-export interface OrderCartProps {
-  cart: CartItem[];
-  existingItems?: OrderItemResponse[];
-  isSubmitting?: boolean;
-  onUpdateQuantity: (dishId: string, delta: number) => void;
-  onSendToKitchen?: () => void;
-  onCheckout: () => void;
-}
-
-export function OrderCart({
-  cart = [],
-  existingItems = [],
-  isSubmitting = false,
-  onUpdateQuantity,
-  onSendToKitchen,
-  onCheckout,
-}: OrderCartProps) {
-  const { grandTotal, totalItemCount, isReadyForCheckout } = useOrderCart(
+export function OrderCart() {
+  const {
     cart,
     existingItems,
-  );
+    grandTotal,
+    totalItemCount,
+    isReadyForCheckout,
+    isSubmitting,
+    updateQuantity,
+    handleSendToKitchen,
+  } = useOrder();
+
+  const {
+    isOpen,
+    orderDetail,
+    cashReceived,
+    totalAmount,
+    changeAmount,
+    cashSuggestions,
+    setCashReceived,
+    handleOpenCheckout,
+    handleCloseCheckout,
+    handleConfirmPayment,
+    isSubmitting: isCheckoutSubmitting,
+  } = useCheckout();
 
   return (
     <div className="flex flex-col h-full bg-surface border-l border-outline-variant w-80 shrink-0 p-4 select-none">
@@ -60,7 +61,7 @@ export function OrderCart({
                   <DraftOrderItemRow
                     key={item.dish.id}
                     item={item}
-                    onUpdateQuantity={onUpdateQuantity}
+                    onUpdateQuantity={updateQuantity}
                   />
                 ))}
               </div>
@@ -98,8 +99,8 @@ export function OrderCart({
           <button
             type="button"
             disabled={cart.length === 0 || isSubmitting}
-            onClick={onSendToKitchen}
-            className="py-2.5 px-3 bg-secondary text-on-secondary text-xs font-bold rounded-xl hover:bg-secondary/90 transition disabled:opacity-40 flex items-center justify-center gap-1.5"
+            onClick={() => handleSendToKitchen()}
+            className="py-2.5 px-3 bg-secondary text-on-secondary text-xs font-bold rounded-xl hover:bg-secondary/90 transition disabled:opacity-40 flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <Icon name="Send" className="w-3.5 h-3.5 shrink-0" />
             <span>{isSubmitting ? "Đang gửi..." : "Gửi chế biến"}</span>
@@ -108,20 +109,29 @@ export function OrderCart({
           {/* Nút Thanh Toán */}
           <button
             type="button"
-            disabled={!isReadyForCheckout || cart.length > 0 || isSubmitting}
-            onClick={onCheckout}
-            title={
-              !isReadyForCheckout
-                ? "Toàn bộ món phải ở trạng thái Đã ra món hoặc Bị từ chối mới có thể thanh toán"
-                : ""
-            }
-            className="py-2.5 px-3 bg-primary text-on-primary text-xs font-bold rounded-xl hover:bg-primary/90 transition disabled:opacity-40 flex items-center justify-center gap-1.5"
+            disabled={!isReadyForCheckout || isSubmitting}
+            onClick={handleOpenCheckout}
+            className="py-2.5 px-3 bg-primary text-on-primary text-xs font-bold rounded-xl hover:bg-primary/90 transition disabled:opacity-40 flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <Icon name="Receipt" className="w-3.5 h-3.5 shrink-0" />
             <span>Thanh toán</span>
           </button>
         </div>
       </div>
+
+      {/* Payment Modal (Pure UI Component nhận props từ container) */}
+      <PaymentModal
+        isOpen={isOpen}
+        onClose={handleCloseCheckout}
+        orderDetail={orderDetail}
+        totalAmount={totalAmount}
+        cashReceived={cashReceived}
+        onCashChange={setCashReceived}
+        changeAmount={changeAmount}
+        cashSuggestions={cashSuggestions}
+        onConfirm={() => handleConfirmPayment()}
+        isSubmitting={isCheckoutSubmitting}
+      />
     </div>
   );
 }

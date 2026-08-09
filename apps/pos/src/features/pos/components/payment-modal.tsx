@@ -1,41 +1,30 @@
-// apps/pos/src/features/pos/components/payment-modal.tsx
+import type { PaymentOrderDetail } from "../types";
 
-import type { CartItem } from "../types";
-import {
-  usePaymentModal,
-  type PaymentOrderDetail,
-} from "../hooks/use-payment-modal";
-
-export interface PaymentModalProps {
+interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  orderDetail?: PaymentOrderDetail | null;
-  cart?: CartItem[];
-  onSuccess?: () => void;
+  orderDetail: PaymentOrderDetail | null;
+  totalAmount: number;
+  cashReceived: number;
+  onCashChange: (value: number) => void;
+  changeAmount: number;
+  cashSuggestions: number[];
+  onConfirm: () => void;
+  isSubmitting: boolean;
 }
 
 export function PaymentModal({
   isOpen,
   onClose,
   orderDetail,
-  cart = [],
-  onSuccess,
+  totalAmount,
+  cashReceived,
+  onCashChange,
+  changeAmount,
+  cashSuggestions,
+  onConfirm,
+  isSubmitting,
 }: PaymentModalProps) {
-  const {
-    cashReceived,
-    setCashReceived,
-    totalAmount,
-    changeAmount,
-    cashSuggestions,
-    handleConfirmPayment,
-    isSubmitting,
-  } = usePaymentModal({
-    orderDetail,
-    cart,
-    onSuccess,
-    onClose,
-  });
-
   if (!isOpen) return null;
 
   return (
@@ -47,14 +36,16 @@ export function PaymentModal({
             <h3 className="text-lg font-bold text-on-surface">
               Thanh toán Tiền mặt
             </h3>
-            <p className="text-xs text-on-surface-variant mt-0.5">
-              Mã đơn: #{orderDetail?.id.slice(-4).toUpperCase()}
-            </p>
+            {orderDetail?.id && (
+              <p className="text-xs text-on-surface-variant mt-0.5">
+                Mã đơn: #{orderDetail.id.slice(-4).toUpperCase()}
+              </p>
+            )}
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant transition"
+            className="w-8 h-8 rounded-full hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant transition cursor-pointer"
           >
             ✕
           </button>
@@ -80,7 +71,7 @@ export function PaymentModal({
             <input
               type="number"
               value={cashReceived || ""}
-              onChange={(e) => setCashReceived(Number(e.target.value))}
+              onChange={(e) => onCashChange(Number(e.target.value))}
               placeholder="Nhập số tiền..."
               className="w-full px-4 py-2.5 border border-outline-variant rounded-xl text-lg font-bold bg-surface focus:outline-none focus:border-primary"
             />
@@ -91,8 +82,8 @@ export function PaymentModal({
                 <button
                   key={amount}
                   type="button"
-                  onClick={() => setCashReceived(amount)}
-                  className="px-2.5 py-1 bg-surface-container-high hover:bg-surface-variant rounded-lg text-xs font-semibold text-on-surface transition"
+                  onClick={() => onCashChange(amount)}
+                  className="px-2.5 py-1 bg-surface-container-high hover:bg-surface-variant rounded-lg text-xs font-semibold text-on-surface transition cursor-pointer"
                 >
                   {amount.toLocaleString("vi-VN")} đ
                 </button>
@@ -116,15 +107,15 @@ export function PaymentModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-3 border border-outline-variant rounded-2xl text-xs font-bold text-on-surface-variant hover:bg-surface-container transition"
+            className="flex-1 py-3 border border-outline-variant rounded-2xl text-xs font-bold text-on-surface-variant hover:bg-surface-container transition cursor-pointer"
           >
             Hủy
           </button>
           <button
             type="button"
             disabled={isSubmitting || cashReceived < totalAmount}
-            onClick={handleConfirmPayment}
-            className="flex-1 py-3 bg-primary text-on-primary rounded-2xl text-xs font-bold hover:bg-primary/90 transition disabled:opacity-40"
+            onClick={onConfirm}
+            className="flex-1 py-3 bg-primary text-on-primary rounded-2xl text-xs font-bold hover:bg-primary/90 transition disabled:opacity-40 cursor-pointer"
           >
             {isSubmitting ? "Đang xử lý..." : "Xác nhận Thanh toán"}
           </button>

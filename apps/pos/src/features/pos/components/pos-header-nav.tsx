@@ -1,40 +1,30 @@
-import type { OpenOrder } from "../types/pos.types";
+import { usePosStore } from "@/stores";
+import { useSession } from "../hooks";
 
-export interface PosHeaderNavProps {
-  /** Danh sách các đơn hàng đang mở/phục vụ */
-  openOrders?: OpenOrder[];
-  /** ID của đơn hàng đang chọn xử lý */
-  activeOrderId?: string;
-  /** Callbacks thao tác với Order Tabs */
-  onSelectOrder?: (orderId: string) => void;
-  /** Callback kích hoạt mở Modal chọn bàn & tạo đơn mới */
-  onNewOrder?: () => void;
-  onCloseOrder?: (orderId: string) => void;
+export function PosHeaderNav() {
+  // Lấy state & handlers quản lý phiên/tab đơn hàng từ useSession
+  const {
+    openOrders,
+    activeTabId,
+    handleSelectTab,
+    handleCloseTab,
+    handleOpenCreateModal,
+  } = useSession();
 
-  /** Ô tìm kiếm món ăn */
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
-}
+  // Lấy state tìm kiếm món ăn trực tiếp từ POS Store
+  const searchQuery = usePosStore((state) => state.searchQuery);
+  const setSearchQuery = usePosStore((state) => state.setSearchQuery);
 
-export function PosHeaderNav({
-  openOrders = [],
-  activeOrderId,
-  onSelectOrder,
-  onNewOrder,
-  onCloseOrder,
-  searchQuery,
-  onSearchChange,
-}: PosHeaderNavProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 bg-surface-container-lowest p-2 rounded-2xl border border-outline-variant/50 shrink-0">
       {/* 1. DANH SÁCH TAB ĐƠN HÀNG ĐANG MỞ */}
       <div className="flex items-center gap-2 overflow-x-auto py-0.5 max-w-2xl">
         {openOrders.map((order) => {
-          const isActive = order.id === activeOrderId;
+          const isActive = order.id === activeTabId;
           return (
             <div
               key={order.id}
-              onClick={() => onSelectOrder?.(order.id)}
+              onClick={() => handleSelectTab(order.id)}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-xl cursor-pointer text-xs font-bold transition shrink-0 ${
                 isActive
                   ? "bg-primary text-on-primary shadow-sm"
@@ -53,27 +43,27 @@ export function PosHeaderNav({
                   {order.itemCount} món
                 </span>
               )}
-              {openOrders.length > 1 && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onCloseOrder?.(order.id);
-                  }}
-                  className="p-0.5 rounded-full hover:bg-black/10 transition"
-                >
-                  ✕
-                </button>
-              )}
+
+              {/* Cho phép đóng bất kỳ tab nào */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCloseTab(order.id);
+                }}
+                className="p-0.5 rounded-full hover:bg-black/10 transition"
+              >
+                ✕
+              </button>
             </div>
           );
         })}
 
-        {/* Nút Tạo đơn mới (Kích hoạt Modal) */}
+        {/* Nút Tạo đơn mới -> Trigger bật Modal */}
         <button
           type="button"
-          onClick={onNewOrder}
-          className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-dashed border-primary text-primary hover:bg-primary/10 text-xs font-bold transition shrink-0"
+          onClick={handleOpenCreateModal}
+          className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-dashed border-primary text-primary hover:bg-primary/10 text-xs font-bold transition shrink-0 cursor-pointer"
         >
           <span>+ Tạo đơn</span>
         </button>
@@ -85,7 +75,7 @@ export function PosHeaderNav({
           type="text"
           placeholder="Tìm món ăn..."
           value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full px-4 py-1.5 border border-outline-variant rounded-xl text-sm bg-surface focus:outline-none focus:border-primary"
         />
       </div>
