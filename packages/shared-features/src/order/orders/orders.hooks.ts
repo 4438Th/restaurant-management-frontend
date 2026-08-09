@@ -39,10 +39,10 @@ export const useOrders = (params?: OrderFilterParams) => {
     });
 };
 
-export const useOrderDetail = (id: string, enabled = true) => {
+export const useOrderDetail = (id?: string, enabled = true) => {
     return useQuery({
-        queryKey: orderKeys.detail(id),
-        queryFn: () => ordersService.getById(id),
+        queryKey: orderKeys.detail(id!),
+        queryFn: () => ordersService.getById(id!),
         enabled: Boolean(id) && enabled,
         staleTime: 30 * 1000,
     });

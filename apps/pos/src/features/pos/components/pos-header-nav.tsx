@@ -1,9 +1,4 @@
-export interface OpenOrder {
-  id: string;
-  tableName?: string;
-  orderCode?: string;
-  itemCount: number;
-}
+import type { OpenOrder } from "../types/pos.types";
 
 export interface PosHeaderNavProps {
   /** Danh sách các đơn hàng đang mở/phục vụ */

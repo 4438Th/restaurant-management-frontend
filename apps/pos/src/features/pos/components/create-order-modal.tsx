@@ -1,3 +1,5 @@
+// apps/pos/src/features/pos/components/create-order-modal.tsx
+
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -18,6 +20,7 @@ export interface CreateOrderModalProps {
   tables: TableResponse[];
   isTablesLoading?: boolean;
   isLoading?: boolean;
+  submitLabel?: string;
   onClose: () => void;
   onSubmit: (data: CreateOrderFormData) => void;
 }
@@ -27,9 +30,11 @@ export function CreateOrderModal({
   tables = [],
   isTablesLoading = false,
   isLoading = false,
+  submitLabel = "Tạo đơn hàng",
   onClose,
   onSubmit,
 }: CreateOrderModalProps) {
+  // Trạng thái Form khởi tạo trực tiếp, không cần useEffect để reset
   const [tableId, setTableId] = useState<string>("");
   const [customerName, setCustomerName] = useState<string>("");
   const [customerPhone, setCustomerPhone] = useState<string>("");
@@ -141,7 +146,7 @@ export function CreateOrderModal({
               disabled={isLoading || !tableId}
               className="px-5 py-2 text-xs font-bold bg-primary text-on-primary rounded-xl hover:bg-primary/90 transition disabled:opacity-40"
             >
-              {isLoading ? "Đang gửi..." : "Xác nhận & Gửi bếp"}
+              {isLoading ? "Đang xử lý..." : submitLabel}
             </button>
           </div>
         </form>

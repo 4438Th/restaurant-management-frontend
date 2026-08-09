@@ -7,3 +7,9 @@ export interface CartItem {
 }
 
 export type SelectedCategory = 'ALL' | string;
+export interface OpenOrder {
+    id: string;
+    tableName?: string;
+    orderCode?: string;
+    itemCount: number;
+}

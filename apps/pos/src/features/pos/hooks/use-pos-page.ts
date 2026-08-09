@@ -1,194 +1,124 @@
-import { useMemo, useState } from "react";
-import { toast } from "sonner";
-import type { DishResponse } from "@repo/shared-features/menu";
-import {
-    useOrders,
-    useOrderDetail,
-    OrderStatus,
-    type OrderResponse,
-} from "@repo/shared-features/order";
-import { useTable } from "@repo/shared-features/tables";
+// apps/pos/src/features/pos/hooks/use-pos-page.ts
 
-import { usePosStore } from "@/stores";
-import { useMenu, type CategoryBarProps, type MenuGridProps } from "@/features/menu";
-import {
-    usePosOrder,
-    type OpenOrder,
-    type PosHeaderNavProps,
-    type OrderCartProps,
-    type PaymentModalProps,
-} from "@/features/pos";
-import type {
-    CreateOrderModalProps,
-    CreateOrderFormData,
-} from "@/features/pos";
+import { usePosStore, type DraftFormData } from "@/stores";
+import { useOrderDetail } from "@repo/shared-features/order";
+import { useMenuFilter } from "@/features/menu";
+import { usePosTabs } from "./use-pos-tabs";
+import { usePosModals } from "./use-pos-modals";
+import { usePosOrder } from "./use-pos-order";
 
 export function usePosPage() {
-    const [isPaymentOpen, setIsPaymentOpen] = useState(false);
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
-    // ZUSTAND STORE
+    // Store Global state & actions
     const cart = usePosStore((state) => state.cart);
-    const draftOrders = usePosStore((state) => state.draftOrders);
-    const activeDraftId = usePosStore((state) => state.activeDraftId);
     const activeOrderId = usePosStore((state) => state.activeOrderId);
-    const selectedCategoryId = usePosStore((state) => state.selectedCategoryId);
-    const searchQuery = usePosStore((state) => state.searchQuery);
-
+    const selectedTableId = usePosStore((state) => state.selectedTableId);
     const addToCart = usePosStore((state) => state.addToCart);
     const updateQuantity = usePosStore((state) => state.updateQuantity);
-    const setSelectedCategoryId = usePosStore((state) => state.setSelectedCategoryId);
-    const setSearchQuery = usePosStore((state) => state.setSearchQuery);
-    const createNewDraft = usePosStore((state) => state.createNewDraft);
-    const selectDraft = usePosStore((state) => state.selectDraft);
-    const closeDraft = usePosStore((state) => state.closeDraft);
-    const setActiveOrder = usePosStore((state) => state.setActiveOrder);
 
-    // API HOOKS
-    const { categories, dishes, isLoading: isMenuLoading } = useMenu();
+    // Sub-hooks
+    const menuFilter = useMenuFilter();
+    const posTabs = usePosTabs();
+    const posModals = usePosModals();
+    const { handleSendToKitchen, isSubmitting: isOrderSubmitting } = usePosOrder();
 
-    const { data: tableResponse, isLoading: isTablesLoading } = useTable();
-    const tables = tableResponse?.data || [];
+    // Fetch thông tin chi tiết đơn hàng hiện tại từ Server (lấy danh sách món đã gửi bếp)
+    const { data: activeOrderDetail, isLoading: isOrderDetailLoading } = useOrderDetail(
+        activeOrderId ?? undefined
+    );
 
-    const { data: ordersPage } = useOrders({
-        status: OrderStatus.PROCESSING,
-    });
+    // Danh sách món đã gửi chế biến từ Server
+    const existingItems = activeOrderDetail?.items ?? [];
 
-    const { data: activeOrderDetail, isLoading: isDetailLoading } =
-        useOrderDetail(activeOrderId || "", Boolean(activeOrderId));
-
-    const { handleSendToKitchen, isSubmitting } = usePosOrder();
-
-    // DERIVED DATA
-    const openOrders: OpenOrder[] = useMemo(() => {
-        const draftTabs: OpenOrder[] = draftOrders.map((d) => ({
-            id: d.id,
-            orderCode: d.label,
-            itemCount: d.cart.reduce((sum, i) => sum + i.quantity, 0),
-        }));
-
-        const serverList = ordersPage?.data || [];
-        const serverTabs: OpenOrder[] = serverList.map((ord: OrderResponse) => ({
-            id: ord.id,
-            tableName:
-                ord.tableName || (ord.tableId ? `Bàn ${ord.tableId}` : undefined),
-            orderCode: `#${ord.id.slice(-4).toUpperCase()}`,
-            itemCount: ord.items?.length || 0,
-        }));
-
-        return [...draftTabs, ...serverTabs];
-    }, [draftOrders, ordersPage]);
-
-    const currentActiveTabId = activeOrderId || activeDraftId || undefined;
-
-    // HANDLERS
-    const handleSelectTab = (orderId: string) => {
-        if (orderId.startsWith("draft-")) {
-            selectDraft(orderId);
-        } else {
-            setActiveOrder(orderId);
+    /**
+     * Xử lý khi nhấn nút "Gửi chế biến" trên Cart
+     */
+    const handleSendToKitchenClick = async () => {
+        // Nếu chưa chọn Bàn và cũng chưa có Đơn hàng active -> Bật Modal yêu cầu chọn Bàn
+        if (!activeOrderId && !selectedTableId) {
+            posModals.setIsCreateModalOpen(true);
+            return;
         }
+
+        // Nếu đã chọn Bàn hoặc đã có đơn hàng -> Gửi thẳng xuống bếp
+        await handleSendToKitchen();
     };
 
-    const handleCreateNewOrder = () => {
-        createNewDraft();
-        setIsCreateModalOpen(true);
-    };
-
-    const handleCloseTab = (orderId: string) => {
-        if (orderId.startsWith("draft-")) {
-            closeDraft(orderId);
-        } else {
-            toast.warning("Đơn hàng đang phục vụ không thể đóng trực tiếp.");
-        }
-    };
-
-    const onClickSendToKitchen = () => {
-        if (!activeOrderId) {
-            setIsCreateModalOpen(true);
-        } else {
-            handleSendToKitchen();
-        }
-    };
-
-    const handleConfirmCreateOrder = async (formData: CreateOrderFormData) => {
+    /**
+     * Xử lý khi người dùng ấn "Xác nhận" từ CreateOrderModal
+     */
+    const handleCreateOrderSubmit = async (formData: DraftFormData) => {
         const success = await handleSendToKitchen(formData);
         if (success) {
-            setIsCreateModalOpen(false);
+            posModals.setIsCreateModalOpen(false);
         }
     };
 
-    const filteredDishes = useMemo(() => {
-        return dishes.filter((dish: DishResponse) => {
-            const matchCategory =
-                selectedCategoryId === "ALL" ||
-                dish.category?.id === selectedCategoryId;
-            const matchSearch =
-                !searchQuery ||
-                dish.dishName.toLowerCase().includes(searchQuery.toLowerCase());
-            return matchCategory && matchSearch;
-        });
-    }, [dishes, selectedCategoryId, searchQuery]);
-
-    // PACKAGED PROPS
-    const headerNavProps: PosHeaderNavProps = {
-        openOrders,
-        activeOrderId: currentActiveTabId,
-        searchQuery,
-        onSelectOrder: handleSelectTab,
-        onNewOrder: handleCreateNewOrder,
-        onCloseOrder: handleCloseTab,
-        onSearchChange: setSearchQuery,
-    };
-
-    const categoryBarProps: CategoryBarProps = {
-        categories,
-        selectedCategoryId,
-        onSelectCategory: setSelectedCategoryId,
-    };
-
-    const menuGridProps: MenuGridProps = {
-        dishes: filteredDishes,
-        onAddToCart: addToCart,
-        isLoading: isMenuLoading,
-    };
-
-    const cartProps: OrderCartProps = {
-        cart,
-        existingItems: activeOrderDetail?.items || [],
-        isSubmitting: isSubmitting || isDetailLoading,
-        onUpdateQuantity: updateQuantity,
-        onSendToKitchen: onClickSendToKitchen,
-        onCheckout: () => setIsPaymentOpen(true),
-    };
-
-    const createModalProps: CreateOrderModalProps = {
-        isOpen: isCreateModalOpen,
-        tables,
-        isTablesLoading,
-        isLoading: isSubmitting,
-        onClose: () => setIsCreateModalOpen(false),
-        onSubmit: handleConfirmCreateOrder,
-    };
-
-    const paymentModalProps: PaymentModalProps = {
-        isOpen: isPaymentOpen,
-        orderDetail: activeOrderDetail
-            ? {
-                id: activeOrderDetail.id,
-                orderDetails: activeOrderDetail.items || [],
-            }
-            : null,
-        cart,
-        onClose: () => setIsPaymentOpen(false),
-    };
+    const isSubmitting = isOrderSubmitting || posModals.isSubmitting;
 
     return {
-        headerNavProps,
-        categoryBarProps,
-        menuGridProps,
-        cartProps,
-        createModalProps,
-        paymentModalProps,
+        // Header Navigation Props
+        headerNavProps: {
+            openOrders: posTabs.openOrders,
+            activeOrderId: posTabs.activeTabId,
+            searchQuery: menuFilter.searchQuery,
+            onSelectOrder: posTabs.handleSelectTab,
+            onNewOrder: () => posModals.setIsCreateModalOpen(true),
+            onCloseOrder: posTabs.handleCloseTab,
+            onSearchChange: menuFilter.setSearchQuery,
+        },
+
+        // Category Bar Props
+        categoryBarProps: {
+            categories: menuFilter.categories,
+            selectedCategoryId: menuFilter.selectedCategoryId,
+            onSelectCategory: menuFilter.setSelectedCategoryId,
+        },
+
+        // Menu Grid Props
+        menuGridProps: {
+            dishes: menuFilter.filteredDishes,
+            onAddToCart: addToCart,
+            isLoading: menuFilter.isLoading,
+        },
+
+        // Cart Props
+        cartProps: {
+            cart,
+            existingItems, // Món đã gửi bếp từ Server
+            isSubmitting,
+            onUpdateQuantity: updateQuantity,
+            onSendToKitchen: handleSendToKitchenClick,
+            onCheckout: () => posModals.setIsPaymentOpen(true),
+        },
+
+        // Create Order Modal Props (Dùng cho CreateOrderModal)
+        createModalProps: {
+            isOpen: posModals.isCreateModalOpen,
+            tables: posModals.tables,
+            isTablesLoading: posModals.isTablesLoading,
+            isLoading: isSubmitting,
+            onClose: () => posModals.setIsCreateModalOpen(false),
+            onSubmit: handleCreateOrderSubmit,
+        },
+
+        // Payment Modal Props
+        paymentModalProps: {
+            isOpen: posModals.isPaymentOpen,
+            orderDetail: activeOrderId
+                ? {
+                    id: activeOrderId,
+                    items: existingItems,
+                    tableId: activeOrderDetail?.tableId,
+                    tableName: activeOrderDetail?.tableName,
+                    totalAmount: activeOrderDetail?.totalAmount,
+                }
+                : null,
+            cart,
+            onClose: () => posModals.setIsPaymentOpen(false),
+        },
+
+        // State bổ sung nếu UI Container cần dùng
+        isOrderDetailLoading,
+        posModals,
     };
 }

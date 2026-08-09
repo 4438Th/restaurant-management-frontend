@@ -1,19 +1,15 @@
-import { useState, useMemo } from "react";
-import { toast } from "sonner";
-import {
-  useCheckoutOrder,
-  type OrderItemResponse,
-} from "@repo/shared-features/order";
-import { usePosStore } from "@/stores";
+// apps/pos/src/features/pos/components/payment-modal.tsx
+
 import type { CartItem } from "../types";
+import {
+  usePaymentModal,
+  type PaymentOrderDetail,
+} from "../hooks/use-payment-modal";
 
 export interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  orderDetail?: {
-    id: string;
-    orderDetails?: OrderItemResponse[];
-  } | null;
+  orderDetail?: PaymentOrderDetail | null;
   cart?: CartItem[];
   onSuccess?: () => void;
 }
@@ -25,72 +21,22 @@ export function PaymentModal({
   cart = [],
   onSuccess,
 }: PaymentModalProps) {
-  const clearCart = usePosStore((state) => state.clearCart);
-  const setActiveOrder = usePosStore((state) => state.setActiveOrder);
-
-  // Hook checkout API từ Shared Features
-  const checkoutMutation = useCheckoutOrder();
-
-  // State nhập số tiền khách đưa
-  const [cashReceived, setCashReceived] = useState<number>(0);
-
-  // TÍNH TỔNG TIỀN ĐƠN HÀNG (Món đã gọi + Món nháp trong cart nếu có)
-  const totalAmount = useMemo(() => {
-    const existingTotal =
-      orderDetail?.orderDetails?.reduce((sum, item) => {
-        return sum + (Number(item.price) || 0) * item.quantity;
-      }, 0) || 0;
-
-    const draftTotal = cart.reduce((sum, item) => {
-      return sum + (Number(item.dish.price) || 0) * item.quantity;
-    }, 0);
-
-    return existingTotal + draftTotal;
-  }, [orderDetail, cart]);
-
-  // Tiền thừa trả khách
-  const changeAmount = Math.max(0, cashReceived - totalAmount);
-
-  // Gợi ý nhanh các mệnh giá tiền phổ biến
-  const cashSuggestions = useMemo(() => {
-    if (totalAmount <= 0) return [];
-    const base = [totalAmount];
-    const denominations = [50000, 100000, 200000, 500000];
-    denominations.forEach((d) => {
-      if (d > totalAmount && !base.includes(d)) {
-        base.push(d);
-      }
-    });
-    return base.sort((a, b) => a - b).slice(0, 4);
-  }, [totalAmount]);
+  const {
+    cashReceived,
+    setCashReceived,
+    totalAmount,
+    changeAmount,
+    cashSuggestions,
+    handleConfirmPayment,
+    isSubmitting,
+  } = usePaymentModal({
+    orderDetail,
+    cart,
+    onSuccess,
+    onClose,
+  });
 
   if (!isOpen) return null;
-
-  // XỬ LÝ THANH TOÁN
-  const handleConfirmPayment = async () => {
-    if (!orderDetail?.id) {
-      toast.error("Không tìm thấy thông tin đơn hàng!");
-      return;
-    }
-
-    if (cashReceived < totalAmount) {
-      toast.error("Số tiền nhận chưa đủ tổng giá trị đơn hàng!");
-      return;
-    }
-
-    try {
-      await checkoutMutation.mutateAsync(orderDetail.id);
-
-      toast.success("Thanh toán thành công!");
-      clearCart();
-      setActiveOrder(null);
-      onSuccess?.();
-      onClose();
-    } catch (error: unknown) {
-      const err = error as { message?: string };
-      toast.error(err?.message || "Thanh toán thất bại, vui lòng thử lại!");
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 select-none animate-fadeIn">
@@ -176,13 +122,11 @@ export function PaymentModal({
           </button>
           <button
             type="button"
-            disabled={checkoutMutation.isPending || cashReceived < totalAmount}
+            disabled={isSubmitting || cashReceived < totalAmount}
             onClick={handleConfirmPayment}
             className="flex-1 py-3 bg-primary text-on-primary rounded-2xl text-xs font-bold hover:bg-primary/90 transition disabled:opacity-40"
           >
-            {checkoutMutation.isPending
-              ? "Đang xử lý..."
-              : "Xác nhận Thanh toán"}
+            {isSubmitting ? "Đang xử lý..." : "Xác nhận Thanh toán"}
           </button>
         </div>
       </div>

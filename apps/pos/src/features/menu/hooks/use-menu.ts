@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import {
     useDish,
     useMenuCategory,
@@ -18,7 +18,7 @@ export { dishKeys, menuCategoryKeys };
 export { useDish, useMenuCategory };
 
 /**
- * Custom Hook tổng hợp danh mục và danh sách món ăn cho POS
+ * Custom Hook tổng hợp danh mục và danh sách món ăn cho POS & Admin
  */
 export const useMenu = (
     dishParams?: DishFilterParams,
@@ -43,16 +43,20 @@ export const useMenu = (
         return (raw as OffsetPageResponse<DishResponse>).data ?? [];
     }, [dishQuery.data]);
 
+    // Bọc useCallback để refetch không bị tạo lại instance mới
+    const refetch = useCallback(() => {
+        categoryQuery.refetch();
+        dishQuery.refetch();
+    }, [categoryQuery, dishQuery]);
+
     return {
         categories,
         dishes,
         isLoading: categoryQuery.isLoading || dishQuery.isLoading,
+        isFetching: categoryQuery.isFetching || dishQuery.isFetching,
         isError: categoryQuery.isError || dishQuery.isError,
         categoryQuery,
         dishQuery,
-        refetch: () => {
-            categoryQuery.refetch();
-            dishQuery.refetch();
-        },
+        refetch,
     };
 };
