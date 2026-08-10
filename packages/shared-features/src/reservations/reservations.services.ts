@@ -35,4 +35,7 @@ export const reservationsService = {
     noShow: (id: string) => {
         return apiClient.post<TableReservationResponse>(`/table-reservations/${id}/no-show`);
     },
+    confirm: (id: string) => {
+        return apiClient.post<TableReservationResponse>(`/table-reservations/${id}/confirm`);
+    },
 };

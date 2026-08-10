@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Sidebar, Icon } from "@repo/ui";
 import { useLogout } from "@repo/shared-features/auth";
+import { usePosStore } from "@/stores";
 import { PageHeader } from "./page-header";
 import { posNavItems } from "./nav-items";
 
@@ -21,7 +22,8 @@ export function AppLayout({ children, title, actionButton }: AppLayoutProps) {
   const handleLogout = () => {
     executeLogout(undefined, {
       onSettled: () => {
-        // Điều hướng về trang đăng nhập của POS
+        usePosStore.persist.clearStorage();
+        usePosStore.getState().resetPosState();
         navigate("/login", { replace: true });
       },
     });

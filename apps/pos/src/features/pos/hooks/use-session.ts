@@ -24,7 +24,7 @@ export function useSession() {
     const { data: ordersPage, isLoading: isOrdersLoading } = useOrders({
         status: OrderStatus.DRAFT,
     });
-    const { data: tablesData, isLoading: isTablesLoading } = useTable();
+    const { data: tablesData, isLoading: isTablesLoading } = useTable({ page: 1, size: 100 });
 
     const serverList = useMemo(() => ordersPage?.data || [], [ordersPage]);
     const rawTables = useMemo(() => tablesData?.data || [], [tablesData]);

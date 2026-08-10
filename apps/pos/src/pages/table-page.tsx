@@ -28,6 +28,7 @@ export function TablePage() {
     search: searchQuery || undefined,
     status: selectedStatus === "ALL" ? undefined : selectedStatus,
     area: selectedArea === "ALL" ? undefined : selectedArea,
+    size: 100,
   });
 
   // Bóc tách dữ liệu danh sách bàn từ API response

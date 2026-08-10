@@ -21,7 +21,8 @@ const STATUS_STYLES: Record<TableReservationStatus, string> = {
 
 export interface ReservationTableRowProps {
   item: TableReservationResponse;
-  onArrive: (id: string) => void;
+  onConfirm: (id: string) => void;
+  onArrive: (item: TableReservationResponse) => void;
   onComplete: (id: string) => void;
   onNoShow: (id: string) => void;
   onRequestCancel: (item: TableReservationResponse) => void;
@@ -30,12 +31,17 @@ export interface ReservationTableRowProps {
 
 export function ReservationTableRow({
   item,
+  onConfirm,
   onArrive,
   onComplete,
   onNoShow,
   onRequestCancel,
   onEdit,
 }: ReservationTableRowProps) {
+  // Chỉ hiển thị nút Xác nhận khi trạng thái là PENDING (chờ duyệt)
+  const isPending = item.status === TableReservationStatus.PENDING;
+
+  // Nút Khách đến hiển thị khi đã được CONFIRMED hoặc PENDING (hoặc tùy theo logic hệ thống của bạn)
   const isPendingOrConfirmed =
     item.status === TableReservationStatus.CONFIRMED ||
     item.status === TableReservationStatus.PENDING;
@@ -94,10 +100,21 @@ export function ReservationTableRow({
       {/* Thao tác */}
       <td className="p-4 text-right">
         <div className="flex items-center justify-end gap-2">
+          {/* Nút Phê duyệt / Xác nhận đơn đặt bàn (PENDING) */}
+          {isPending && (
+            <button
+              type="button"
+              onClick={() => onConfirm(item.id)}
+              className="px-2.5 py-1.5 bg-info text-on-info text-xs font-semibold rounded-lg hover:opacity-90"
+            >
+              Xác nhận
+            </button>
+          )}
+
           {isPendingOrConfirmed && (
             <button
               type="button"
-              onClick={() => onArrive(item.id)}
+              onClick={() => onArrive(item)}
               className="px-2.5 py-1.5 bg-primary text-on-primary text-xs font-semibold rounded-lg hover:opacity-90"
             >
               Khách đến

@@ -99,3 +99,13 @@ export const useNoShowReservation = () => {
         },
     });
 };
+export const useConfirmReservation = () => {
+    const queryClient = useQueryClient();
+    return useMutation<unknown, ApiError, string>({
+        mutationFn: (id: string) => reservationsService.confirm(id),
+        onSuccess: (_, id) => {
+            queryClient.invalidateQueries({ queryKey: reservationKeys.lists() });
+            queryClient.invalidateQueries({ queryKey: reservationKeys.detail(id) });
+        },
+    });
+};

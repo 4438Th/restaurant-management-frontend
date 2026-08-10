@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { Icon } from "../icon";
 import { SidebarNavItem } from "./sidebar-nav-item";
 import { SidebarProps } from "./types";

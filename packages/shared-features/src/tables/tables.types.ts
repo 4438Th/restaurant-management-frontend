@@ -66,6 +66,7 @@ export interface TableResponse extends AuditEntity {
     type: TableType;
     status: TableStatus;
     area: TableArea;
+    nextReservationTime?: string | null;
 }
 
 export interface TableAnalyticsResponse {

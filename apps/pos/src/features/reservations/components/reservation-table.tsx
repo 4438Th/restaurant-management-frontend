@@ -6,7 +6,8 @@ interface ReservationTableProps {
   isLoading: boolean;
   isError: boolean;
   onRetry: () => void;
-  onArrive: (id: string) => void;
+  onConfirm: (id: string) => void;
+  onArrive: (item: TableReservationResponse) => void;
   onComplete: (id: string) => void;
   onNoShow: (id: string) => void;
   onRequestCancel: (item: TableReservationResponse) => void;
@@ -18,6 +19,7 @@ export function ReservationTable({
   isLoading,
   isError,
   onRetry,
+  onConfirm,
   onArrive,
   onComplete,
   onNoShow,
@@ -74,6 +76,7 @@ export function ReservationTable({
             <ReservationTableRow
               key={item.id}
               item={item}
+              onConfirm={onConfirm}
               onArrive={onArrive}
               onComplete={onComplete}
               onNoShow={onNoShow}

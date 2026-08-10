@@ -1,12 +1,10 @@
-import { useState } from "react";
 import { Icon } from "@repo/ui";
-import type {
-  TableReservationResponse,
-  TableReservationCreateRequest,
-  TableReservationUpdateRequest,
-} from "@repo/shared-features/reservations";
-import type { TableResponse } from "@repo/shared-features/tables";
-
+import {
+  type TableResponse,
+  TableStatus,
+  TableAreaLabel,
+} from "@repo/shared-features/tables";
+import type { ReservationFormData } from "@/features/reservations";
 import {
   FormRow,
   InputField,
@@ -14,123 +12,35 @@ import {
   TextareaField,
 } from "./reservation-form-fields";
 
-// ==========================================
-// HELPER FUNCTIONS (XỬ LÝ THỜI GIAN LOCALDATETIME)
-// ==========================================
-function formatIsoToLocalInput(isoString?: string): string {
-  if (!isoString) {
-    const now = new Date();
-    const pad = (n: number) => n.toString().padStart(2, "0");
-    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  }
-  return isoString.slice(0, 16);
-}
-
-function formatLocalInputToLocalDateTime(localDateTimeString: string): string {
-  if (localDateTimeString.length === 16) {
-    return `${localDateTimeString}:00`;
-  }
-  return localDateTimeString;
-}
-
-// ==========================================
-// TYPES & INTERFACES
-// ==========================================
-export type ReservationFormData = {
-  tableId: string;
-  customerName: string;
-  customerPhone: string;
-  guestCount: number;
-  reservationTime: string;
-  note?: string;
-};
-
 interface ReservationFormModalProps {
   isOpen: boolean;
   tables: TableResponse[];
-  initialData?: TableReservationResponse | null;
+  isEditMode: boolean;
   isSubmitting: boolean;
+  formData: ReservationFormData;
+  onChange: (field: keyof ReservationFormData, value: string | number) => void;
   onClose: () => void;
-  onSubmit: (
-    data: TableReservationCreateRequest | TableReservationUpdateRequest,
-  ) => void;
+  onSubmit: (e: React.FormEvent) => void;
 }
 
-// ==========================================
-// MAIN MODAL COMPONENT
-// ==========================================
 export function ReservationFormModal({
   isOpen,
   tables,
-  initialData,
+  isEditMode,
   isSubmitting,
+  formData,
+  onChange,
   onClose,
   onSubmit,
 }: ReservationFormModalProps) {
-  const [formData, setFormData] = useState<ReservationFormData>(() => {
-    if (initialData) {
-      return {
-        tableId: initialData.tableId || "",
-        customerName: initialData.customerName || "",
-        customerPhone: initialData.customerPhone || "",
-        guestCount: initialData.guestCount ?? 1,
-        reservationTime: formatIsoToLocalInput(initialData.reservationTime),
-        note: initialData.note || "",
-      };
-    }
-
-    return {
-      tableId: tables[0]?.id || "",
-      customerName: "",
-      customerPhone: "",
-      guestCount: 2,
-      reservationTime: formatIsoToLocalInput(),
-      note: "",
-    };
-  });
-
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (
-      !formData.tableId ||
-      !formData.customerName ||
-      !formData.customerPhone ||
-      !formData.reservationTime
-    ) {
-      return;
-    }
-
-    const payloadTime = formatLocalInputToLocalDateTime(
-      formData.reservationTime,
-    );
-
-    if (initialData) {
-      const updatePayload: TableReservationUpdateRequest = {
-        tableId: formData.tableId,
-        customerName: formData.customerName,
-        customerPhone: formData.customerPhone,
-        guestCount: formData.guestCount,
-        reservationTime: payloadTime,
-        note: formData.note || undefined,
-      };
-      onSubmit(updatePayload);
-    } else {
-      const createPayload: TableReservationCreateRequest = {
-        tableId: formData.tableId,
-        customerName: formData.customerName,
-        customerPhone: formData.customerPhone,
-        guestCount: formData.guestCount,
-        reservationTime: payloadTime,
-        note: formData.note || undefined,
-      };
-      onSubmit(createPayload);
-    }
-  };
-
-  const isEditMode = Boolean(initialData);
+  // Lọc bỏ bàn đã xóa hoặc đang bảo trì
+  const availableTables = tables.filter(
+    (tbl: TableResponse) =>
+      tbl.status !== TableStatus.DELETED &&
+      tbl.status !== TableStatus.MAINTENANCE,
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -150,23 +60,25 @@ export function ReservationFormModal({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-4">
+        <form onSubmit={onSubmit} className="flex flex-col gap-4 mt-4">
           <SelectField
             label="Chọn Bàn ăn"
             required
             value={formData.tableId}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, tableId: e.target.value }))
-            }
+            onChange={(e) => onChange("tableId", e.target.value)}
           >
             <option value="" disabled>
               -- Chọn bàn --
             </option>
-            {tables.map((table) => (
-              <option key={table.id} value={table.id}>
-                {table.tableName} ({table.capacity} chỗ)
-              </option>
-            ))}
+            {availableTables.map((table: TableResponse) => {
+              const areaName = TableAreaLabel[table.area] || table.area;
+
+              return (
+                <option key={table.id} value={table.id}>
+                  {table.tableName} - {areaName} ({table.capacity} chỗ)
+                </option>
+              );
+            })}
           </SelectField>
 
           <FormRow>
@@ -176,12 +88,7 @@ export function ReservationFormModal({
               type="text"
               placeholder="Nguyễn Văn A"
               value={formData.customerName}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  customerName: e.target.value,
-                }))
-              }
+              onChange={(e) => onChange("customerName", e.target.value)}
             />
             <InputField
               label="Số điện thoại"
@@ -189,12 +96,7 @@ export function ReservationFormModal({
               type="tel"
               placeholder="0901234567"
               value={formData.customerPhone}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  customerPhone: e.target.value,
-                }))
-              }
+              onChange={(e) => onChange("customerPhone", e.target.value)}
             />
           </FormRow>
 
@@ -205,24 +107,14 @@ export function ReservationFormModal({
               type="number"
               min={1}
               value={formData.guestCount}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  guestCount: Number(e.target.value),
-                }))
-              }
+              onChange={(e) => onChange("guestCount", Number(e.target.value))}
             />
             <InputField
               label="Thời gian đến"
               required
               type="datetime-local"
               value={formData.reservationTime}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  reservationTime: e.target.value,
-                }))
-              }
+              onChange={(e) => onChange("reservationTime", e.target.value)}
             />
           </FormRow>
 
@@ -230,9 +122,7 @@ export function ReservationFormModal({
             label="Ghi chú thêm"
             placeholder="Yêu cầu ghế trẻ em, trang trí tiệc..."
             value={formData.note || ""}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, note: e.target.value }))
-            }
+            onChange={(e) => onChange("note", e.target.value)}
           />
 
           {/* Actions */}

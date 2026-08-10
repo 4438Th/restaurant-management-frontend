@@ -24,29 +24,13 @@ export const posNavItems: NavItem[] = [
         icon: "CalendarCheck",
     },
     {
-        title: "Quản lý gọi món",
-        icon: "ClipboardList",
-        children: [
-            {
-                title: "Tạo đơn mới",
-                href: "/orders/new",
-                icon: "PlusCircle",
-            },
-            {
-                title: "Danh sách đơn hàng",
-                href: "/orders",
-                icon: "Receipt",
-            },
-        ],
+        title: "Danh sách đơn hàng",
+        href: "/orders",
+        icon: "Receipt",
     },
     {
         title: "Báo cáo doanh thu",
         href: "/reports",
         icon: "BarChart3",
-    },
-    {
-        title: "Cài đặt thiết bị",
-        href: "/settings",
-        icon: "Settings",
     },
 ];

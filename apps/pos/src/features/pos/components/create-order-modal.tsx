@@ -1,11 +1,8 @@
-// apps/pos/src/features/pos/components/create-order-modal.tsx
-
 import { useState } from "react";
 import { toast } from "sonner";
 import {
   type TableResponse,
   TableStatus,
-  TableStatusLabel,
   TableAreaLabel,
 } from "@repo/shared-features/tables";
 
@@ -25,6 +22,30 @@ export interface CreateOrderModalProps {
   onSubmit?: (data: CreateOrderFormData) => void;
 }
 
+/**
+ * Hàm hỗ trợ định dạng thời gian đặt bàn tiếp theo thành chuỗi dễ đọc
+ */
+const formatNextReservationTime = (isoString?: string | null): string => {
+  if (!isoString) return "";
+  try {
+    const date = new Date(isoString);
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+
+    if (isToday) {
+      return `Hôm nay lúc ${hours}:${minutes}`;
+    }
+    return `${hours}:${minutes} ngày ${day}/${month}`;
+  } catch {
+    return "";
+  }
+};
+
 export function CreateOrderModal({
   isOpen = false,
   tables = [],
@@ -40,6 +61,7 @@ export function CreateOrderModal({
 
   if (!isOpen) return null;
 
+  // Chỉ lọc bỏ các bàn đã xóa hoặc đang bảo trì
   const availableTables = tables.filter(
     (tbl: TableResponse) =>
       tbl.status !== TableStatus.DELETED &&
@@ -81,17 +103,27 @@ export function CreateOrderModal({
               <option value="">-- Chọn bàn --</option>
               {availableTables.map((tbl: TableResponse) => {
                 const areaName = TableAreaLabel[tbl.area] || tbl.area;
-                const statusName = TableStatusLabel[tbl.status] || tbl.status;
                 const isOccupied = tbl.status === TableStatus.OCCUPIED;
+                const formattedReservation = formatNextReservationTime(
+                  tbl.nextReservationTime,
+                );
 
                 return (
                   <option
                     key={tbl.id}
                     value={tbl.id}
-                    className={isOccupied ? "text-amber-600 font-semibold" : ""}
+                    disabled={isOccupied}
+                    className={
+                      isOccupied
+                        ? "text-outline bg-surface-container/50 italic"
+                        : ""
+                    }
                   >
-                    {tbl.tableName} - {areaName} ({statusName} - {tbl.capacity}{" "}
-                    chỗ)
+                    {tbl.tableName} - {areaName} ({tbl.capacity} chỗ){" "}
+                    {isOccupied ? "- [Đang có khách]" : ""}
+                    {!isOccupied && formattedReservation
+                      ? ` - [Có lịch hẹn lúc ${formattedReservation}]`
+                      : ""}
                   </option>
                 );
               })}
