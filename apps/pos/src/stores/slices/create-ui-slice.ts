@@ -45,7 +45,7 @@ export const createUiSlice: StateCreator<PosState, [], [], UiSlice> = (set) => (
 
     resetPosState: () =>
         set({
-            draftOrders: [{ id: `draft-${Date.now()}`, label: 'Đơn #1', cart: [] }],
+            draftOrders: [],
             openOrders: [],
             activeDraftId: null,
             cart: [],

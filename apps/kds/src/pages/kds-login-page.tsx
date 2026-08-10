@@ -22,7 +22,7 @@ export function KdsLoginPage() {
             localStorage.setItem("accessToken", token);
 
             toast.success("Đăng nhập KDS thành công!");
-            // navigate("/KDS", { replace: true });
+            navigate("/kds", { replace: true });
           } else {
             toast.error("Dữ liệu phản hồi từ máy chủ không hợp lệ!");
           }

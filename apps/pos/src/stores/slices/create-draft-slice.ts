@@ -11,10 +11,8 @@ export const createDraftSlice: StateCreator<PosState, [], [], DraftSlice> = (set
     closeCreateModal: () => set({ isCreateModalOpen: false }),
 
     createNewDraft: (formData) => {
-        const { draftOrders } = get();
+        const { draftOrders, cart } = get();
 
-        // 🛠️ TÍNH SỐ THỨ TỰ ĐƠN MỚI TRÁNH TRÙNG LẶP:
-        // Lấy tất cả các con số từ label "Đơn #X" hiện có
         const existingNumbers = draftOrders
             .map((d) => {
                 const match = d.label?.match(/\d+/);
@@ -22,14 +20,13 @@ export const createDraftSlice: StateCreator<PosState, [], [], DraftSlice> = (set
             })
             .filter((num) => !isNaN(num) && num > 0);
 
-        // Tìm số lớn nhất hiện tại, nếu chưa có đơn nào thì bắt đầu từ 0
         const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 0;
         const nextNumber = maxNumber + 1;
 
         const newDraft: LocalDraftOrder = {
             id: `draft-${Date.now()}`,
             label: `Đơn #${nextNumber}`,
-            cart: [],
+            cart: [...cart],
             tableId: formData?.tableId,
             customerInfo: {
                 customerName: formData?.customerName,
@@ -42,7 +39,6 @@ export const createDraftSlice: StateCreator<PosState, [], [], DraftSlice> = (set
             activeDraftId: newDraft.id,
             activeOrderId: null,
             activeOrderItems: [],
-            cart: [],
             selectedTableId: formData?.tableId || null,
             customerInfo: newDraft.customerInfo || {},
             isCreateModalOpen: false,

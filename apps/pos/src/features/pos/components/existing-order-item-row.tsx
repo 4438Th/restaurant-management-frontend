@@ -1,8 +1,5 @@
 import { Badge } from "@repo/ui";
-import {
-  OrderItemStatus,
-  type OrderItemResponse,
-} from "@repo/shared-features/order";
+import { OrderItemStatus, type OrderItemResponse } from "@repo/shared-features";
 
 interface ExistingOrderItemRowProps {
   item: OrderItemResponse;

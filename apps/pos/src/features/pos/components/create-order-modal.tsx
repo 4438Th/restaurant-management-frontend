@@ -22,9 +22,6 @@ export interface CreateOrderModalProps {
   onSubmit?: (data: CreateOrderFormData) => void;
 }
 
-/**
- * Hàm hỗ trợ định dạng thời gian đặt bàn tiếp theo thành chuỗi dễ đọc
- */
 const formatNextReservationTime = (isoString?: string | null): string => {
   if (!isoString) return "";
   try {
@@ -61,12 +58,19 @@ export function CreateOrderModal({
 
   if (!isOpen) return null;
 
-  // Chỉ lọc bỏ các bàn đã xóa hoặc đang bảo trì
   const availableTables = tables.filter(
     (tbl: TableResponse) =>
       tbl.status !== TableStatus.DELETED &&
       tbl.status !== TableStatus.MAINTENANCE,
   );
+
+  const handleClose = () => {
+    // Reset state trực tiếp khi đóng modal
+    setTableId("");
+    setCustomerName("");
+    setCustomerPhone("");
+    onClose?.();
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,7 +165,7 @@ export function CreateOrderModal({
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-outline-variant">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isLoading}
               className="px-4 py-2 text-xs font-bold text-on-surface-variant hover:bg-surface-variant rounded-xl transition cursor-pointer"
             >

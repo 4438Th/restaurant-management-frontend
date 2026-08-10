@@ -1,8 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import {
-  //  KdsPage,
-  KdsLoginPage,
-} from "@/pages";
+import { KdsPage, KdsLoginPage } from "@/pages";
 
 export const AppRoutes = () => {
   return (
@@ -13,10 +10,10 @@ export const AppRoutes = () => {
       {/* Các trang chức năng */}
       <Route path="/login" element={<KdsLoginPage />} />
 
-      {/* <Route path="/kds" element={<PosPage />} /> */}
+      <Route path="/kds" element={<KdsPage />} />
 
       {/* Fallback cho các đường dẫn không tồn tại */}
-      <Route path="*" element={<Navigate to="/pos" replace />} />
+      <Route path="*" element={<Navigate to="/kds" replace />} />
     </Routes>
   );
 };

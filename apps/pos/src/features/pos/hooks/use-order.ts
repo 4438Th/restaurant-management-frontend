@@ -17,9 +17,11 @@ export function useOrder() {
     const cart = usePosStore((s) => s.cart);
     const activeOrderId = usePosStore((s) => s.activeOrderId);
     const selectedTableId = usePosStore((s) => s.selectedTableId);
+    const customerInfo = usePosStore((s) => s.customerInfo);
 
     const activeDraftId = usePosStore((s) => s.activeDraftId);
     const closeDraft = usePosStore((s) => s.closeDraft);
+    const openCreateModal = usePosStore((s) => s.openCreateModal);
 
     const addToCart = usePosStore((s) => s.addToCart);
     const updateQuantity = usePosStore((s) => s.updateQuantity);
@@ -68,14 +70,12 @@ export function useOrder() {
         );
     }, [cart, existingItems]);
 
-    // Điều kiện sẵn sàng thanh toán: 
-    // Bắt buộc phải có món trên server và toàn bộ món đó phải ở trạng thái SERVED hoặc CANCELLED
+    // Điều kiện sẵn sàng thanh toán
     const isReadyForCheckout = useMemo(() => {
         if (existingItems.length === 0) return false;
 
         const orderStatus = activeOrderDetail?.status;
 
-        // Nếu BE trả về trạng thái tổng đã hoàn thành/phục vụ xong
         if (
             orderStatus === OrderStatus.SERVED ||
             orderStatus === OrderStatus.COMPLETED
@@ -83,7 +83,6 @@ export function useOrder() {
             return true;
         }
 
-        // Kiểm tra an toàn dựa trên tất cả món đã gửi bếp
         return existingItems.every(
             (item) =>
                 item.status === OrderItemStatus.SERVED ||
@@ -98,6 +97,7 @@ export function useOrder() {
     const handleSendToKitchen = async (
         overrideParams?: DraftFormData
     ): Promise<OrderResponse | boolean> => {
+        // Nếu giỏ hàng trống thì chặn luôn
         if (cart.length === 0) {
             toast.error("Giỏ hàng đang trống!");
             return false;
@@ -115,40 +115,46 @@ export function useOrder() {
             let targetOrderId = activeOrderId;
             let createdOrder: OrderResponse | null = null;
 
-            // Bước 1: Tạo đơn mới trên Server nếu chưa có activeOrderId
+            // BƯỚC 1: NẾU CHƯA CÓ ACTIVE ORDER ID TRÊN SERVER -> TẠO ĐƠN MỚI
             if (!targetOrderId) {
                 if (!targetTableId) {
+                    toast.info("Vui lòng chọn bàn và tạo đơn trước khi gửi bếp!");
+                    openCreateModal();
                     return false;
                 }
 
+                // Gọi API tạo đơn chính thức cho bàn
                 createdOrder = await createOrderMutation.mutateAsync({
                     tableId: targetTableId,
-                    customerName: overrideParams?.customerName,
-                    customerPhone: overrideParams?.customerPhone,
+                    customerName: overrideParams?.customerName || customerInfo?.customerName,
+                    customerPhone: overrideParams?.customerPhone || customerInfo?.customerPhone,
                 });
 
                 targetOrderId = createdOrder.id;
 
+                // Cập nhật trạng thái Active Order chính thức ngay lập tức
                 setActiveOrder({
                     id: createdOrder.id,
                     tableId: createdOrder.tableId,
                     tableName: createdOrder.tableName,
-                    items: createdOrder.items,
+                    items: createdOrder.items || [],
                 });
             }
 
-            // Bước 2: Thêm món ăn vào đơn hàng (đã có hoặc vừa tạo)
+            // BƯỚC 2: THÊM MÓN VÀO ĐƠN TRÊN SERVER (DÙ LÀ ĐƠN CŨ HAY VỪA TẠO MỚI)
             if (targetOrderId) {
                 await addItemsMutation.mutateAsync({
                     orderId: targetOrderId,
                     payload: itemsPayload,
                 });
 
-                clearCart();
-
+                // Đóng tab nháp local nếu có
                 if (activeDraftId && activeDraftId.startsWith("draft-")) {
                     closeDraft(activeDraftId);
                 }
+
+                // Làm sạch giỏ hàng tạm sau khi đã đẩy lên Server
+                clearCart();
 
                 toast.success("Đã gửi món xuống bếp thành công!");
                 return createdOrder || true;

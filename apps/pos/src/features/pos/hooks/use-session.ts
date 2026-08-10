@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { toast } from "sonner";
 import { useOrders, OrderStatus, type OrderResponse } from "@repo/shared-features/order";
-import { useTable } from "@repo/shared-features/tables"; // Sửa lại thành useTable
+import { useTable } from "@repo/shared-features/tables";
 import { usePosStore } from "@/stores";
 import type { OpenOrder, CreateOrderFormData } from "@/features/pos";
 
@@ -84,17 +84,32 @@ export function useSession() {
 
     const handleCloseTab = (tabId: string) => {
         if (tabId.startsWith("draft-")) {
+            const targetDraft = draftOrders.find((d) => d.id === tabId);
+            const hasItems = targetDraft && targetDraft.cart.length > 0;
+
+            if (hasItems) {
+                toast.warning("Đơn nháp có chứa món ăn!", {
+                    description: "Bạn có chắc chắn muốn đóng và xóa đơn này không?",
+                    action: {
+                        label: "Xác nhận xóa",
+                        onClick: () => closeDraft(tabId),
+                    },
+                    classNames: {
+                        actionButton: "!bg-red-500 !text-white hover:!bg-red-600 font-bold",
+                    },
+                });
+                return;
+            }
+
             closeDraft(tabId);
         } else {
             toast.warning("Đơn hàng trên hệ thống không thể đóng trực tiếp. Hãy thực hiện thanh toán hoặc hủy đơn.");
         }
     };
 
-    /**
-     * Submit từ Modal -> Thực hiện tạo Tab nháp mới
-     */
     const handleCreateOrderSubmit = (formData: CreateOrderFormData) => {
         createNewDraft(formData);
+        closeCreateModal();
         toast.success("Tạo đơn nháp mới thành công!");
     };
 
@@ -105,7 +120,7 @@ export function useSession() {
         activeOrderId,
         activeDraftId,
         isOrdersLoading,
-        tables: availableTables, // Trả về danh sách bàn đã lọc các bàn bị giữ chỗ
+        tables: availableTables,
         isTablesLoading,
         isCreateModalOpen,
 
