@@ -16,8 +16,8 @@ export enum OrderItemStatus {
 export const OrderItemStatusLabel: Record<OrderItemStatus, string> = {
     [OrderItemStatus.PENDING]: "Chờ xử lý",
     [OrderItemStatus.PREPARING]: "Đang chế biến",
-    [OrderItemStatus.READY]: "Chờ cung ứng",
-    [OrderItemStatus.SERVED]: "Đã cung ứng",
+    [OrderItemStatus.READY]: "Sẵn sàng",
+    [OrderItemStatus.SERVED]: "Đã ra món",
     [OrderItemStatus.CANCELLED]: "Đã hủy",
     [OrderItemStatus.REFUNDED]: "Đã hoàn tiền",
 };

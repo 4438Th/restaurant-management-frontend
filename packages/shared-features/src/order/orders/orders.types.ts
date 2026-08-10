@@ -22,7 +22,7 @@ export enum OrderStatus {
 export const OrderStatusLabel: Record<OrderStatus, string> = {
     [OrderStatus.DRAFT]: "Nháp",
     [OrderStatus.PROCESSING]: "Đang phục vụ",
-    [OrderStatus.SERVED]: "Đã ra đủ món",
+    [OrderStatus.SERVED]: "Đã đủ món",
     [OrderStatus.PENDING_PAYMENT]: "Chờ thanh toán",
     [OrderStatus.COMPLETED]: "Hoàn thành",
     [OrderStatus.REFUNDED]: "Đã hoàn tiền",

@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "HTH RMS",
+  title: "HTH-RMS",
   description: "Enterprise Hospitality Management",
 };
 
