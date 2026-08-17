@@ -4,3 +4,5 @@ export * from './reservation-cancel-modal';
 export * from './reservation-form-modal';
 export * from './reservation-table-row';
 export * from './reservation-form-fields';
+export * from './reservation-detail-modal';
+export * from './pre-order-cart';

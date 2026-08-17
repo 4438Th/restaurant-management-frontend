@@ -5,7 +5,9 @@ import {
     TableReservationCreateRequest,
     TableReservationUpdateRequest,
     TableReservationCancelRequest,
-    TableReservationFilterParams
+    ConfirmDepositRequest,
+    TableReservationFilterParams,
+    TableReservationResponse,
 } from './reservations.types';
 
 // ==========================================
@@ -23,7 +25,7 @@ export const reservationKeys = {
 export const RESERVATIONS_QUERY_KEY = reservationKeys.all;
 
 // ==========================================
-// HOOKS
+// HOOKS - QUERIES
 // ==========================================
 
 export const useReservation = (params?: TableReservationFilterParams) => {
@@ -35,9 +37,13 @@ export const useReservation = (params?: TableReservationFilterParams) => {
     });
 };
 
+// ==========================================
+// HOOKS - MUTATIONS
+// ==========================================
+
 export const useCreateReservation = () => {
     const queryClient = useQueryClient();
-    return useMutation<unknown, ApiError, TableReservationCreateRequest>({
+    return useMutation<TableReservationResponse, ApiError, TableReservationCreateRequest>({
         mutationFn: (payload: TableReservationCreateRequest) => reservationsService.create(payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: reservationKeys.lists() });
@@ -47,7 +53,11 @@ export const useCreateReservation = () => {
 
 export const useUpdateReservation = () => {
     const queryClient = useQueryClient();
-    return useMutation<unknown, ApiError, { id: string; payload: TableReservationUpdateRequest }>({
+    return useMutation<
+        TableReservationResponse,
+        ApiError,
+        { id: string; payload: TableReservationUpdateRequest }
+    >({
         mutationFn: ({ id, payload }) => reservationsService.update(id, payload),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: reservationKeys.lists() });
@@ -56,10 +66,14 @@ export const useUpdateReservation = () => {
     });
 };
 
-export const useCancelReservation = () => {
+export const useConfirmDeposit = () => {
     const queryClient = useQueryClient();
-    return useMutation<unknown, ApiError, { id: string; payload: TableReservationCancelRequest }>({
-        mutationFn: ({ id, payload }) => reservationsService.cancel(id, payload),
+    return useMutation<
+        TableReservationResponse,
+        ApiError,
+        { id: string; payload: ConfirmDepositRequest }
+    >({
+        mutationFn: ({ id, payload }) => reservationsService.confirmDeposit(id, payload),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: reservationKeys.lists() });
             queryClient.invalidateQueries({ queryKey: reservationKeys.detail(variables.id) });
@@ -67,10 +81,10 @@ export const useCancelReservation = () => {
     });
 };
 
-export const useArriveReservation = () => {
+export const useCheckInReservation = () => {
     const queryClient = useQueryClient();
-    return useMutation<unknown, ApiError, string>({
-        mutationFn: (id: string) => reservationsService.arrive(id),
+    return useMutation<TableReservationResponse, ApiError, string>({
+        mutationFn: (id: string) => reservationsService.checkIn(id),
         onSuccess: (_, id) => {
             queryClient.invalidateQueries({ queryKey: reservationKeys.lists() });
             queryClient.invalidateQueries({ queryKey: reservationKeys.detail(id) });
@@ -78,34 +92,17 @@ export const useArriveReservation = () => {
     });
 };
 
-export const useCompleteReservation = () => {
+export const useCancelReservation = () => {
     const queryClient = useQueryClient();
-    return useMutation<unknown, ApiError, string>({
-        mutationFn: (id: string) => reservationsService.complete(id),
-        onSuccess: (_, id) => {
+    return useMutation<
+        TableReservationResponse,
+        ApiError,
+        { id: string; payload: TableReservationCancelRequest }
+    >({
+        mutationFn: ({ id, payload }) => reservationsService.cancel(id, payload),
+        onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: reservationKeys.lists() });
-            queryClient.invalidateQueries({ queryKey: reservationKeys.detail(id) });
-        },
-    });
-};
-
-export const useNoShowReservation = () => {
-    const queryClient = useQueryClient();
-    return useMutation<unknown, ApiError, string>({
-        mutationFn: (id: string) => reservationsService.noShow(id),
-        onSuccess: (_, id) => {
-            queryClient.invalidateQueries({ queryKey: reservationKeys.lists() });
-            queryClient.invalidateQueries({ queryKey: reservationKeys.detail(id) });
-        },
-    });
-};
-export const useConfirmReservation = () => {
-    const queryClient = useQueryClient();
-    return useMutation<unknown, ApiError, string>({
-        mutationFn: (id: string) => reservationsService.confirm(id),
-        onSuccess: (_, id) => {
-            queryClient.invalidateQueries({ queryKey: reservationKeys.lists() });
-            queryClient.invalidateQueries({ queryKey: reservationKeys.detail(id) });
+            queryClient.invalidateQueries({ queryKey: reservationKeys.detail(variables.id) });
         },
     });
 };

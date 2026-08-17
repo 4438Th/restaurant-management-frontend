@@ -1,82 +1,40 @@
 import { AppLayout } from "@/components/layouts";
 import { Icon } from "@repo/ui";
 import { useTable } from "@repo/shared-features/tables";
-import { type TableReservationResponse } from "@repo/shared-features/reservations";
+import { useDish } from "@repo/shared-features/menu";
+import { PaymentMethod } from "@repo/shared-features/reservations";
 import {
   ReservationToolbar,
   ReservationTable,
   ReservationCancelModal,
   ReservationFormModal,
+  ReservationDetailModal,
   useReservationState,
   useFilters,
-  useActions,
-  getInitialReservationFormData,
-  formatLocalInputToLocalDateTime,
-  type ReservationFormData,
+  useReservationActions,
 } from "@/features/reservations";
-import { useState } from "react";
 
 export function ReservationPage() {
   const ui = useReservationState();
   const filters = useFilters();
-  const actions = useActions(() => {
-    ui.setIsFormOpen(false);
-    ui.setEditingItem(null);
+  const actions = useReservationActions(() => {
+    ui.closeFormModal();
   });
 
   const { data: tablesData } = useTable({ size: 100 });
+  const { data: dishesData } = useDish({ size: 100 });
 
-  // State quản lý giá trị form theo mô hình Pure UI
-  const [formData, setFormData] = useState<ReservationFormData>(() =>
-    getInitialReservationFormData(null, tablesData?.data?.[0]?.id),
-  );
-
-  // Cập nhật formData khi mở form tạo mới hoặc chỉnh sửa
-  const handleOpenCreate = () => {
-    setFormData(getInitialReservationFormData(null, tablesData?.data?.[0]?.id));
-    ui.setEditingItem(null);
-    ui.setIsFormOpen(true);
-  };
-
-  const handleOpenEdit = (item: TableReservationResponse) => {
-    setFormData(getInitialReservationFormData(item));
-    ui.setEditingItem(item);
-    ui.setIsFormOpen(true);
-  };
-
-  const handleFormChange = (
-    field: keyof ReservationFormData,
-    value: string | number,
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleFormSubmit = () => {
     if (
-      !formData.tableId ||
-      !formData.customerName ||
-      !formData.customerPhone ||
-      !formData.reservationTime
+      !ui.formData.tableId ||
+      !ui.formData.customerName ||
+      !ui.formData.customerPhone ||
+      !ui.formData.reservationTime
     ) {
       return;
     }
 
-    const payloadTime = formatLocalInputToLocalDateTime(
-      formData.reservationTime,
-    );
-
-    const payload = {
-      tableId: formData.tableId,
-      customerName: formData.customerName,
-      customerPhone: formData.customerPhone,
-      guestCount: formData.guestCount,
-      reservationTime: payloadTime,
-      note: formData.note || undefined,
-    };
-
-    actions.handleFormSubmit(payload, ui.editingItem);
+    actions.handleFormSubmit(ui.formData, ui.preOrderItems, ui.editingItem);
   };
 
   return (
@@ -87,7 +45,7 @@ export function ReservationPage() {
           selectedStatus={filters.selectedStatus}
           onSearchChange={filters.setSearchQuery}
           onStatusChange={filters.setSelectedStatus}
-          onCreateNew={handleOpenCreate}
+          onCreateNew={() => ui.openCreateModal(tablesData?.data?.[0]?.id)}
         />
 
         <div className="flex-1 min-h-0 bg-surface-container-lowest rounded-2xl border border-outline-variant/50 flex flex-col shadow-sm overflow-hidden">
@@ -97,12 +55,15 @@ export function ReservationPage() {
               isLoading={filters.isLoading}
               isError={filters.isError}
               onRetry={filters.refetch}
-              onEdit={handleOpenEdit}
-              onConfirm={(id) => actions.handleConfirm(id)}
-              onArrive={(item) => actions.handleArrive(item)}
-              onComplete={(id) => actions.handleComplete(id)}
-              onNoShow={(id) => actions.handleNoShow(id)}
-              onRequestCancel={ui.setCancelModalItem}
+              onConfirm={(id) =>
+                actions.handleConfirmDeposit(id, {
+                  depositAmount: 0,
+                  paymentMethod: PaymentMethod.CASH,
+                  transactionRef: "",
+                })
+              }
+              onCheckIn={(item) => actions.handleCheckIn(item)}
+              onViewDetails={ui.setDetailItem}
             />
           </div>
 
@@ -129,14 +90,31 @@ export function ReservationPage() {
         </div>
       </div>
 
+      <ReservationDetailModal
+        item={ui.detailItem}
+        onClose={() => ui.setDetailItem(null)}
+        onEdit={(item) => {
+          ui.setDetailItem(null);
+          ui.openEditModal(item);
+        }}
+        onRequestCancel={ui.setCancelModalItem}
+      />
+
       <ReservationFormModal
         isOpen={ui.isFormOpen}
+        currentStep={ui.currentStep}
         tables={tablesData?.data || []}
+        dishes={dishesData?.data || []}
         isEditMode={Boolean(ui.editingItem)}
         isSubmitting={actions.isFormPending}
-        formData={formData}
-        onChange={handleFormChange}
-        onClose={() => ui.setIsFormOpen(false)}
+        formData={ui.formData}
+        preOrderItems={ui.preOrderItems}
+        onChangeStep={ui.setCurrentStep}
+        onChangeForm={ui.handleFormChange}
+        onAddToCart={ui.handleAddToCart}
+        onUpdateQuantity={ui.handleUpdateQuantity}
+        onRemoveItem={ui.handleRemoveItem}
+        onClose={ui.closeFormModal}
         onSubmit={handleFormSubmit}
       />
 
@@ -145,20 +123,13 @@ export function ReservationPage() {
         reason={ui.cancelReason}
         isSubmitting={actions.isCancelPending}
         onReasonChange={ui.setCancelReason}
-        onConfirm={() =>
-          actions.cancel.mutate(
-            {
-              id: ui.cancelModalItem!.id,
-              payload: { cancelReason: ui.cancelReason },
-            },
-            {
-              onSuccess: () => {
-                ui.setCancelModalItem(null);
-                ui.setCancelReason("");
-              },
-            },
-          )
-        }
+        onConfirm={() => {
+          if (ui.cancelModalItem) {
+            actions.handleCancel(ui.cancelModalItem.id, ui.cancelReason);
+            ui.setCancelModalItem(null);
+            ui.setCancelReason("");
+          }
+        }}
         onClose={() => ui.setCancelModalItem(null)}
       />
     </AppLayout>

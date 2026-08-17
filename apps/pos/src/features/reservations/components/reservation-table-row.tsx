@@ -1,61 +1,71 @@
-import { Icon } from "@repo/ui";
+import { Icon, type IconName } from "@repo/ui";
 import {
   TableReservationStatus,
   TableReservationStatusLabel,
   type TableReservationResponse,
 } from "@repo/shared-features/reservations";
 
-const STATUS_STYLES: Record<TableReservationStatus, string> = {
-  [TableReservationStatus.PENDING]:
-    "bg-warning/10 text-warning border-warning/20",
-  [TableReservationStatus.CONFIRMED]: "bg-info/10 text-info border-info/20",
-  [TableReservationStatus.ARRIVED]:
-    "bg-primary/10 text-primary border-primary/20",
-  [TableReservationStatus.COMPLETED]:
-    "bg-success/10 text-success border-success/20",
-  [TableReservationStatus.CANCELLED]:
-    "bg-outline/10 text-on-surface-variant border-outline/20",
-  [TableReservationStatus.DELAYED]: "bg-error/10 text-error border-error/20",
-  [TableReservationStatus.NO_SHOW]: "bg-error/20 text-error border-error/40",
+// Cấu hình style & icon badge cho từng trạng thái
+const STATUS_CONFIG: Record<
+  TableReservationStatus,
+  { style: string; icon: IconName }
+> = {
+  // Chờ duyệt: Vàng Cam (Chờ xử lý)
+  [TableReservationStatus.PENDING]: {
+    style:
+      "bg-amber-500/10 text-amber-600 border-amber-500/30 dark:text-amber-400",
+    icon: "Clock",
+  },
+  // Đã xác nhận: Xanh Dương (Sẵn sàng đón khách)
+  [TableReservationStatus.CONFIRMED]: {
+    style: "bg-blue-500/10 text-blue-600 border-blue-500/30 dark:text-blue-400",
+    icon: "CalendarCheck",
+  },
+  // Khách đã đến: Tím/Indigo (Đang ngồi tại bàn)
+  [TableReservationStatus.ARRIVED]: {
+    style:
+      "bg-indigo-500/10 text-indigo-600 border-indigo-500/30 dark:text-indigo-400 font-bold",
+    icon: "MapPin",
+  },
+  // Hoàn tất: Xanh Lá (Đã xong dịch vụ)
+  [TableReservationStatus.COMPLETED]: {
+    style:
+      "bg-emerald-500/10 text-emerald-600 border-emerald-500/30 dark:text-emerald-400",
+    icon: "CheckCircle2",
+  },
+  // Khách vắng mặt: Đỏ Thẫm (Không đến)
+  [TableReservationStatus.NO_SHOW]: {
+    style: "bg-rose-500/15 text-rose-600 border-rose-500/30 dark:text-rose-400",
+    icon: "UserX",
+  },
+  // Đã hủy: Xám Trung Tính (Nền chìm)
+  [TableReservationStatus.CANCELLED]: {
+    style:
+      "bg-slate-500/10 text-slate-500 border-slate-500/20 dark:text-slate-400",
+    icon: "XCircle",
+  },
 };
 
 export interface ReservationTableRowProps {
   item: TableReservationResponse;
   onConfirm: (id: string) => void;
-  onArrive: (item: TableReservationResponse) => void;
-  onComplete: (id: string) => void;
-  onNoShow: (id: string) => void;
-  onRequestCancel: (item: TableReservationResponse) => void;
-  onEdit: (item: TableReservationResponse) => void;
+  onCheckIn: (item: TableReservationResponse) => void;
+  onViewDetails: (item: TableReservationResponse) => void;
 }
 
 export function ReservationTableRow({
   item,
   onConfirm,
-  onArrive,
-  onComplete,
-  onNoShow,
-  onRequestCancel,
-  onEdit,
+  onCheckIn,
+  onViewDetails,
 }: ReservationTableRowProps) {
-  // Chỉ hiển thị nút Xác nhận khi trạng thái là PENDING (chờ duyệt)
-  const isPending = item.status === TableReservationStatus.PENDING;
-
-  // Nút Khách đến hiển thị khi đã được CONFIRMED hoặc PENDING (hoặc tùy theo logic hệ thống của bạn)
-  const isPendingOrConfirmed =
-    item.status === TableReservationStatus.CONFIRMED ||
-    item.status === TableReservationStatus.PENDING;
-
-  const isConfirmedOrDelayed =
-    item.status === TableReservationStatus.CONFIRMED ||
-    item.status === TableReservationStatus.DELAYED;
-
-  const canCancel =
-    item.status !== TableReservationStatus.COMPLETED &&
-    item.status !== TableReservationStatus.CANCELLED;
+  const statusInfo = STATUS_CONFIG[item.status];
 
   return (
-    <tr className="hover:bg-surface-container-low/50">
+    <tr
+      onClick={() => onViewDetails(item)}
+      className="hover:bg-surface-container-low/50 cursor-pointer transition-colors"
+    >
       {/* Khách hàng */}
       <td className="p-4">
         <div className="font-semibold text-on-surface">{item.customerName}</div>
@@ -84,10 +94,9 @@ export function ReservationTableRow({
       {/* Trạng thái */}
       <td className="p-4">
         <span
-          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${
-            STATUS_STYLES[item.status]
-          }`}
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border shadow-xs ${statusInfo.style}`}
         >
+          <Icon name={statusInfo.icon} className="w-3 h-3 shrink-0" />
           {TableReservationStatusLabel[item.status]}
         </span>
       </td>
@@ -97,68 +106,41 @@ export function ReservationTableRow({
         {item.note || "-"}
       </td>
 
-      {/* Thao tác */}
-      <td className="p-4 text-right">
-        <div className="flex items-center justify-end gap-2">
-          {/* Nút Phê duyệt / Xác nhận đơn đặt bàn (PENDING) */}
-          {isPending && (
+      {/* Thao tác cốt lõi */}
+      <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-end gap-1.5">
+          {/* Nút Xác nhận cho PENDING */}
+          {item.status === TableReservationStatus.PENDING && (
             <button
               type="button"
               onClick={() => onConfirm(item.id)}
-              className="px-2.5 py-1.5 bg-info text-on-info text-xs font-semibold rounded-lg hover:opacity-90"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg shadow-sm hover:bg-blue-700 active:scale-95 transition-all"
             >
+              <Icon name="Check" className="w-3.5 h-3.5" />
               Xác nhận
             </button>
           )}
 
-          {isPendingOrConfirmed && (
+          {/* Nút Khách đến cho CONFIRMED */}
+          {item.status === TableReservationStatus.CONFIRMED && (
             <button
               type="button"
-              onClick={() => onArrive(item)}
-              className="px-2.5 py-1.5 bg-primary text-on-primary text-xs font-semibold rounded-lg hover:opacity-90"
+              onClick={() => onCheckIn(item)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-lg shadow-sm hover:bg-indigo-700 active:scale-95 transition-all"
             >
+              <Icon name="UserCheck" className="w-3.5 h-3.5" />
               Khách đến
             </button>
           )}
 
-          {item.status === TableReservationStatus.ARRIVED && (
-            <button
-              type="button"
-              onClick={() => onComplete(item.id)}
-              className="px-2.5 py-1.5 bg-success text-on-success text-xs font-semibold rounded-lg hover:opacity-90"
-            >
-              Hoàn tất
-            </button>
-          )}
-
-          {isConfirmedOrDelayed && (
-            <button
-              type="button"
-              onClick={() => onNoShow(item.id)}
-              className="px-2.5 py-1.5 bg-surface-container text-error text-xs font-semibold rounded-lg border border-outline-variant hover:bg-error/10"
-            >
-              Khách vắng
-            </button>
-          )}
-
-          {canCancel && (
-            <button
-              type="button"
-              onClick={() => onRequestCancel(item)}
-              className="p-1.5 text-on-surface-variant hover:text-error hover:bg-error/10 rounded-lg"
-              title="Hủy đặt bàn"
-            >
-              <Icon name="XCircle" className="w-4 h-4" />
-            </button>
-          )}
-
+          {/* Nút Xem chi tiết */}
           <button
             type="button"
-            onClick={() => onEdit(item)}
-            className="p-1.5 text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-lg"
-            title="Chỉnh sửa thông tin"
+            onClick={() => onViewDetails(item)}
+            className="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-lg transition-colors border border-transparent hover:border-outline-variant/30"
+            title="Xem chi tiết & Thao tác khác"
           >
-            <Icon name="Edit" className="w-4 h-4" />
+            <Icon name="Eye" className="w-4 h-4" />
           </button>
         </div>
       </td>

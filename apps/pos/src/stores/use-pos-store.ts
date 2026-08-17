@@ -28,6 +28,16 @@ export const usePosStore = create<PosState>()(
                     activeOrderId: state.activeOrderId,
                     customerInfo: state.customerInfo,
                 }),
+                onRehydrateStorage: () => (state) => {
+                    if (state && state.activeDraftId) {
+                        const activeDraft = state.draftOrders.find((d) => d.id === state.activeDraftId);
+                        if (activeDraft) {
+                            state.cart = activeDraft.cart;
+                            state.customerInfo = activeDraft.customerInfo || {};
+                            state.selectedTableId = activeDraft.tableId || null;
+                        }
+                    }
+                },
             }
         )
     )

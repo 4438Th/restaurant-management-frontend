@@ -1,83 +1,109 @@
-import { toast } from "sonner";
-import { ApiError } from "@repo/core";
+import { toast } from 'sonner';
+import { ApiError } from '@repo/core';
+import { useQueryClient } from '@tanstack/react-query';
 import {
     useCreateReservation,
     useUpdateReservation,
     useCancelReservation,
-    useConfirmReservation,
-    useArriveReservation,
-    useCompleteReservation,
-    useNoShowReservation,
+    useConfirmDeposit,
+    useCheckInReservation,
     type TableReservationCreateRequest,
     type TableReservationUpdateRequest,
-    type TableReservationResponse
-} from "@repo/shared-features/reservations";
-import { usePosStore } from "@/stores/use-pos-store";
+    type TableReservationResponse,
+    type ConfirmDepositRequest,
+} from '@repo/shared-features/reservations';
+import { orderKeys } from '@repo/shared-features/order';
+import { usePosStore } from '@/stores/use-pos-store';
+import type { ReservationFormData, PreOrderItem } from '../types';
+import { formatLocalInputToLocalDateTime } from '../utils/reservation-form.utils';
 
-export function useActions(onSuccess: () => void) {
+export function useReservationActions(onSuccess: () => void) {
+    const queryClient = useQueryClient();
     const create = useCreateReservation();
     const update = useUpdateReservation();
     const cancel = useCancelReservation();
-    const confirm = useConfirmReservation();
-    const arrive = useArriveReservation();
-    const complete = useCompleteReservation();
-    const noShow = useNoShowReservation();
+    const confirmDeposit = useConfirmDeposit();
+    const checkIn = useCheckInReservation();
 
     const setSelectedTableId = usePosStore((state) => state.setSelectedTableId);
 
     const handleFormSubmit = (
-        data: TableReservationCreateRequest | TableReservationUpdateRequest,
+        formData: ReservationFormData,
+        preOrderItems: PreOrderItem[],
         editingItem: TableReservationResponse | null
     ) => {
+        const items = preOrderItems.map((item) => ({
+            dishId: item.dish.id,
+            quantity: item.quantity,
+        }));
+
         if (editingItem) {
+            const payload: TableReservationUpdateRequest = {
+                tableId: formData.tableId,
+                customerName: formData.customerName,
+                customerPhone: formData.customerPhone,
+                guestCount: formData.guestCount,
+                reservationTime: formatLocalInputToLocalDateTime(formData.reservationTime),
+                note: formData.note,
+            };
+
             update.mutate(
-                {
-                    id: editingItem.id,
-                    payload: data as TableReservationUpdateRequest
-                },
+                { id: editingItem.id, payload },
                 {
                     onSuccess: () => {
-                        toast.success("Đã cập nhật lịch đặt bàn thành công!");
+                        toast.success('Đã cập nhật lịch đặt bàn thành công!');
                         onSuccess();
                     },
-                    onError: (err: ApiError) => toast.error(err.message || "Cập nhật thất bại!")
+                    onError: (err: ApiError) =>
+                        toast.error(err.message || 'Cập nhật thất bại!'),
                 }
             );
         } else {
-            create.mutate(
-                data as TableReservationCreateRequest,
-                {
-                    onSuccess: () => {
-                        toast.success("Đã tạo lịch đặt bàn mới thành công!");
-                        onSuccess();
-                    },
-                    onError: (err: ApiError) => toast.error(err.message || "Tạo mới thất bại!")
-                }
-            );
+            const payload: TableReservationCreateRequest = {
+                tableId: formData.tableId,
+                customerName: formData.customerName,
+                customerPhone: formData.customerPhone,
+                guestCount: formData.guestCount,
+                reservationTime: formatLocalInputToLocalDateTime(formData.reservationTime),
+                note: formData.note,
+                preOrderItems: items.length > 0 ? items : undefined,
+            };
+
+            create.mutate(payload, {
+                onSuccess: () => {
+                    toast.success('Đã tạo lịch đặt bàn mới thành công!');
+                    onSuccess();
+                },
+                onError: (err: ApiError) =>
+                    toast.error(err.message || 'Tạo mới thất bại!'),
+            });
         }
     };
 
-    /**
-     * Xử lý xác nhận lịch đặt bàn
-     */
-    const handleConfirm = (id: string) => {
-        confirm.mutate(id, {
-            onSuccess: () => {
-                toast.success("Đã xác nhận lịch đặt bàn thành công!");
-                onSuccess();
-            },
-            onError: (err: ApiError) => toast.error(err.message || "Xác nhận thất bại!")
-        });
+    const handleConfirmDeposit = (id: string, payload: ConfirmDepositRequest) => {
+        confirmDeposit.mutate(
+            { id, payload },
+            {
+                onSuccess: () => {
+                    toast.success('Đã xác nhận tiền cọc thành công!');
+                    onSuccess();
+                },
+                onError: (err: ApiError) =>
+                    toast.error(err.message || 'Xác nhận cọc thất bại!'),
+            }
+        );
     };
 
-    /**
-     * Xử lý Check-in: Gọi API arrive ở BE -> Set bàn POS -> Chuyển hướng sang POS
-     */
-    const handleArrive = (reservation: TableReservationResponse) => {
-        arrive.mutate(reservation.id, {
+    const handleCheckIn = (reservation: TableReservationResponse) => {
+        checkIn.mutate(reservation.id, {
             onSuccess: () => {
-                toast.success(`Check-in thành công cho bàn ${reservation.tableName || ""}!`);
+                toast.success('Check-in thành công cho bàn!');
 
+                // 1. Invalidate cache để các Component đang dùng useQuery tự làm mới dữ liệu
+                queryClient.invalidateQueries({ queryKey: ['tables'] });
+                queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
+
+                // 2. Chuyển active bàn trên Zustand POS Store
                 if (reservation.tableId) {
                     setSelectedTableId(reservation.tableId);
                 }
@@ -85,49 +111,33 @@ export function useActions(onSuccess: () => void) {
                 onSuccess();
             },
             onError: (err: ApiError) => {
-                toast.error(err.message || "Check-in thất bại!");
+                toast.error(err.message || 'Check-in thất bại!');
+            },
+        });
+    };
+
+    const handleCancel = (id: string, cancelReason: string) => {
+        cancel.mutate(
+            { id, payload: { cancelReason } },
+            {
+                onSuccess: () => {
+                    toast.success('Đã hủy lịch đặt bàn thành công!');
+                    onSuccess();
+                },
+                onError: (err: ApiError) =>
+                    toast.error(err.message || 'Hủy đặt bàn thất bại!'),
             }
-        });
-    };
-
-    /**
-     * Xử lý hoàn tất lịch đặt bàn
-     */
-    const handleComplete = (id: string) => {
-        complete.mutate(id, {
-            onSuccess: () => {
-                toast.success("Đã hoàn tất lịch đặt bàn!");
-                onSuccess();
-            },
-            onError: (err: ApiError) => toast.error(err.message || "Thực hiện thất bại!")
-        });
-    };
-
-    /**
-     * Xử lý ghi nhận khách vắng mặt
-     */
-    const handleNoShow = (id: string) => {
-        noShow.mutate(id, {
-            onSuccess: () => {
-                toast.success("Đã ghi nhận khách vắng mặt!");
-                onSuccess();
-            },
-            onError: (err: ApiError) => toast.error(err.message || "Thực hiện thất bại!")
-        });
+        );
     };
 
     return {
         handleFormSubmit,
-        handleArrive,
-        handleConfirm,
-        handleComplete,
-        handleNoShow,
-        cancel, // Vẫn giữ nguyên cancel nếu đang xử lý qua modal riêng
+        handleCheckIn,
+        handleConfirmDeposit,
+        handleCancel,
         isFormPending: create.isPending || update.isPending,
-        isConfirmPending: confirm.isPending,
+        isConfirmPending: confirmDeposit.isPending,
         isCancelPending: cancel.isPending,
-        isArrivePending: arrive.isPending,
-        isCompletePending: complete.isPending,
-        isNoShowPending: noShow.isPending
+        isArrivePending: checkIn.isPending,
     };
 }

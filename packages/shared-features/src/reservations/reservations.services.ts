@@ -3,8 +3,9 @@ import {
     TableReservationCreateRequest,
     TableReservationUpdateRequest,
     TableReservationCancelRequest,
+    ConfirmDepositRequest,
     TableReservationResponse,
-    TableReservationFilterParams
+    TableReservationFilterParams,
 } from './reservations.types';
 
 export const reservationsService = {
@@ -20,22 +21,15 @@ export const reservationsService = {
         return apiClient.patch<TableReservationResponse>(`/table-reservations/${id}`, payload);
     },
 
+    confirmDeposit: (id: string, payload: ConfirmDepositRequest) => {
+        return apiClient.put<TableReservationResponse>(`/table-reservations/${id}/confirm-deposit`, payload);
+    },
+
+    checkIn: (id: string) => {
+        return apiClient.put<TableReservationResponse>(`/table-reservations/${id}/check-in`);
+    },
+
     cancel: (id: string, payload: TableReservationCancelRequest) => {
-        return apiClient.post<TableReservationResponse>(`/table-reservations/${id}/cancel`, payload);
-    },
-
-    arrive: (id: string) => {
-        return apiClient.post<TableReservationResponse>(`/table-reservations/${id}/arrive`);
-    },
-
-    complete: (id: string) => {
-        return apiClient.post<TableReservationResponse>(`/table-reservations/${id}/complete`);
-    },
-
-    noShow: (id: string) => {
-        return apiClient.post<TableReservationResponse>(`/table-reservations/${id}/no-show`);
-    },
-    confirm: (id: string) => {
-        return apiClient.post<TableReservationResponse>(`/table-reservations/${id}/confirm`);
-    },
+        return apiClient.put<TableReservationResponse>(`/table-reservations/${id}/cancel`, payload);
+    }
 };

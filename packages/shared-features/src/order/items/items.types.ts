@@ -1,8 +1,5 @@
 import { AuditEntity, WithCursorPagination, WithOffsetPagination } from "@repo/core";
-
-// ==========================================
-// 1. ENUMS & LABELS
-// ==========================================
+// ENUMS & LABELS
 
 export enum OrderItemStatus {
     PENDING = "PENDING",
@@ -22,9 +19,7 @@ export const OrderItemStatusLabel: Record<OrderItemStatus, string> = {
     [OrderItemStatus.REFUNDED]: "Đã hoàn tiền",
 };
 
-// ==========================================
-// 2. REQUEST INTERFACES
-// ==========================================
+// REQUEST
 
 export interface OrderItemCreateRequest {
     dishId: string;
@@ -41,14 +36,7 @@ export interface OrderItemStatusUpdateRequest {
     status: OrderItemStatus;
 }
 
-// ==========================================
-// 3. RESPONSE INTERFACES
-// ==========================================
-
-/**
- * Khớp 100% với OrderItemResponse.java từ Spring Boot Backend
- * Kế thừa AuditEntity (id, createdAt, createdBy, updatedAt, updatedBy)
- */
+// RESPONSE
 export interface OrderItemResponse extends AuditEntity {
     id: string;
     orderId: string;
@@ -58,7 +46,6 @@ export interface OrderItemResponse extends AuditEntity {
     dishImage?: string;
 
     quantity: number;
-    /** BigDecimal từ BE có thể serialize thành number hoặc string */
     price: number | string;
     totalPrice?: number | string;
 
@@ -66,12 +53,6 @@ export interface OrderItemResponse extends AuditEntity {
     cancelReason?: string;
     status: OrderItemStatus;
 }
-
-// ==========================================
-// 4. FILTER INTERFACES
-// ==========================================
-
-/** Khớp 100% với KitchenItemFilterRequest.java (Phân trang Offset) */
 export interface KitchenItemFilter {
     search?: string;
     status?: OrderItemStatus;

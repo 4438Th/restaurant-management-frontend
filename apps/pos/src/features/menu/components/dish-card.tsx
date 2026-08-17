@@ -17,7 +17,6 @@ export const DishCard: React.FC<DishCardProps> = ({
     currency: "VND",
   }).format(parseFloat(dish.price) || 0);
 
-  // SỬA LỖI: Dùng status === DishStatus.AVAILABLE thay vì isAvailable
   const isAvailable = dish.status === DishStatus.AVAILABLE;
 
   return (
@@ -60,11 +59,6 @@ export const DishCard: React.FC<DishCardProps> = ({
           <span className="font-extrabold text-primary text-sm">
             {priceFormatted}
           </span>
-          {isAvailable && (
-            <span className="text-[10px] font-bold text-on-surface-variant px-2 py-0.5 bg-surface-container rounded-md">
-              + Thêm
-            </span>
-          )}
         </div>
       </div>
     </div>

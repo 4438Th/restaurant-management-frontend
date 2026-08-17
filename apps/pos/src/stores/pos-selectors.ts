@@ -16,13 +16,21 @@ export const usePosCalculations = () => {
         (sum: number, item: CartItem) => sum + item.quantity,
         0
     );
+
     const discountAmount = (subtotal * discountPercentage) / 100;
     const grandTotal = subtotal - discountAmount;
+
+    const preOrderItems = cart.map((item) => ({
+        dishId: item.dish.id,
+        quantity: item.quantity,
+        note: item.note,
+    }));
 
     return {
         subtotal,
         totalItems,
         discountAmount,
         grandTotal,
+        preOrderItems,
     };
 };

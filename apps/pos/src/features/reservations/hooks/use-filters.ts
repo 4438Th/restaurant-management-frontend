@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react';
 import {
     useReservation,
     TableReservationStatus,
     type TableReservationFilterParams,
-    type TableReservationResponse
-} from "@repo/shared-features/reservations";
-import { type CursorPageResponse } from "@repo/core";
+    type TableReservationResponse,
+} from '@repo/shared-features/reservations';
+import { type CursorPageResponse } from '@repo/core';
 
 export function useFilters() {
-    const [searchQuery, setSearchQuery] = useState("");
-    const [selectedStatus, setSelectedStatus] = useState("ALL");
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedStatus, setSelectedStatus] = useState('ALL');
     const [filters, setFilters] = useState<TableReservationFilterParams>({});
 
     useEffect(() => {
@@ -18,9 +18,10 @@ export function useFilters() {
                 cursor: undefined,
                 size: 10,
                 search: searchQuery.trim() || undefined,
-                status: selectedStatus === "ALL" ? undefined : (selectedStatus as TableReservationStatus),
+                status: selectedStatus === 'ALL' ? undefined : (selectedStatus as TableReservationStatus),
             });
         }, 400);
+
         return () => clearTimeout(handler);
     }, [searchQuery, selectedStatus]);
 
@@ -29,18 +30,22 @@ export function useFilters() {
 
     const loadNextPage = () => {
         if (pageData?.hasNext && pageData?.nextCursor) {
-            setFilters(prev => ({ ...prev, cursor: pageData.nextCursor }));
+            setFilters((prev) => ({ ...prev, cursor: pageData.nextCursor }));
         }
     };
 
-    const resetCursor = () => setFilters(prev => ({ ...prev, cursor: undefined }));
+    const resetCursor = () => setFilters((prev) => ({ ...prev, cursor: undefined }));
 
     return {
         pageData,
         reservations: pageData?.data || [],
         filters,
-        searchQuery, setSearchQuery,
-        selectedStatus, setSelectedStatus,
-        loadNextPage, resetCursor, ...rest
+        searchQuery,
+        setSearchQuery,
+        selectedStatus,
+        setSelectedStatus,
+        loadNextPage,
+        resetCursor,
+        ...rest,
     };
 }

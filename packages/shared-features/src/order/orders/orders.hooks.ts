@@ -6,9 +6,12 @@ import {
     OrderResponse,
     OrderCreateRequest,
     OrderUpdateInfoRequest,
-    OrderChangeTableRequest,
     OrderCancelRequest,
     OrderFilterParams,
+    OrderItemResponse,
+    OrderItemCreateRequest,
+    OrderItemUpdateRequest,
+    SendItemsToPreparationRequest,
 } from './orders.types';
 
 // ==========================================
@@ -19,7 +22,7 @@ export const orderKeys = {
     lists: () => [...orderKeys.all, 'list'] as const,
     list: (params?: OrderFilterParams) => [...orderKeys.lists(), params] as const,
     details: () => [...orderKeys.all, 'detail'] as const,
-    detail: (id: string) => [...orderKeys.details(), id] as const,
+    detail: (id?: string) => [...orderKeys.details(), id] as const,
 };
 
 export const ORDERS_QUERY_KEY = orderKeys.all;
@@ -41,7 +44,7 @@ export const useOrders = (params?: OrderFilterParams) => {
 
 export const useOrderDetail = (id?: string, enabled = true) => {
     return useQuery({
-        queryKey: orderKeys.detail(id!),
+        queryKey: orderKeys.detail(id),
         queryFn: () => ordersService.getById(id!),
         enabled: Boolean(id) && enabled,
         staleTime: 30 * 1000,
@@ -56,7 +59,7 @@ export const useOrderDetail = (id?: string, enabled = true) => {
 export const useCreateOrder = () => {
     const queryClient = useQueryClient();
     return useMutation<OrderResponse, ApiError, OrderCreateRequest>({
-        mutationFn: (payload: OrderCreateRequest) => ordersService.create(payload),
+        mutationFn: (payload) => ordersService.create(payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
             queryClient.invalidateQueries({ queryKey: TABLE_QUERY_KEY });
@@ -65,7 +68,7 @@ export const useCreateOrder = () => {
     });
 };
 
-/** Cập nhật thông tin đơn (Tên khách, SĐT, Reservation...) */
+/** Cập nhật thông tin đơn hàng */
 export const useUpdateOrderInfo = () => {
     const queryClient = useQueryClient();
     return useMutation<OrderResponse, ApiError, { id: string; payload: OrderUpdateInfoRequest }>({
@@ -77,15 +80,68 @@ export const useUpdateOrderInfo = () => {
     });
 };
 
-/** Chuyển bàn */
-export const useChangeTable = () => {
+
+/** Thêm danh sách món vào Order */
+export const useAddItemsToOrder = () => {
     const queryClient = useQueryClient();
-    return useMutation<OrderResponse, ApiError, { id: string; payload: OrderChangeTableRequest }>({
-        mutationFn: ({ id, payload }) => ordersService.changeTable(id, payload),
+    return useMutation<
+        OrderItemResponse[],
+        ApiError,
+        { orderId: string; requests: OrderItemCreateRequest[] }
+    >({
+        mutationFn: ({ orderId, requests }) => ordersService.addItemsToOrder(orderId, requests),
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
+            queryClient.invalidateQueries({ queryKey: orderKeys.detail(variables.orderId) });
+        },
+    });
+};
+
+/** Gửi món sang bếp/bar chế biến */
+export const useSendItemsToPreparation = () => {
+    const queryClient = useQueryClient();
+    return useMutation<
+        OrderResponse,
+        ApiError,
+        { id: string; payload: SendItemsToPreparationRequest }
+    >({
+        mutationFn: ({ id, payload }) => ordersService.sendItemsToPreparation(id, payload),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
             queryClient.invalidateQueries({ queryKey: orderKeys.detail(variables.id) });
-            queryClient.invalidateQueries({ queryKey: TABLE_QUERY_KEY });
+            queryClient.invalidateQueries({ queryKey: orderItemKeys.kitchen() });
+        },
+    });
+};
+
+/** Cập nhật món trong order */
+export const useUpdateOrderItem = (orderId?: string) => {
+    const queryClient = useQueryClient();
+    return useMutation<
+        OrderItemResponse,
+        ApiError,
+        { itemId: string; payload: OrderItemUpdateRequest }
+    >({
+        mutationFn: ({ itemId, payload }) => ordersService.updateItem(itemId, payload),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
+            if (orderId) {
+                queryClient.invalidateQueries({ queryKey: orderKeys.detail(orderId) });
+            }
+        },
+    });
+};
+
+/** Xóa món khỏi order */
+export const useRemoveOrderItem = (orderId?: string) => {
+    const queryClient = useQueryClient();
+    return useMutation<void, ApiError, string>({
+        mutationFn: (itemId) => ordersService.removeItem(itemId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
+            if (orderId) {
+                queryClient.invalidateQueries({ queryKey: orderKeys.detail(orderId) });
+            }
         },
     });
 };
@@ -94,7 +150,7 @@ export const useChangeTable = () => {
 export const useCheckoutOrder = () => {
     const queryClient = useQueryClient();
     return useMutation<OrderResponse, ApiError, string>({
-        mutationFn: (id: string) => ordersService.checkout(id),
+        mutationFn: (id) => ordersService.checkout(id),
         onSuccess: (_, id) => {
             queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
             queryClient.invalidateQueries({ queryKey: orderKeys.detail(id) });

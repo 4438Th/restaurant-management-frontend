@@ -10,18 +10,41 @@ export enum TableReservationStatus {
     ARRIVED = "ARRIVED",
     COMPLETED = "COMPLETED",
     CANCELLED = "CANCELLED",
-    DELAYED = "DELAYED",
     NO_SHOW = "NO_SHOW",
 }
 
 export const TableReservationStatusLabel: Record<TableReservationStatus, string> = {
     [TableReservationStatus.PENDING]: "Chờ xác nhận",
     [TableReservationStatus.CONFIRMED]: "Đã xác nhận",
-    [TableReservationStatus.ARRIVED]: "Khách đã đến",
+    [TableReservationStatus.ARRIVED]: "Khách đến",
     [TableReservationStatus.COMPLETED]: "Hoàn thành",
     [TableReservationStatus.CANCELLED]: "Đã hủy",
-    [TableReservationStatus.DELAYED]: "Trễ giờ",
     [TableReservationStatus.NO_SHOW]: "Khách không đến",
+};
+
+export enum PaymentMethod {
+    CASH = "CASH",
+    BANK_TRANSFER = "BANK_TRANSFER",
+    ONLINE_GATEWAY = "ONLINE_GATEWAY"
+}
+
+export const PaymentMethodLabel: Record<PaymentMethod, string> = {
+    [PaymentMethod.CASH]: "Tiền mặt",
+    [PaymentMethod.BANK_TRANSFER]: "Chuyển khoản ngân hàng",
+    [PaymentMethod.ONLINE_GATEWAY]: "Cổng trực truyến"
+};
+
+export enum TableArea {
+    MAIN_HALL = "MAIN_HALL",
+    PRIVATE_ROOM = "PRIVATE_ROOM",
+    AIR_CONDITIONED = "AIR_CONDITIONED",
+    ROOFTOP = "ROOFTOP",
+}
+export const TableAreaLabel: Record<TableArea, string> = {
+    [TableArea.MAIN_HALL]: "Sảnh chính",
+    [TableArea.PRIVATE_ROOM]: "Phòng riêng",
+    [TableArea.AIR_CONDITIONED]: "Máy lạnh",
+    [TableArea.ROOFTOP]: "Sân thượng",
 };
 
 // ==========================================
@@ -33,8 +56,9 @@ export interface TableReservationCreateRequest {
     customerName: string;
     customerPhone: string;
     guestCount: number;
-    reservationTime: string; // ISO string (e.g. 2026-08-15T19:00:00)
+    reservationTime: string;
     note?: string;
+    preOrderItems?: PreOrderItemRequest[];
 }
 
 export interface TableReservationUpdateRequest {
@@ -44,10 +68,22 @@ export interface TableReservationUpdateRequest {
     guestCount?: number;
     reservationTime?: string;
     note?: string;
+    preOrderItems?: PreOrderItemRequest[];
 }
 
 export interface TableReservationCancelRequest {
     cancelReason: string;
+}
+export interface PreOrderItemRequest {
+    dishId: string;
+    quantity: number;
+    note?: string;
+}
+
+export interface ConfirmDepositRequest {
+    depositAmount: number | string;
+    paymentMethod: PaymentMethod;
+    transactionRef: string;
 }
 
 // ==========================================
@@ -66,6 +102,20 @@ export interface TableReservationResponse extends AuditEntity {
     status: TableReservationStatus;
     note?: string;
     cancelReason?: string;
+    depositAmount: number | string;
+    isDepositPaid: boolean;
+    depositMethod: PaymentMethod;
+    depositPaidAt: string;
+    depositTransactionRef: string;
+    preOrderId?: string;
+    preOrderItems?: PreOrderItemResponse[];
+}
+export interface PreOrderItemResponse {
+    dishId: string;
+    dishName: string;
+    quantity: number;
+    price: number | string;
+    note?: string;
 }
 
 export interface TableReservationAnalyticsResponse {

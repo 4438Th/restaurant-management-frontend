@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import { useOrders, OrderStatus, type OrderResponse } from "@repo/shared-features/order";
 import { useTable } from "@repo/shared-features/tables";
@@ -10,6 +10,7 @@ export function useSession() {
     const draftOrders = usePosStore((state) => state.draftOrders);
     const activeDraftId = usePosStore((state) => state.activeDraftId);
     const activeOrderId = usePosStore((state) => state.activeOrderId);
+    const selectedTableId = usePosStore((state) => state.selectedTableId);
     const isCreateModalOpen = usePosStore((state) => state.isCreateModalOpen);
 
     const openCreateModal = usePosStore((state) => state.openCreateModal);
@@ -20,18 +21,54 @@ export function useSession() {
     const setActiveOrder = usePosStore((state) => state.setActiveOrder);
     const resetCartAndOrder = usePosStore((state) => state.resetCartAndOrder);
 
-    // Fetch dữ liệu từ Server
-    const { data: ordersPage, isLoading: isOrdersLoading } = useOrders({
-        status: OrderStatus.DRAFT,
-    });
+    // Fetch danh sách đơn DRAFT chính thức trên Server (BE tự động loại bỏ PREORDER)
+    const { data: ordersPage, isLoading: isOrdersLoading } = useOrders();
+
+    // Fetch thông tin Order riêng cho bàn đang chọn (Dùng khi vừa bấm Check-in xong)
+    const { data: tableOrdersData } = useOrders(
+        selectedTableId ? { tableId: selectedTableId, page: 1, size: 1 } : undefined
+    );
+
     const { data: tablesData, isLoading: isTablesLoading } = useTable({ page: 1, size: 100 });
 
-    const serverList = useMemo(() => ordersPage?.data || [], [ordersPage]);
+    /**
+     * Lọc thêm ở Client để đảm bảo an toàn tuyệt đối:
+     * Bỏ qua bất kỳ Order nào vẫn đang mang status là PREORDER (nếu BE lỡ trả về chung)
+     */
+    const serverList = useMemo(() => {
+        const rawList = ordersPage?.data || [];
+        return rawList.filter((ord: OrderResponse) => {
+            const isAllowedStatus =
+                ord.status === OrderStatus.DRAFT ||
+                ord.status === OrderStatus.PROCESSING
+
+            return isAllowedStatus && Boolean(ord.tableId);
+        });
+    }, [ordersPage]);
+
     const rawTables = useMemo(() => tablesData?.data || [], [tablesData]);
 
     /**
-     * Kỹ thuật Local Hold (Client-side Table Filtering):
-     * Loại bỏ các bàn đã được xí chỗ trong mảng draftOrders hiện tại ở FE.
+     * Tự động đồng bộ Active Order khi selectedTableId thay đổi (Sau khi Check-in)
+     */
+    useEffect(() => {
+        if (selectedTableId && tableOrdersData?.data && tableOrdersData.data.length > 0) {
+            const currentTableOrder = tableOrdersData.data[0];
+
+            // Chỉ active nếu đơn đã chuyển sang DRAFT/được kích hoạt (Không active đơn PRE_ORDER)
+            if (currentTableOrder.status !== OrderStatus.PRE_ORDER) {
+                setActiveOrder({
+                    id: currentTableOrder.id,
+                    tableId: currentTableOrder.tableId,
+                    tableName: currentTableOrder.tableName,
+                    items: currentTableOrder.items || [],
+                });
+            }
+        }
+    }, [selectedTableId, tableOrdersData, setActiveOrder]);
+
+    /**
+     * Kỹ thuật Local Hold: Loại bỏ các bàn đã giữ chỗ ở Draft Local
      */
     const availableTables = useMemo(() => {
         const occupiedTableIdsInDrafts = new Set(
@@ -45,12 +82,14 @@ export function useSession() {
 
     // Gom danh sách Tab hiển thị trên Header Navigation
     const openOrders: OpenOrder[] = useMemo(() => {
+        // 1. Tab từ nháp Local
         const draftTabs: OpenOrder[] = draftOrders.map((d) => ({
             id: d.id,
             orderCode: d.label || "Đơn mới",
             itemCount: d.cart.reduce((sum, i) => sum + i.quantity, 0),
         }));
 
+        // 2. Tab từ Server List (Đã lọc bỏ các đơn PREORDER)
         const serverTabs: OpenOrder[] = serverList.map((ord: OrderResponse) => ({
             id: ord.id,
             tableName: ord.tableName || (ord.tableId ? `Bàn ${ord.tableId}` : undefined),
@@ -58,8 +97,25 @@ export function useSession() {
             itemCount: ord.items?.length || 0,
         }));
 
-        return [...draftTabs, ...serverTabs];
-    }, [draftOrders, serverList]);
+        // Hợp nhất danh sách
+        const combined = [...draftTabs, ...serverTabs];
+
+        // 3. Chỉ đẩy Active Order vào Tab Bar nếu đơn đó không thuộc dạng PREORDER
+        if (activeOrderId && !combined.some((tab) => tab.id === activeOrderId)) {
+            const activeTableOrder = tableOrdersData?.data?.find((o) => o.id === activeOrderId);
+
+            if (activeTableOrder && activeTableOrder.status !== OrderStatus.PRE_ORDER) {
+                combined.push({
+                    id: activeOrderId,
+                    tableName: activeTableOrder.tableName || (selectedTableId ? `Bàn ${selectedTableId}` : "Đơn hiện tại"),
+                    orderCode: `#${activeOrderId.slice(-4).toUpperCase()}`,
+                    itemCount: activeTableOrder.items?.length || 0,
+                });
+            }
+        }
+
+        return combined;
+    }, [draftOrders, serverList, activeOrderId, selectedTableId, tableOrdersData]);
 
     const activeTabId = activeOrderId || activeDraftId || undefined;
 

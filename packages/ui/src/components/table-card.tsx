@@ -2,12 +2,7 @@ import React from "react";
 import { Icon } from "./icon";
 
 // 1. Định nghĩa kiểu dữ liệu trạng thái bàn
-export type TableStatusUI =
-  | "AVAILABLE"
-  | "OCCUPIED"
-  | "RESERVED"
-  | "MAINTENANCE"
-  | string;
+export type TableStatusUI = "AVAILABLE" | "OCCUPIED" | "MAINTENANCE" | string;
 
 // 2. Định nghĩa cấu trúc theme cho thẻ
 interface StatusTheme {
@@ -30,10 +25,6 @@ const statusColorMap: Record<string, StatusTheme> = {
   },
   OCCUPIED: {
     cardClass: "status-occupied",
-    textClass: "font-bold",
-  },
-  RESERVED: {
-    cardClass: "status-reserved",
     textClass: "font-bold",
   },
   MAINTENANCE: defaultTheme,

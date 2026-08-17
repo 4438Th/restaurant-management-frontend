@@ -145,7 +145,7 @@ export function useOrder() {
             if (targetOrderId) {
                 await addItemsMutation.mutateAsync({
                     orderId: targetOrderId,
-                    payload: itemsPayload,
+                    requests: itemsPayload,
                 });
 
                 // Đóng tab nháp local nếu có

@@ -3,7 +3,6 @@ import { AuditEntity, WithOffsetPagination } from "@repo/core";
 export enum TableStatus {
     AVAILABLE = "AVAILABLE",
     OCCUPIED = "OCCUPIED",
-    RESERVED = "RESERVED",
     MAINTENANCE = "MAINTENANCE",
     DELETED = "DELETED",
 }
@@ -11,7 +10,6 @@ export enum TableStatus {
 export const TableStatusLabel: Record<TableStatus, string> = {
     [TableStatus.AVAILABLE]: "Bàn trống",
     [TableStatus.OCCUPIED]: "Đang sử dụng",
-    [TableStatus.RESERVED]: "Đã đặt trước",
     [TableStatus.MAINTENANCE]: "Bảo trì",
     [TableStatus.DELETED]: "Đã xóa",
 };

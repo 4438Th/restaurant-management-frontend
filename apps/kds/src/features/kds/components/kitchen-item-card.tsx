@@ -81,7 +81,7 @@ export function KitchenItemCard({
             }
             className="col-span-2 py-2 bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white font-bold rounded-xl text-xs transition shadow-sm shadow-sky-600/20 disabled:opacity-50 cursor-pointer"
           >
-            Bắt đầu nấu (Preparing)
+            Nhận chế biến
           </button>
         )}
         {item.status === OrderItemStatus.PREPARING && (
@@ -93,7 +93,7 @@ export function KitchenItemCard({
             }
             className="col-span-2 py-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-sm shadow-emerald-600/20 disabled:opacity-50 cursor-pointer"
           >
-            Đã nấu xong (Ready)
+            Chế biến xong
           </button>
         )}
         {item.status === OrderItemStatus.READY && (
@@ -105,7 +105,7 @@ export function KitchenItemCard({
             }
             className="col-span-2 py-2 bg-slate-700 hover:bg-slate-600 active:bg-slate-800 text-white font-bold rounded-xl text-xs transition disabled:opacity-50 cursor-pointer"
           >
-            Đã phục vụ (Served)
+            Đã phục vụ
           </button>
         )}
         {item.status !== OrderItemStatus.SERVED &&

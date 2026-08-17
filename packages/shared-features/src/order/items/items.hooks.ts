@@ -10,9 +10,7 @@ import {
     KitchenItemFilterParams,
 } from './items.types';
 
-// ==========================================
 // QUERY KEY FACTORY
-// ==========================================
 export const orderItemKeys = {
     all: ['order-items'] as const,
     kitchen: () => [...orderItemKeys.all, 'kitchen'] as const,
@@ -21,9 +19,7 @@ export const orderItemKeys = {
 
 export const ORDER_ITEMS_QUERY_KEY = orderItemKeys.all;
 
-// ==========================================
 // QUERY HOOKS
-// ==========================================
 
 export const useKitchenItems = (params?: KitchenItemFilterParams) => {
     return useQuery({
@@ -34,49 +30,8 @@ export const useKitchenItems = (params?: KitchenItemFilterParams) => {
     });
 };
 
-// ==========================================
 // MUTATION HOOKS
-// ==========================================
 
-/** Gửi món / Gọi thêm món vào đơn */
-export const useAddItemsToOrder = () => {
-    const queryClient = useQueryClient();
-    return useMutation<
-        OrderItemResponse[],
-        ApiError,
-        { orderId: string; payload: OrderItemCreateRequest[] }
-    >({
-        mutationFn: ({ orderId, payload }) =>
-            orderItemsService.addItemsToOrder(orderId, payload),
-        onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: orderItemKeys.kitchen() });
-            queryClient.invalidateQueries({ queryKey: orderKeys.detail(variables.orderId) });
-            queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
-        },
-    });
-};
-
-/** Cập nhật số lượng / ghi chú món */
-export const useUpdateOrderItem = () => {
-    const queryClient = useQueryClient();
-    return useMutation<
-        OrderItemResponse,
-        ApiError,
-        { itemId: string; orderId?: string; payload: OrderItemUpdateRequest }
-    >({
-        mutationFn: ({ itemId, payload }) =>
-            orderItemsService.updateItem(itemId, payload),
-        onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: orderItemKeys.kitchen() });
-            if (variables.orderId) {
-                queryClient.invalidateQueries({ queryKey: orderKeys.detail(variables.orderId) });
-            }
-            queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
-        },
-    });
-};
-
-/** Bếp cập nhật trạng thái chế biến (PENDING -> PREPARING -> READY -> SERVED -> CANCELLED) */
 export const useUpdateOrderItemStatus = () => {
     const queryClient = useQueryClient();
     return useMutation<
@@ -86,25 +41,6 @@ export const useUpdateOrderItemStatus = () => {
     >({
         mutationFn: ({ itemId, payload }) =>
             orderItemsService.updateStatus(itemId, payload),
-        onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: orderItemKeys.kitchen() });
-            if (variables.orderId) {
-                queryClient.invalidateQueries({ queryKey: orderKeys.detail(variables.orderId) });
-            }
-            queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
-        },
-    });
-};
-
-/** Xóa món khỏi đơn */
-export const useRemoveOrderItem = () => {
-    const queryClient = useQueryClient();
-    return useMutation<
-        void,
-        ApiError,
-        { itemId: string; orderId?: string }
-    >({
-        mutationFn: ({ itemId }) => orderItemsService.removeItem(itemId),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: orderItemKeys.kitchen() });
             if (variables.orderId) {
