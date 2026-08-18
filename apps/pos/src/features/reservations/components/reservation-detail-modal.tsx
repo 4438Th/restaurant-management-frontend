@@ -4,8 +4,8 @@ import {
   type TableReservationResponse,
   TableReservationStatus,
   TableAreaLabel,
-  PaymentMethod,
 } from "@repo/shared-features/reservations";
+import { PaymentMethod } from "@repo/shared-features/payment";
 
 interface ReservationDetailModalProps {
   item: TableReservationResponse | null;

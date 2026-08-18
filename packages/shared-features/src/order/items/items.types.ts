@@ -27,11 +27,6 @@ export interface OrderItemCreateRequest {
     note?: string;
 }
 
-export interface OrderItemUpdateRequest {
-    quantity: number;
-    note?: string;
-}
-
 export interface OrderItemStatusUpdateRequest {
     status: OrderItemStatus;
 }

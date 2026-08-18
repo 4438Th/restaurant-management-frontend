@@ -2,7 +2,7 @@ import { AppLayout } from "@/components/layouts";
 import { Icon } from "@repo/ui";
 import { useTable } from "@repo/shared-features/tables";
 import { useDish } from "@repo/shared-features/menu";
-import { PaymentMethod } from "@repo/shared-features/reservations";
+import { PaymentMethod } from "@repo/shared-features/payment";
 import {
   ReservationToolbar,
   ReservationTable,

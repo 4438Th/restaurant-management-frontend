@@ -1,4 +1,5 @@
 import { AuditEntity, WithCursorPagination } from "@repo/core";
+import { PaymentMethod } from "@/payment/payment";
 
 // ==========================================
 // ENUMS & LABELS
@@ -20,18 +21,6 @@ export const TableReservationStatusLabel: Record<TableReservationStatus, string>
     [TableReservationStatus.COMPLETED]: "Hoàn thành",
     [TableReservationStatus.CANCELLED]: "Đã hủy",
     [TableReservationStatus.NO_SHOW]: "Khách không đến",
-};
-
-export enum PaymentMethod {
-    CASH = "CASH",
-    BANK_TRANSFER = "BANK_TRANSFER",
-    ONLINE_GATEWAY = "ONLINE_GATEWAY"
-}
-
-export const PaymentMethodLabel: Record<PaymentMethod, string> = {
-    [PaymentMethod.CASH]: "Tiền mặt",
-    [PaymentMethod.BANK_TRANSFER]: "Chuyển khoản ngân hàng",
-    [PaymentMethod.ONLINE_GATEWAY]: "Cổng trực truyến"
 };
 
 export enum TableArea {
