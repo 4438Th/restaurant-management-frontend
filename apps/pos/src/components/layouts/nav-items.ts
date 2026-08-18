@@ -22,15 +22,5 @@ export const posNavItems: NavItem[] = [
         title: "Lịch đặt bàn",
         href: "/reservations",
         icon: "CalendarCheck",
-    },
-    {
-        title: "Danh sách đơn hàng",
-        href: "/orders",
-        icon: "Receipt",
-    },
-    {
-        title: "Báo cáo doanh thu",
-        href: "/reports",
-        icon: "BarChart3",
-    },
+    }
 ];

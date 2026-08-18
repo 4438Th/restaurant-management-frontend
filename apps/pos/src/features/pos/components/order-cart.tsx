@@ -19,15 +19,10 @@ export function OrderCart() {
   const {
     isOpen,
     orderDetail,
-    cashReceived,
-    totalAmount,
-    changeAmount,
-    cashSuggestions,
-    setCashReceived,
     handleOpenCheckout,
     handleCloseCheckout,
-    handleConfirmPayment,
-    isSubmitting: isCheckoutSubmitting,
+    handlePaymentSuccess,
+    isCreatingInvoice, // <--- Lấy thêm isCreatingInvoice
   } = useCheckout();
 
   return (
@@ -98,7 +93,7 @@ export function OrderCart() {
           {/* Nút Gửi Chế Biến */}
           <button
             type="button"
-            disabled={cart.length === 0 || isSubmitting}
+            disabled={cart.length === 0 || isSubmitting || isCreatingInvoice}
             onClick={() => handleSendToKitchen()}
             className="py-2.5 px-3 bg-secondary text-on-secondary text-xs font-bold rounded-xl hover:bg-secondary/90 transition disabled:opacity-40 flex items-center justify-center gap-1.5 cursor-pointer"
           >
@@ -109,28 +104,25 @@ export function OrderCart() {
           {/* Nút Thanh Toán */}
           <button
             type="button"
-            disabled={!isReadyForCheckout || isSubmitting}
+            disabled={!isReadyForCheckout || isSubmitting || isCreatingInvoice}
             onClick={handleOpenCheckout}
             className="py-2.5 px-3 bg-primary text-on-primary text-xs font-bold rounded-xl hover:bg-primary/90 transition disabled:opacity-40 flex items-center justify-center gap-1.5 cursor-pointer"
           >
-            <Icon name="Receipt" className="w-3.5 h-3.5 shrink-0" />
-            <span>Thanh toán</span>
+            <Icon
+              name={isCreatingInvoice ? "Loader2" : "Receipt"}
+              className={`w-3.5 h-3.5 shrink-0 ${isCreatingInvoice ? "animate-spin" : ""}`}
+            />
+            <span>{isCreatingInvoice ? "Đang tạo HĐ..." : "Thanh toán"}</span>
           </button>
         </div>
       </div>
 
-      {/* Payment Modal (Pure UI Component nhận props từ container) */}
+      {/* Payment Modal */}
       <PaymentModal
         isOpen={isOpen}
         onClose={handleCloseCheckout}
         orderDetail={orderDetail}
-        totalAmount={totalAmount}
-        cashReceived={cashReceived}
-        onCashChange={setCashReceived}
-        changeAmount={changeAmount}
-        cashSuggestions={cashSuggestions}
-        onConfirm={() => handleConfirmPayment()}
-        isSubmitting={isCheckoutSubmitting}
+        onSuccess={handlePaymentSuccess}
       />
     </div>
   );

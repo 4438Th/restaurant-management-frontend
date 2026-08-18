@@ -34,7 +34,7 @@ export function DepositPaymentModal({
   const [externalRefNo, setExternalRefNo] = useState<string>("");
   const [note, setNote] = useState<string>("");
 
-  // 🔴 Lấy Invoice trực tiếp dựa trên reservation.id (targetId)
+  // Lấy Invoice trực tiếp dựa trên reservation.id (targetId)
   const { data: invoice, isLoading: isLoadingInvoice } = useInvoiceByTarget(
     reservation?.id ?? "",
     isOpen && Boolean(reservation?.id),
