@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { AppLayout } from "@/components/layouts";
 import { Icon } from "@repo/ui";
 import { useTable } from "@repo/shared-features/tables";
 import { useDish } from "@repo/shared-features/menu";
-import { PaymentMethod } from "@repo/shared-features/payment";
+import type { TableReservationResponse } from "@repo/shared-features/reservations";
+import { DepositPaymentModal } from "@/features/payment";
 import {
   ReservationToolbar,
   ReservationTable,
@@ -17,6 +19,10 @@ import {
 export function ReservationPage() {
   const ui = useReservationState();
   const filters = useFilters();
+
+  const [selectedDepositReservation, setSelectedDepositReservation] =
+    useState<TableReservationResponse | null>(null);
+
   const actions = useReservationActions(() => {
     ui.closeFormModal();
   });
@@ -55,13 +61,7 @@ export function ReservationPage() {
               isLoading={filters.isLoading}
               isError={filters.isError}
               onRetry={filters.refetch}
-              onConfirm={(id) =>
-                actions.handleConfirmDeposit(id, {
-                  depositAmount: 0,
-                  paymentMethod: PaymentMethod.CASH,
-                  transactionRef: "",
-                })
-              }
+              onPayDeposit={(item) => setSelectedDepositReservation(item)}
               onCheckIn={(item) => actions.handleCheckIn(item)}
               onViewDetails={ui.setDetailItem}
             />
@@ -72,7 +72,7 @@ export function ReservationPage() {
               <button
                 onClick={filters.resetCursor}
                 disabled={!filters.filters.cursor}
-                className="text-primary hover:underline font-medium"
+                className="text-primary hover:underline font-medium disabled:no-underline disabled:text-on-surface-variant/50 cursor-pointer"
               >
                 {filters.filters.cursor
                   ? "← Quay lại trang đầu"
@@ -81,7 +81,7 @@ export function ReservationPage() {
               <button
                 disabled={!filters.pageData.hasNext || filters.isLoading}
                 onClick={filters.loadNextPage}
-                className="px-3 py-1.5 rounded-lg border flex items-center gap-1 hover:bg-surface-container"
+                className="px-3 py-1.5 rounded-lg border flex items-center gap-1 hover:bg-surface-container disabled:opacity-50 disabled:hover:bg-transparent cursor-pointer"
               >
                 Trang tiếp theo <Icon name="ChevronRight" className="w-4 h-4" />
               </button>
@@ -132,6 +132,23 @@ export function ReservationPage() {
         }}
         onClose={() => ui.setCancelModalItem(null)}
       />
+
+      {/* Modal Thu Tiền Cọc */}
+      {selectedDepositReservation && (
+        <DepositPaymentModal
+          isOpen={Boolean(selectedDepositReservation)}
+          onClose={() => setSelectedDepositReservation(null)}
+          reservation={selectedDepositReservation}
+          depositAmount={
+            selectedDepositReservation.depositAmount
+              ? Number(selectedDepositReservation.depositAmount)
+              : 0
+          }
+          onSuccess={() => {
+            filters.refetch();
+          }}
+        />
+      )}
     </AppLayout>
   );
 }

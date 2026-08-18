@@ -41,7 +41,17 @@ export const useInvoiceDetail = (id: string, enabled = true) => {
         staleTime: 30 * 1000,
     });
 };
-
+export const useInvoiceByTarget = (targetId: string, enabled = true) => {
+    return useQuery({
+        queryKey: invoiceKeys.list({ targetId, size: 1 }),
+        queryFn: async () => {
+            const response = await invoiceService.getAll({ targetId, size: 1 });
+            return response.data?.[0] ?? null;
+        },
+        enabled: Boolean(targetId) && enabled,
+        staleTime: 30 * 1000,
+    });
+};
 export const useCreateInvoice = () => {
     const queryClient = useQueryClient();
     return useMutation<unknown, ApiError, InvoiceCreateRequest>({

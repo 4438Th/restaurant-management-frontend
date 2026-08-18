@@ -6,7 +6,7 @@ interface ReservationTableProps {
   isLoading: boolean;
   isError: boolean;
   onRetry: () => void;
-  onConfirm: (id: string) => void;
+  onPayDeposit: (item: TableReservationResponse) => void;
   onCheckIn: (item: TableReservationResponse) => void;
   onViewDetails: (item: TableReservationResponse) => void;
 }
@@ -16,7 +16,7 @@ export function ReservationTable({
   isLoading,
   isError,
   onRetry,
-  onConfirm,
+  onPayDeposit,
   onCheckIn,
   onViewDetails,
 }: ReservationTableProps) {
@@ -61,6 +61,7 @@ export function ReservationTable({
             <th className="p-4">Số khách</th>
             <th className="p-4">Thời gian nhận bàn</th>
             <th className="p-4">Trạng thái</th>
+            <th className="p-4">Tiền cọc</th>
             <th className="p-4">Ghi chú</th>
             <th className="p-4 text-right">Thao tác</th>
           </tr>
@@ -70,7 +71,7 @@ export function ReservationTable({
             <ReservationTableRow
               key={item.id}
               item={item}
-              onConfirm={onConfirm}
+              onPayDeposit={onPayDeposit}
               onCheckIn={onCheckIn}
               onViewDetails={onViewDetails}
             />

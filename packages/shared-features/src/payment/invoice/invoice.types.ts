@@ -40,7 +40,6 @@ export const InvoiceTypeLabel: Record<InvoiceType, string> = {
 export interface InvoiceCreateRequest {
     targetType: InvoiceType;
     targetId: string;
-    customerId?: string;
     customerName?: string;
     customerPhone?: string;
     subTotal: number;
@@ -58,7 +57,6 @@ export interface InvoiceResponse extends AuditEntity {
     invoiceCode: string;
     targetType: InvoiceType;
     targetId: string;
-    customerId?: string;
     customerName?: string;
     customerPhone?: string;
     subTotal: number;
