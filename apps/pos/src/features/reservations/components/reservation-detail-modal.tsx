@@ -3,9 +3,9 @@ import { Icon } from "@repo/ui";
 import {
   type TableReservationResponse,
   TableReservationStatus,
-  TableAreaLabel,
 } from "@repo/shared-features/reservations";
 import { PaymentMethod } from "@repo/shared-features/payment";
+import { TableAreaLabel } from "@repo/shared-features/tables";
 
 interface ReservationDetailModalProps {
   item: TableReservationResponse | null;

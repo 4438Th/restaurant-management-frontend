@@ -23,19 +23,6 @@ export const TableReservationStatusLabel: Record<TableReservationStatus, string>
     [TableReservationStatus.NO_SHOW]: "Khách không đến",
 };
 
-export enum TableArea {
-    MAIN_HALL = "MAIN_HALL",
-    PRIVATE_ROOM = "PRIVATE_ROOM",
-    AIR_CONDITIONED = "AIR_CONDITIONED",
-    ROOFTOP = "ROOFTOP",
-}
-export const TableAreaLabel: Record<TableArea, string> = {
-    [TableArea.MAIN_HALL]: "Sảnh chính",
-    [TableArea.PRIVATE_ROOM]: "Phòng riêng",
-    [TableArea.AIR_CONDITIONED]: "Máy lạnh",
-    [TableArea.ROOFTOP]: "Sân thượng",
-};
-
 // ==========================================
 // REQUEST DTOs
 // ==========================================

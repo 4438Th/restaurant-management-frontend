@@ -23,4 +23,5 @@ export const posNavItems: NavItem[] = [
         href: "/reservations",
         icon: "CalendarCheck",
     }
+
 ];
